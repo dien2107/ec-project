@@ -1,1 +1,1 @@
-# assets
+# stores
