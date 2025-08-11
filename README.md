@@ -22,5 +22,5 @@ src/
 ├── assets/
 ├── services/             # API chung
 └── stores/               # redux
-└── contexts/             # useContext
+└── middlewares/          
 
