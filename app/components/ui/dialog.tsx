@@ -4,7 +4,6 @@ import { XIcon } from "lucide-react";
 
 import { cn } from "~/libs/utils";
 
-
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {

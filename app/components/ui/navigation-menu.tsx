@@ -5,7 +5,6 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { cn } from "~/libs/utils";
 
-
 function NavigationMenu({
   className,
   children,
