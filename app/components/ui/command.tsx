@@ -3,6 +3,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
 
 import { cn } from "~/libs/utils";
+
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+
 
 function Command({
   className,
@@ -39,6 +41,7 @@ function CommandDialog({
   description?: string;
   className?: string;
   showCloseButton?: boolean;
+
 }) {
   return (
     <Dialog {...props}>
@@ -180,3 +183,4 @@ export {
   CommandShortcut,
   CommandSeparator,
 };
+
