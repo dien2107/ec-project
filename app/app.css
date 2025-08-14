@@ -4,8 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 html,
@@ -89,32 +90,31 @@ body {
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
+  --font-xs: 0.75rem;
+  --font-xs-line: 1rem;
 
-    --font-xs: 0.75rem;
-    --font-xs-line: 1rem;
+  --font-sm: 0.875rem;
+  --font-sm-line: 1.25rem;
 
-    --font-sm: 0.875rem;
-    --font-sm-line: 1.25rem;
+  --font-base: 1rem;
+  --font-base-line: 1.5rem;
 
-    --font-base: 1rem;
-    --font-base-line: 1.5rem;
+  --font-lg: 1.125rem;
+  --font-lg-line: 1.75rem;
 
-    --font-lg: 1.125rem;
-    --font-lg-line: 1.75rem;
+  --font-xl: 1.25rem;
+  --font-xl-line: 1.75rem;
 
-    --font-xl: 1.25rem;
-    --font-xl-line: 1.75rem;
+  --font-2xl: 1.5rem;
+  --font-2xl-line: 2rem;
 
-    --font-2xl: 1.5rem;
-    --font-2xl-line: 2rem;
+  --font-3xl: 1.875rem;
+  --font-3xl-line: 2.25rem;
 
-    --font-3xl: 1.875rem;
-    --font-3xl-line: 2.25rem;
+  --font-4xl: 2.25rem;
+  --font-4xl-line: 2.5rem;
 
-    --font-4xl: 2.25rem;
-    --font-4xl-line: 2.5rem;
-
-    --container-max: 1280px;
+  --container-max: 1280px;
 }
 
 .dark {

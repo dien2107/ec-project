@@ -5,6 +5,7 @@ export default [
     index("features/home/index.tsx"),
     route("/categories", "features/categories/index.tsx"),
     route("/payments", "features/payment/index.tsx"),
+    route("/profile", "features/user-profile/index.tsx"),
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout
