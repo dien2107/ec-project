@@ -3,14 +3,13 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "~/components/ui/navigation-menu"
+} from "~/components/ui/navigation-menu";
 
 const Navbar = ({ className = "" }: { className?: string }) => {
   return (
     <NavigationMenu className={`hidden lg:flex ${className}`}>
       <NavigationMenuList className="flex items-center space-x-6">
         {[
-          { label: "Trang chủ", href: "/" },
           { label: "Áo", href: "/ao" },
           { label: "Quần", href: "/quan" },
           { label: "Phụ kiện", href: "/phu-kien" },
@@ -28,7 +27,7 @@ const Navbar = ({ className = "" }: { className?: string }) => {
         ))}
       </NavigationMenuList>
     </NavigationMenu>
-  )
-}
+  );
+};
 
 export default Navbar;

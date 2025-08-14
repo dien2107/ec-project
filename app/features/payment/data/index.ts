@@ -28,7 +28,8 @@ export const mockCartItems: CartItem[] = [
     name: "Áo thun nam cổ tròn basic",
     price: 199000,
     quantity: 2,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
     size: "M",
     color: "Trắng",
   },
@@ -37,7 +38,8 @@ export const mockCartItems: CartItem[] = [
     name: "Quần jean nam slim fit",
     price: 499000,
     quantity: 1,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
     size: "32",
     color: "Xanh đậm",
   },
@@ -46,7 +48,8 @@ export const mockCartItems: CartItem[] = [
     name: "Giày thể thao nam",
     price: 899000,
     quantity: 1,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
     size: "42",
     color: "Đen",
   },
@@ -55,7 +58,8 @@ export const mockCartItems: CartItem[] = [
     name: "Áo khoác dù nam",
     price: 659000,
     quantity: 1,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
     size: "L",
     color: "Xám",
   },
@@ -64,10 +68,11 @@ export const mockCartItems: CartItem[] = [
     name: "Túi đeo chéo thời trang",
     price: 299000,
     quantity: 1,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
     size: "One size",
     color: "Đen",
   },
 ];
 
-export const mockSelectedItems: string[] = ["1", "2", "3"]
+export const mockSelectedItems: string[] = ["1", "2", "3"];
