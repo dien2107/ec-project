@@ -1,197 +1,28 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { Funnel } from "lucide-react";
+import ProductCard from "./components/product-card";
+import Pagination from "~/components/common/pagination";
+import type { PriceRange, CategoryFilters } from "./types";
 import { useSearchParams } from "react-router";
-
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Funnel } from "lucide-react";
+import { fakeProducts } from "~/features/categories/data/products";
 
-import ProductCard from "./components/ProductCard";
-import Pagination from "~/components/Pagination";
+const PRODUCTS_PER_PAGE = 12;
+const PRICE_RANGES = [
+  { label: "Dưới 200.000₫", min: 0, max: 200000 },
+  { label: "200.000₫ - 400.000₫", min: 200000, max: 400000 },
+  { label: "Trên 400.000₫", min: 400000, max: Infinity },
+] as const;
 
-import type { PriceRange, CategoryFilters } from "./types";
+const SIZES = ["S", "M", "L", "XL"] as const;
 
-export const fakeProducts = [
-  {
-    id: 1,
-    title: "Áo Thun Cổ Tròn Đơn Giản",
-    price: 185000,
-    oldPrice: 250000,
-    discount: 26,
-    image:
-      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    title: "Áo Hoodie Nỉ Bông",
-    price: 320000,
-    oldPrice: 420000,
-    discount: 24,
-    image:
-      "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 3,
-    title: "Áo Polo Nam Thể Thao",
-    price: 210000,
-    oldPrice: 300000,
-    discount: 30,
-    image:
-      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 4,
-    title: "Áo Sơ Mi Trắng Form Rộng",
-    price: 280000,
-    oldPrice: 350000,
-    discount: 20,
-    image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 5,
-    title: "Áo Khoác Jean Xanh",
-    price: 450000,
-    oldPrice: 550000,
-    discount: 18,
-    image:
-      "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 6,
-    title: "Áo Sweater Mùa Đông",
-    price: 370000,
-    oldPrice: 450000,
-    discount: 18,
-    image:
-      "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 7,
-    title: "Áo Tank Top Thể Thao",
-    price: 150000,
-    oldPrice: 200000,
-    discount: 25,
-    image:
-      "https://images.unsplash.com/photo-1542060748-10c28b62716b?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 8,
-    title: "Áo Len Cổ Lọ",
-    price: 340000,
-    oldPrice: 400000,
-    discount: 15,
-    image:
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 9,
-    title: "Áo Thun Graphic",
-    price: 220000,
-    oldPrice: 300000,
-    discount: 27,
-    image:
-      "https://images.unsplash.com/photo-1554568218-0f1715e72254?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 10,
-    title: "Áo Khoác Phao Nam",
-    price: 650000,
-    oldPrice: 800000,
-    discount: 19,
-    image:
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 11,
-    title: "Áo Hoodie Oversize",
-    price: 330000,
-    oldPrice: 420000,
-    discount: 21,
-    image:
-      "https://images.unsplash.com/photo-1503342394128-c104d54dba01?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 12,
-    title: "Áo Vest Nam Công Sở",
-    price: 750000,
-    oldPrice: 950000,
-    discount: 21,
-    image:
-      "https://images.unsplash.com/photo-1520975918319-8a4d3d720b81?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 13,
-    title: "Áo Sơ Mi Kẻ Caro",
-    price: 260000,
-    oldPrice: 350000,
-    discount: 26,
-    image:
-      "https://images.unsplash.com/photo-1520974735194-6c79bc01a5e9?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 14,
-    title: "Áo Khoác Bomber",
-    price: 480000,
-    oldPrice: 600000,
-    discount: 20,
-    image:
-      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 15,
-    title: "Áo Hoodie Trơn",
-    price: 300000,
-    oldPrice: 380000,
-    discount: 21,
-    image:
-      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 16,
-    title: "Áo Thun Basic",
-    price: 180000,
-    oldPrice: 230000,
-    discount: 22,
-    image:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 17,
-    title: "Áo Gile Len",
-    price: 250000,
-    oldPrice: 320000,
-    discount: 22,
-    image:
-      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 18,
-    title: "Áo Khoác Dù",
-    price: 400000,
-    oldPrice: 500000,
-    discount: 20,
-    image:
-      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 19,
-    title: "Áo Thun Tay Dài",
-    price: 210000,
-    oldPrice: 270000,
-    discount: 22,
-    image:
-      "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&auto=format&fit=crop",
-  },
-  {
-    id: 20,
-    title: "Áo Khoác Cardigan",
-    price: 350000,
-    oldPrice: 450000,
-    discount: 22,
-    image:
-      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&auto=format&fit=crop",
-  },
-];
+const COLORS = [
+  { name: "Black", class: "bg-black" },
+  { name: "White", class: "bg-white border-gray-200 border-2" },
+  { name: "Blue", class: "bg-blue-500" },
+  { name: "Red", class: "bg-red-500" },
+] as const;
 
 export default function Categories() {
   const [filters, setFilters] = useState<CategoryFilters>({
@@ -199,158 +30,202 @@ export default function Categories() {
     size: null,
     color: null,
   });
-
   const [hideFilter, setHideFilter] = useState(false);
-
   const [searchParams, setSearchParams] = useSearchParams();
-  const productsPerPage = 12;
+
   const currentPage = Number(searchParams.get("page")) || 1;
-  const totalPages = Math.ceil(fakeProducts.length / productsPerPage);
+  const totalPages = Math.ceil(fakeProducts.length / PRODUCTS_PER_PAGE);
 
-  const priceRanges = [
-    { label: "Dưới 200.000₫", min: 0, max: 200000 },
-    { label: "200.000₫ - 400.000₫", min: 200000, max: 400000 },
-    { label: "Trên 400.000₫", min: 400000, max: Infinity },
-  ];
-
-  const sizes = ["S", "M", "L", "XL"];
-
-  const colors = [
-    { name: "Black", class: "bg-black" },
-    { name: "White", class: "bg-white border-gray-200 border-2" },
-    { name: "Blue", class: "bg-blue-500" },
-    { name: "Red", class: "bg-red-500" },
-  ];
-
-  const handlePriceChange = (range: PriceRange | null) => {
+  const handlePriceChange = useCallback((range: PriceRange) => {
     setFilters((prev) => ({
       ...prev,
-      price: range,
+      price: prev.price?.min === range.min ? null : range,
     }));
-  };
+  }, []);
 
-  const handleSizeChange = (size: string | null) => {
+  const handleSizeChange = useCallback((size: string) => {
     setFilters((prev) => ({
       ...prev,
-      size: size,
+      size: prev.size === size ? null : size,
     }));
-  };
+  }, []);
 
-  const handleColorChange = (color: string | null) => {
+  const handleColorChange = useCallback((color: string) => {
     setFilters((prev) => ({
       ...prev,
-      color: color,
+      color: prev.color === color ? null : color,
     }));
-  };
+  }, []);
 
-  const handleChangePage = (page: number) => {
-    setSearchParams((prev) => {
-      prev.set("page", page.toString());
-      return prev;
-    });
-  };
+  const handleChangePage = useCallback(
+    (page: number) => {
+      setSearchParams((prev) => {
+        prev.set("page", page.toString());
+        return prev;
+      });
+    },
+    [setSearchParams]
+  );
+
+  const displayedProducts = useMemo(() => {
+    return fakeProducts.slice(
+      (currentPage - 1) * PRODUCTS_PER_PAGE,
+      currentPage * PRODUCTS_PER_PAGE
+    );
+  }, [currentPage]);
 
   return (
-    <div className="max-w-[1280px] mx-auto p-6 ">
+    <div className="max-w-[1280px] mx-auto p-4 md:p-6">
       <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-        <h1 className="font-bold text-2xl">Áo</h1>
+        <h1 className="font-bold text-xl md:text-2xl">Áo</h1>
         <Button
           variant="outline"
-          className="cursor-pointer py-2 px-4 h-10 w-20"
+          className="flex items-center gap-2 py-2 px-4 h-10"
           onClick={() => setHideFilter((prev) => !prev)}
+          aria-label={hideFilter ? "Show filters" : "Hide filters"}
         >
-          <Funnel />
+          <Funnel size={16} />
           <span className="text-sm">Lọc</span>
         </Button>
       </div>
-      <div className="grid grid-cols-12 mt-4 h-[100vh]">
-        {/* LEFT SIDE: Filters */}
-        <div
-          className={`${hideFilter ? "hidden" : ""} col-span-3 py-6 pr-6 flex flex-col gap-6`}
-        >
-          {/* Price */}
-          <div>
-            <h3 className="font-medium mb-3">Giá</h3>
-            <div className="flex flex-col gap-2">
-              {priceRanges.map((range, idx) => (
-                <div key={idx}>
-                  <Checkbox
-                    id={`price-${idx}`}
-                    className="mr-2 border-black cursor-pointer"
-                    onClick={() => handlePriceChange(range)}
-                  />
-                  <label htmlFor={`price-${idx}`} className="cursor-pointer">
-                    {range.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Size */}
-          <div>
-            <h3 className="font-medium mb-3">Kích thước</h3>
-            <div className="flex gap-2 flex-wrap">
-              {sizes.map((size) => (
-                <Button
-                  key={size}
-                  variant="outline"
-                  className="cursor-pointer h-8 text-sm font-medium"
-                  onClick={() => handleSizeChange(size)}
-                >
-                  {size}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Color */}
-          <div>
-            <h3 className="font-medium mb-3">Màu sắc</h3>
-            <div className="flex gap-2 flex-wrap">
-              {colors.map((color, idx) => (
-                <div
+      <div className="flex flex-col md:flex-row mt-4 min-h-[calc(100vh-180px)]">
+        {!hideFilter && (
+          <aside className="w-full md:w-1/4 md:pr-6 py-6 space-y-6 overflow-y-auto">
+            <FilterSection title="Giá">
+              {PRICE_RANGES.map((range, idx) => (
+                <FilterCheckbox
                   key={idx}
-                  className={`w-6 h-6 rounded-full ${color.class} cursor-pointer`}
-                  title={color.name}
-                  onClick={() => handleColorChange(color.name)}
-                ></div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT SIDE: Products */}
-        <div className={`col-span-${hideFilter ? 12 : 9} mt-4 `}>
-          <div className="grid grid-cols-4 gap-x-4 gap-y-8">
-            {fakeProducts
-              .slice(
-                (currentPage - 1) * productsPerPage,
-                currentPage * productsPerPage
-              )
-              .map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  title={product.title}
-                  price={product.price}
-                  oldPrice={product.oldPrice}
-                  discount={product.discount}
-                  image={product.image}
+                  id={`price-${idx}`}
+                  label={range.label}
+                  checked={filters.price?.min === range.min}
+                  onChange={() => handlePriceChange(range)}
                 />
               ))}
-          </div>
+            </FilterSection>
 
-          {/* Pagination */}
-          <div className="flex justify-center mt-10">
+            <FilterSection title="Kích thước">
+              <div className="flex flex-wrap gap-2">
+                {SIZES.map((size) => (
+                  <FilterButton
+                    key={size}
+                    label={size}
+                    active={filters.size === size}
+                    onClick={() => handleSizeChange(size)}
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection title="Màu sắc">
+              <div className="flex flex-wrap gap-3">
+                {COLORS.map((color, idx) => (
+                  <ColorFilter
+                    key={idx}
+                    color={color}
+                    active={filters.color === color.name}
+                    onClick={() => handleColorChange(color.name)}
+                  />
+                ))}
+              </div>
+            </FilterSection>
+          </aside>
+        )}
+
+        <main className={`${hideFilter ? "w-full" : "w-full md:w-3/4"} py-4`}>
+          <ProductGrid products={displayedProducts} />
+
+          <div className="mt-8 pb-8 flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handleChangePage}
             />
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
 }
+
+const FilterSection = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <div>
+    <h3 className="font-medium mb-3">{title}</h3>
+    {children}
+  </div>
+);
+
+const FilterCheckbox = ({
+  id,
+  label,
+  checked,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) => (
+  <div className="flex items-center">
+    <Checkbox
+      id={id}
+      className="mr-2 border-gray-400 cursor-pointer"
+      checked={checked}
+      onCheckedChange={onChange}
+    />
+    <label htmlFor={id} className="cursor-pointer text-sm">
+      {label}
+    </label>
+  </div>
+);
+
+const FilterButton = ({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <Button
+    variant={active ? "default" : "outline"}
+    className="h-8 px-3 text-xs md:text-sm"
+    onClick={onClick}
+  >
+    {label}
+  </Button>
+);
+
+const ColorFilter = ({
+  color,
+  active,
+  onClick,
+}: {
+  color: { name: string; class: string };
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <div
+    className={`w-6 h-6 rounded-full ${color.class} cursor-pointer ${
+      active ? "ring-2 ring-offset-2 ring-gray-400" : ""
+    }`}
+    title={color.name}
+    onClick={onClick}
+    aria-label={`Filter by ${color.name} color`}
+  />
+);
+
+const ProductGrid = ({ products }: { products: typeof fakeProducts }) => (
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    {products.map((product) => (
+      <ProductCard key={product.id} {...product} />
+    ))}
+  </div>
+);
