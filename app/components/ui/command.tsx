@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 
-
 function Command({
   className,
   ...props
@@ -41,7 +40,6 @@ function CommandDialog({
   description?: string;
   className?: string;
   showCloseButton?: boolean;
-
 }) {
   return (
     <Dialog {...props}>
@@ -183,4 +181,3 @@ export {
   CommandShortcut,
   CommandSeparator,
 };
-
