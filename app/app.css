@@ -205,3 +205,35 @@ body {
     line-height: var(--font-5xl-line);
   }
 }
+
+/* Custom Scrollbar  */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: var(--muted); /* dùng màu biến Tailwind */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-foreground);
+}
+
+.scrollbar-custom::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none;
+  background: transparent;
+}
+
+/* Đảm bảo cho cả increment và decrement */
+.scrollbar-custom::-webkit-scrollbar-button:single-button {
+  display: none;
+  background: transparent;
+}
