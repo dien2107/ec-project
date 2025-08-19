@@ -3,6 +3,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "~/libs/utils";
 
+
 function Tabs({
   className,
   ...props
@@ -60,5 +61,4 @@ function TabsContent({
     />
   );
 }
-
 export { Tabs, TabsList, TabsTrigger, TabsContent };

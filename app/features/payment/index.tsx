@@ -40,7 +40,6 @@ import {
   mockSelectedItems,
   type Address,
   type CartItem,
-  type LocationState,
 } from "~/features/payment/data";
 
 const addressSchema = z.object({
@@ -95,8 +94,6 @@ const Payment = () => {
   });
 
   useEffect(() => {
-    const locationState = state as LocationState;
-
     setCartItems(mockCartItems);
     setSelectedItems(mockSelectedItems);
   }, [state, navigate]);
