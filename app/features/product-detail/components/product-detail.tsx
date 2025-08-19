@@ -2,7 +2,8 @@ import { useState, useCallback } from "react";
 
 import { Button } from "~/components/ui/button";
 
-import { Minus, Plus, ShoppingCart, CircleCheck } from "lucide-react";
+import { Minus, Plus, ShoppingCart, CircleCheck, Star } from "lucide-react";
+import Rating from "react-rating";
 
 import type { SelectedProductProps } from "../types";
 
@@ -53,9 +54,40 @@ export default function ProductDetail() {
     <div className="flex flex-col gap-6">
       {/* Title & Price */}
       <div>
-        <h1 className="text-2xl font-bold mb-2">
-          Áo Thun Cổ Tròn Tay Ngắn Seventy Seven 13 Đen
-        </h1>
+        <div className="border-b border-gray-200">
+          <h1 className="text-2xl font-bold mb-2">
+            Áo Thun Cổ Tròn Tay Ngắn Seventy Seven 13 Đen
+          </h1>
+          <div className="flex justify-start items-center gap-4 mb-4">
+            <div className="inline-flex justify-start items-center gap-2 border-r border-gray-200 pr-4">
+              <span className="font-medium text-md border-b border-black">
+                4.5
+              </span>
+              <div className="rating-wrapper">
+                <Rating
+                  initialRating={4.5}
+                  emptySymbol={<Star size={16} stroke="gold" />}
+                  fullSymbol={<Star size={16} fill="gold" stroke="gold" />}
+                  readonly
+                />
+              </div>
+            </div>
+            <div className="inline-flex justify-start items-center gap-2 border-r border-gray-200 pr-4">
+              <span className="flex items-center gap-2">
+                <span className="font-medium text-md border-b border-black">
+                  156
+                </span>{" "}
+                <span className="font-normal text-gray-500">đánh giá</span>
+              </span>
+            </div>
+            <div className="inline-flex justify-start items-center gap-4">
+              <span className="flex items-center gap-2">
+                <span className="font-medium text-md">943</span>{" "}
+                <span className="font-normal text-gray-500">đã bán</span>
+              </span>
+            </div>
+          </div>
+        </div>
         <div className="flex items-center gap-3 mt-4">
           <span className="text-xl font-bold">{formatVND(157000)}</span>
           <span className="text-gray-500 line-through">

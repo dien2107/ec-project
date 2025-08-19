@@ -12,3 +12,9 @@ export type SelectedProductProps = {
   colorId: number | null;
   quantity: number;
 };
+
+export type StarRatingRowProps = {
+  stars: number;
+  value: number;
+  count: string;
+};
