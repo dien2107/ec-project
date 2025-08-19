@@ -2,13 +2,11 @@ src/
 ├── features/
 │   ├── auth/
 │   │   ├── components/   # Component riêng cho auth
-│   │   ├── pages/        # Trang Login, Register
 │   │   ├── hooks/
 │   │   ├── services/
 │   │   └── index.ts
 │   ├── users/
 │   │   ├── components/
-│   │   ├── pages/
 │   │   ├── hooks/
 │   │   ├── services/
 │   │   └── index.ts
@@ -23,4 +21,3 @@ src/
 ├── services/             # API chung
 └── stores/               # redux
 └── middlewares/          
-
