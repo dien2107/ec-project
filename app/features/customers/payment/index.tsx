@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -12,7 +12,6 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 import { Check } from "lucide-react";
-import { useLocation, useNavigate } from "react-router";
 import { showError, showSuccess } from "~/libs/toast";
 import {
   Form,
@@ -40,7 +39,8 @@ import {
   mockSelectedItems,
   type Address,
   type CartItem,
-} from "~/features/payment/data";
+} from "~/features/customers/payment/data";
+import { useLocation, useNavigate } from "react-router";
 
 const addressSchema = z.object({
   fullName: z.string().min(1, "Vui lòng nhập họ tên"),
@@ -503,4 +503,4 @@ const Payment = () => {
   );
 };
 
-export default Payment;
+export default React.memo ? React.memo(Payment) : Payment;

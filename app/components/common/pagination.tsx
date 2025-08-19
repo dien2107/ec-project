@@ -9,7 +9,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { PaginationProps } from "~/types/pagination.schema";
-import { usePagination } from "~/hooks/usePagination";
+import { usePagination } from "~/hooks/use-pagination";
 
 export default function Pagination({
   currentPage,
