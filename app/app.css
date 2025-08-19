@@ -4,8 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 html,
@@ -88,6 +89,32 @@ body {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --font-xs: 0.75rem;
+  --font-xs-line: 1rem;
+
+  --font-sm: 0.875rem;
+  --font-sm-line: 1.25rem;
+
+  --font-base: 1rem;
+  --font-base-line: 1.5rem;
+
+  --font-lg: 1.125rem;
+  --font-lg-line: 1.75rem;
+
+  --font-xl: 1.25rem;
+  --font-xl-line: 1.75rem;
+
+  --font-2xl: 1.5rem;
+  --font-2xl-line: 2rem;
+
+  --font-3xl: 1.875rem;
+  --font-3xl-line: 2.25rem;
+
+  --font-4xl: 2.25rem;
+  --font-4xl-line: 2.5rem;
+
+  --container-max: 1280px;
 }
 
 .dark {
@@ -131,4 +158,82 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+  .main-container {
+    @apply mx-auto px-4;
+    max-width: var(--container-max);
+  }
+}
+
+@layer utilities {
+  .text-xs {
+    font-size: var(--font-xs);
+    line-height: var(--font-xs-line);
+  }
+  .text-sm {
+    font-size: var(--font-sm);
+    line-height: var(--font-sm-line);
+  }
+  .text-base {
+    font-size: var(--font-base);
+    line-height: var(--font-base-line);
+  }
+  .text-lg {
+    font-size: var(--font-lg);
+    line-height: var(--font-lg-line);
+  }
+  .text-xl {
+    font-size: var(--font-xl);
+    line-height: var(--font-xl-line);
+  }
+  .text-2xl {
+    font-size: var(--font-2xl);
+    line-height: var(--font-2xl-line);
+  }
+  .text-3xl {
+    font-size: var(--font-3xl);
+    line-height: var(--font-3xl-line);
+  }
+  .text-4xl {
+    font-size: var(--font-4xl);
+    line-height: var(--font-4xl-line);
+  }
+  .text-5xl {
+    font-size: var(--font-5xl);
+    line-height: var(--font-5xl-line);
+  }
+}
+
+/* Custom Scrollbar  */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: var(--muted); /* dùng màu biến Tailwind */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-foreground);
+}
+
+.scrollbar-custom::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none;
+  background: transparent;
+}
+
+/* Đảm bảo cho cả increment và decrement */
+.scrollbar-custom::-webkit-scrollbar-button:single-button {
+  display: none;
+  background: transparent;
 }
