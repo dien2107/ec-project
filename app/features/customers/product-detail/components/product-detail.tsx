@@ -50,8 +50,8 @@ const MAX_VALUE = 2;
 
 export default function ProductDetail() {
   const [selected, setSelected] = useState<SelectedProductProps>({
-    sizeId: null,
-    colorId: null,
+    sizeId: 1,
+    colorId: 1,
     quantity: 1,
   });
 

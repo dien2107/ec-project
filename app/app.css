@@ -238,16 +238,3 @@ body {
   background: transparent;
 }
 
-/* Css for rating  */
-.rating-wrapper > span {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 4px !important;
-}
-
-/* Css for swiper fw */
-.swiper-wrapper {
-  display: flex !important;
-  align-items: center !important  ;
-}
