@@ -12,8 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Star, ThumbsUp, EllipsisVertical } from "lucide-react";
-import Rating from "react-rating";
+import { Star, ThumbsUp, EllipsisVertical, StarHalf } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperClass } from "swiper";
 import { Pagination } from "swiper/modules";
@@ -39,6 +38,22 @@ export default function CardReview() {
     swiperRef.current?.slideTo(idx);
   };
 
+  const renderStars = (rating: number) => {
+    const stars = [];
+
+    for (let i = 1; i <= 5; i++) {
+      if (rating >= i) {
+        stars.push(<Star key={i} fill="gold" stroke="gold" />);
+      } else if (rating + 0.5 >= i) {
+        stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
+      } else {
+        stars.push(<Star key={i} stroke="gold" />);
+      }
+    }
+
+    return stars;
+  };
+
   return (
     <Card>
       <div className="px-6 flex items-start justify-start">
@@ -55,23 +70,10 @@ export default function CardReview() {
                 <h3 className="text-sm font-medium">Hương Ly</h3>
                 <span className="text-xs text-gray-400">2025-01-16</span>
               </div>
-              <div className="rating-wrapper">
-                <Rating
-                  initialRating={4.8}
-                  fractions={2}
-                  readonly
-                  emptySymbol={
-                    <span>
-                      <Star size={16} stroke="gold" />
-                    </span>
-                  }
-                  fullSymbol={
-                    <span>
-                      <Star size={16} fill="gold" stroke="gold" />
-                    </span>
-                  }
-                />
-              </div>
+              <div className="flex items-center gap-3 mb-1">
+                  <span className="text-3xl font-bold text-black">4.8</span>
+                  <div className="flex">{renderStars(4.8)}</div>
+                </div>
             </div>
             <span className="text-xs text-gray-400 mb-2">
               Phân loại: Trắng - M
