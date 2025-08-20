@@ -1,10 +1,8 @@
 import { useParams } from "react-router";
-
 import ProductImageGallery from "./components/product-image-gallery";
 import ProductDetail from "./components/product-detail";
 import TabsInfo from "./components/tabs-info";
 import ProductRelated from "./components/product-related";
-
 import { fakeImagesOfProduct } from "./data/images";
 
 export default function Product() {

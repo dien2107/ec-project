@@ -26,10 +26,11 @@ const COLORS = [
 
 export default function Categories() {
   const [filters, setFilters] = useState<CategoryFilters>({
-    price: null,
-    size: null,
-    color: null,
+    price: { label: "Any", min: 0, max: 10 },
+    size: "10",
+    color: "10",
   });
+
   const [hideFilter, setHideFilter] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -39,21 +40,21 @@ export default function Categories() {
   const handlePriceChange = useCallback((range: PriceRange) => {
     setFilters((prev) => ({
       ...prev,
-      price: prev.price?.min === range.min ? null : range,
+      price: range,
     }));
   }, []);
 
   const handleSizeChange = useCallback((size: string) => {
     setFilters((prev) => ({
       ...prev,
-      size: prev.size === size ? null : size,
+      size,
     }));
   }, []);
 
   const handleColorChange = useCallback((color: string) => {
     setFilters((prev) => ({
       ...prev,
-      color: prev.color === color ? null : color,
+      color,
     }));
   }, []);
 

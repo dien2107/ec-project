@@ -1,4 +1,5 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Link, useLocation } from "react-router"
  
 import {
   Sidebar,
@@ -14,7 +15,7 @@ import {
 const items = [
   {
     title: "Home",
-    url: "/system/home",
+    url: "/system",
     icon: Home,
   },
   {
@@ -38,8 +39,10 @@ const items = [
     icon: Settings,
   },
 ]
- 
+
+
 export function AdminSidebar() {
+  const location = useLocation()
   return (
     <Sidebar>
       <SidebarContent>
@@ -47,16 +50,22 @@ export function AdminSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const isActive = location.pathname === item.url
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={isActive ? "bg-blue-50 text-blue-600" : ""}
+                    >
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
