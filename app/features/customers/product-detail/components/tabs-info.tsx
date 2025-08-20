@@ -1,10 +1,25 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Star } from "lucide-react";
 import StarRatingRow from "./star-rating-row";
 import TabsReview from "./tabs-review";
-import Rating from "react-rating";
+import { Star, StarHalf } from "lucide-react";
 
 export default function TabsInfo() {
+  const renderStars = (rating: number) => {
+    const stars = [];
+
+    for (let i = 1; i <= 5; i++) {
+      if (rating >= i) {
+        stars.push(<Star key={i} fill="gold" stroke="gold" />);
+      } else if (rating + 0.5 >= i) {
+        stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
+      } else {
+        stars.push(<Star key={i} stroke="gold" />);
+      }
+    }
+
+    return stars;
+  };
+
   return (
     <div>
       <Tabs defaultValue="product" className="w-full">
@@ -74,23 +89,9 @@ export default function TabsInfo() {
             {/* Left content */}
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-3xl font-bold text-black">4.8</span>
-                <div className="rating-wrapper">
-                  <Rating
-                    initialRating={4.8}
-                    fractions={2}
-                    readonly
-                    emptySymbol={
-                      <span>
-                        <Star stroke="gold" />
-                      </span>
-                    }
-                    fullSymbol={
-                      <span>
-                        <Star fill="gold" stroke="gold" />
-                      </span>
-                    }
-                  />
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="text-3xl font-bold text-black">4.8</span>
+                  <div className="flex">{renderStars(4.8)}</div>
                 </div>
               </div>
               <div>

@@ -1,11 +1,32 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 
 import { Button } from "~/components/ui/button";
 
-import { Minus, Plus, ShoppingCart, CircleCheck, Star } from "lucide-react";
-import Rating from "react-rating";
+import {
+  Minus,
+  Plus,
+  ShoppingCart,
+  CircleCheck,
+  Star,
+  StarHalf,
+} from "lucide-react";
 
 import type { SelectedProductProps } from "../types";
+const renderStars = (rating: number) => {
+  const stars = [];
+
+  for (let i = 1; i <= 5; i++) {
+    if (rating >= i) {
+      stars.push(<Star key={i} fill="gold" stroke="gold" />);
+    } else if (rating + 0.5 >= i) {
+      stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
+    } else {
+      stars.push(<Star key={i} stroke="gold" />);
+    }
+  }
+
+  return stars;
+};
 
 const formatVND = (amount: number) =>
   Intl.NumberFormat("vi-VN", {
@@ -63,13 +84,8 @@ export default function ProductDetail() {
               <span className="font-medium text-md border-b border-black">
                 4.5
               </span>
-              <div className="rating-wrapper">
-                <Rating
-                  initialRating={4.5}
-                  emptySymbol={<Star size={16} stroke="gold" />}
-                  fullSymbol={<Star size={16} fill="gold" stroke="gold" />}
-                  readonly
-                />
+              <div className="flex items-center gap-3 mb-1">
+                <div className="flex">{renderStars(4.8)}</div>
               </div>
             </div>
             <div className="inline-flex justify-start items-center gap-2 border-r border-gray-200 pr-4">

@@ -1,7 +1,7 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
-  route("", "./layouts/default-layout.tsx", [
+  route("", "./layouts/customer-layout.tsx", [
     index("features/customers/home/index.tsx"),
     route("/categories", "features/customers/categories/index.tsx"),
     route("/payments", "features/customers/payment/index.tsx"),
@@ -10,6 +10,8 @@ export default [
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout
-  route("/system", "features/system/index.tsx"),
+  route("", "./layouts/admin-layout.tsx", [
+    route("/system", "features/system/index.tsx"),
+  ])
   //   route("login", "features/auth/login.tsx"),
 ] satisfies RouteConfig;

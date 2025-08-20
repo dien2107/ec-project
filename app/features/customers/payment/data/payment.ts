@@ -1,26 +1,4 @@
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-  size: string;
-  color: string;
-}
-
-export interface Address {
-  id: string;
-  fullName: string;
-  phone: string;
-  address: string;
-  city: string;
-  isDefault: boolean;
-}
-
-export interface LocationState {
-  cartItems: CartItem[];
-  selectedItems: string[];
-}
+import type { CartItem } from "~/features/customers/payment/types/payment";
 
 export const mockCartItems: CartItem[] = [
   {
