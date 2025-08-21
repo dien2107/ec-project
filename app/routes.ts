@@ -12,6 +12,7 @@ export default [
   // Page custom riêng, không dùng default layout
   route("", "./layouts/admin-layout.tsx", [
     route("/system", "features/system/index.tsx"),
-  ])
+    route("/system/products", "features/system/products/index.tsx"),
+  ]),
   //   route("login", "features/auth/login.tsx"),
 ] satisfies RouteConfig;
