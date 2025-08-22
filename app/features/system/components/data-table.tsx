@@ -56,6 +56,7 @@ interface DataTableProps<TData, TValue> {
   showAddButton?: boolean;
   addButtonTitle?: string;
   onAddClick?: () => void;
+  expandedRowContent?: (product: TData) => React.ReactNode;
 }
 
 export default function DataTable<TData, TValue>({
@@ -70,6 +71,7 @@ export default function DataTable<TData, TValue>({
   showAddButton = false,
   addButtonTitle = "Thêm",
   onAddClick,
+  expandedRowContent,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -215,20 +217,33 @@ export default function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="bg-white hover:bg-gray-100"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="bg-white hover:bg-gray-100"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+
+                  {/* Render expanded row content */}
+                  {row.getIsExpanded() && (
+                    <TableRow>
+                      <TableCell colSpan={columns.length}>
+                        {expandedRowContent
+                          ? expandedRowContent(row.original)
+                          : null}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))
             ) : (
               <TableRow>
