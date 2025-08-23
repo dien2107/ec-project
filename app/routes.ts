@@ -7,6 +7,8 @@ export default [
     route("/payments", "features/customers/payment/index.tsx"),
     route("/products/:id", "features/customers/product-detail/index.tsx"),
     route("/profile", "features/customers/user-profile/index.tsx"),
+    route("/cart", "features/customers/cart/index.tsx"),
+    route("/address", "features/customers/address/index.tsx"),
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout
