@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import UserInfo from "./components/user-info";
 import { Package } from "lucide-react";
 import type {
   OrderItem,
@@ -14,7 +15,7 @@ import OrderCard from "~/features/customers/user-profile/components/order-card";
 import OrderDetailsModal from "~/features/customers/user-profile/components/order-detail";
 
 export default function UserProfilePage() {
-  const [activeTab, setActiveTab] = useState("don-hang");
+  const [activeTab, setActiveTab] = useState("thong-tin");
   const [statusFilter, setStatusFilter] = useState<"Tất cả" | OrderStatus>(
     "Tất cả"
   );
@@ -81,11 +82,7 @@ export default function UserProfilePage() {
               </div>
             )}
 
-            {activeTab === "thong-tin" && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-gray-500 text-center">
-                Trang thông tin tài khoản sẽ được cập nhật sau
-              </div>
-            )}
+            {activeTab === "thong-tin" && <UserInfo />}
 
             {activeTab === "dia-chi" && (
               <div className="bg-white rounded-lg shadow-sm p-6 text-gray-500 text-center">
