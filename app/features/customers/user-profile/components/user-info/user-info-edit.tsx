@@ -60,7 +60,7 @@ export default function UserInfoEdit({ name, email, phone, onChange, onSave, onC
           </div>
           <div className="flex justify-end gap-2 mt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded border">Hủy</button>
-            <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">Lưu thay đổi</button>
+            <button type="submit" className="px-4 py-2 rounded bg-gray-400 text-black">Lưu thay đổi</button>
           </div>
         </form>
       </div>
