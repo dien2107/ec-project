@@ -10,7 +10,7 @@ interface UserInfoViewProps {
 export default function UserInfoView({ name, email, phone, onEdit }: UserInfoViewProps) {
   return (
     <div className="flex-1">
-      <div className="p-6 flex flex-col gap-4 rounded-xl shadow border border-gray-100">
+      <div className="bg-white p-6 flex flex-col gap-4 rounded-xl shadow border border-gray-100">
         <div className="flex justify-between items-center mb-2">
           <div className="font-semibold text-lg">Thông tin cá nhân</div>
           <button
