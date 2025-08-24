@@ -5,7 +5,11 @@ import { Button } from "~/components/ui/button";
 import DataTable from "../components/data-table";
 import { fakeProducts } from "./data/fakeProducts";
 import { getColumns, type Product } from "./types";
+
 import ProductVariant from "./components/product-variant";
+import AddProductDialog from "./components/add-product-dialog";
+import EditProductDialog from "./components/edit-product-dialog";
+import DeleteProductDialog from "./components/delete-product-dialog";
 
 export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +24,6 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -30,10 +33,6 @@ export default function Products() {
   const handleDelete = (product: Product) => {
     setSelectedProduct(product);
     setIsDeleteOpen(true);
-  };
-
-  const handleAdd = () => {
-    setIsAddOpen(true);
   };
 
   const handleRenderExpandedRowContent = (
@@ -67,24 +66,31 @@ export default function Products() {
   const columns = getColumns(handleEdit, handleDelete);
 
   return (
-    <div className="container">
-      <h3 className="text-2xl font-bold mb-4">Quản lý sản phẩm</h3>
-      <DataTable
-        columns={columns}
-        data={paginatedData}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        title="Danh sách sản phẩm"
-        filterPlaceholder="Tìm sản phẩm..."
-        showFilter
-        showAddButton
-        addButtonTitle="Thêm sản phẩm"
-        onAddClick={handleAdd}
-        expandedRowContent={handleRenderExpandedRowContent}
-      />
-    </div>
+    <>
+      <div className="container">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-2xl font-bold">Quản lý sản phẩm</h3>
+          <AddProductDialog />
+        </div>
+        <DataTable
+          columns={columns}
+          data={paginatedData}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          title="Danh sách sản phẩm"
+          filterPlaceholder="Tìm sản phẩm..."
+          showFilter
+          addButtonTitle="Thêm sản phẩm"
+          expandedRowContent={handleRenderExpandedRowContent}
+        />
+      </div>
 
-    // Code modal here
+      {/* Edit Modal */}
+      <EditProductDialog open={isEditOpen} setIsOpen={setIsEditOpen} />
+
+      {/* Delete Modal */}
+      <DeleteProductDialog open={isDeleteOpen} setIsOpen={setIsDeleteOpen} />
+    </>
   );
 }
