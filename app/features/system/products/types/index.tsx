@@ -1,11 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  ChevronUp,
-  SquarePen,
-  Trash,
-} from "lucide-react";
+import { ArrowUpDown, ChevronUp, SquarePen, Trash } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 
