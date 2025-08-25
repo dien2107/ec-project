@@ -52,11 +52,14 @@ interface DataTableProps<TData, TValue> {
   filterColumn?: string;
   filterPlaceholder?: string;
   showFilter?: boolean;
+  showGlobalFilter?: boolean;
   showVisibility?: boolean;
   showAddButton?: boolean;
   addButtonTitle?: string;
   onAddClick?: () => void;
   expandedRowContent?: (product: TData) => React.ReactNode;
+  globalFilterFn?: (row: any, columnId: string, filterValue: string) => boolean;
+  globalFilterPlaceholder?: string;
 }
 
 export default function DataTable<TData, TValue>({
@@ -66,12 +69,15 @@ export default function DataTable<TData, TValue>({
   totalPages,
   onPageChange,
   title = "Danh sách",
-  showFilter = true,
+  showFilter = false,
+  showGlobalFilter = false,
   showVisibility = false,
   showAddButton = false,
   addButtonTitle = "Thêm",
   onAddClick,
   expandedRowContent,
+  globalFilterFn,
+  globalFilterPlaceholder,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -79,6 +85,7 @@ export default function DataTable<TData, TValue>({
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
+  const [globalFilter, setGlobalFilter] = React.useState("");
 
   const table = useReactTable({
     data,
@@ -88,12 +95,15 @@ export default function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: globalFilterFn,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      globalFilter,
     },
+    onGlobalFilterChange: setGlobalFilter,
   });
 
   return (
@@ -101,6 +111,15 @@ export default function DataTable<TData, TValue>({
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold">{title}</h3>
         <div className="flex justify-center items-center space-x-2">
+          {showGlobalFilter && (
+            <Input
+              placeholder={globalFilterPlaceholder ?? "Tìm kiếm..."}
+              value={globalFilter ?? ""}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="max-w-sm"
+            />
+          )}
+
           {showFilter &&
             table.getAllColumns().map((column) => {
               const meta = (column.columnDef as any).meta;
