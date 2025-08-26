@@ -4,15 +4,15 @@ import { Package } from "lucide-react";
 import type {
   OrderItem,
   OrderStatus,
-} from "~/features/customers/user-profile/types/user";
+} from "~/features/clients/user-profile/types/user";
 import {
   mockOrders,
   mockUserData,
-} from "~/features/customers/user-profile/data/fake-user";
-import Sidebar from "~/features/customers/user-profile/components/sidebar";
-import OrderStatusTabs from "~/features/customers/user-profile/components/order-status";
-import OrderCard from "~/features/customers/user-profile/components/order-card";
-import OrderDetailsModal from "~/features/customers/user-profile/components/order-detail";
+} from "~/features/clients/user-profile/data/fake-user";
+import Sidebar from "~/features/clients/user-profile/components/sidebar";
+import OrderStatusTabs from "~/features/clients/user-profile/components/order-status";
+import OrderCard from "~/features/clients/user-profile/components/order-card";
+import OrderDetailsModal from "~/features/clients/user-profile/components/order-detail";
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("thong-tin");
