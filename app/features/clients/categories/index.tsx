@@ -6,7 +6,7 @@ import type { PriceRange, CategoryFilters } from "./types";
 import { useSearchParams } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { fakeProducts } from "~/features/customers/categories/data/products";
+import { fakeProducts } from "~/features/clients/categories/data/products";
 
 const PRODUCTS_PER_PAGE = 12;
 const PRICE_RANGES = [

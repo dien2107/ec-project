@@ -1,4 +1,4 @@
-import type { OrderItem } from "~/features/customers/user-profile/types/user";
+import type { OrderItem } from "~/features/clients/user-profile/types/user";
 
 export const mockUserData = {
   fullName: "Nguyễn Văn A",

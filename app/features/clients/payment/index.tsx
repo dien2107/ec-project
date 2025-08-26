@@ -6,12 +6,12 @@ import { useLocation, useNavigate } from "react-router";
 import {
   mockCartItems,
   mockSelectedItems,
-} from "~/features/customers/payment/data/payment";
-import type { Address, CartItem } from "~/features/customers/payment/types/payment";
-import AddressSection from "~/features/customers/payment/components/address-section";
-import PaymentMethodSection from "~/features/customers/payment/components/payment-method";
-import CartSummary from "~/features/customers/payment/components/cart-summary";
-import SuccessDialog from "~/features/customers/payment/components/success-dialog";
+} from "~/features/clients/payment/data/payment";
+import type { Address, CartItem } from "~/features/clients/payment/types/payment";
+import AddressSection from "~/features/clients/payment/components/address-section";
+import PaymentMethodSection from "~/features/clients/payment/components/payment-method";
+import CartSummary from "~/features/clients/payment/components/cart-summary";
+import SuccessDialog from "~/features/clients/payment/components/success-dialog";
 
 const paymentSchema = z.object({
   paymentMethod: z.enum(["bank", "cod"]),

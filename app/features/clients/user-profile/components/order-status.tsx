@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import type { OrderStatus } from "~/features/customers/user-profile/types/user";
+import type { OrderStatus } from "~/features/clients/user-profile/types/user";
 
 type StatusType = "Tất cả" | OrderStatus;
 
