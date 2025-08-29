@@ -1,6 +1,6 @@
 import { X, Clock, Truck, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import type { OrderItem, OrderStatus } from "~/features/customers/user-profile/types/user";
+import type { OrderItem, OrderStatus } from "~/features/clients/user-profile/types/user";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -60,7 +60,7 @@ export default function OrderDetailsModal({
             </Button>
           </div>
 
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] scrollbar-custom">
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(
                 order.status

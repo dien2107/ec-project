@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Clock, Truck, CheckCircle2, XCircle } from "lucide-react";
-import type { OrderItem, OrderStatus } from "~/features/customers/user-profile/types/user";
+import type { OrderItem, OrderStatus } from "~/features/clients/user-profile/types/user";
 
 const statusIconMap: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,

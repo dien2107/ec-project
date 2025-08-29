@@ -11,7 +11,7 @@ import {
 import { Form, FormField, FormItem, FormControl, FormLabel, FormMessage } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import type { Address } from "~/features/customers/payment/types/payment";
+import type { Address } from "~/features/clients/payment/types/payment";
 
 const schema = z.object({
   fullName: z.string().min(1, "Họ và tên là bắt buộc"),

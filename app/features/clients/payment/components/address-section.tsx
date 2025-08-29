@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import NewAddressSheet from "~/features/customers/payment/components/new-address";
-import type { Address } from "~/features/customers/payment/types/payment";
+import NewAddressSheet from "~/features/clients/payment/components/new-address";
+import type { Address } from "~/features/clients/payment/types/payment";
 
 export default function AddressSection({
   addresses,

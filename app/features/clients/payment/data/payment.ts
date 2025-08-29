@@ -1,4 +1,4 @@
-import type { CartItem } from "~/features/customers/payment/types/payment";
+import type { CartItem } from "~/features/clients/payment/types/payment";
 
 export const mockCartItems: CartItem[] = [
   {
