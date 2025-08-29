@@ -15,7 +15,7 @@ export default function UserInfoEdit({ name, email, phone, onChange, onSave, onC
       <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Chỉnh sửa thông tin cá nhân</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer">×</button>
         </div>
         <form
           onSubmit={e => {
@@ -59,8 +59,8 @@ export default function UserInfoEdit({ name, email, phone, onChange, onSave, onC
             />
           </div>
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded border">Hủy</button>
-            <button type="submit" className="px-4 py-2 rounded bg-gray-400 text-black">Lưu thay đổi</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded border cursor-pointer">Hủy</button>
+            <button type="submit" className="px-4 py-2 rounded bg-gray-400 text-black cursor-pointer">Lưu thay đổi</button>
           </div>
         </form>
       </div>

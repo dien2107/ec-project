@@ -21,7 +21,7 @@ export default function Banner() {
           Khám phá các thiết kế mới nhất từ YAME. Phong cách trẻ trung, độc đáo
           dành cho giới trẻ Việt Nam.
         </p>
-        <button className="px-6 py-2 bg-white text-black rounded font-semibold hover:bg-gray-100 transition">
+        <button className="px-6 py-2 bg-white text-black rounded font-semibold hover:bg-gray-100 transition cursor-pointer">
           Khám phá ngay
         </button>
       </div>
