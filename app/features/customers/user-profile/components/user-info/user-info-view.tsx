@@ -15,7 +15,7 @@ export default function UserInfoView({ name, email, phone, onEdit }: UserInfoVie
           <div className="font-semibold text-lg">Thông tin cá nhân</div>
           <button
             type="button"
-            className="border px-3 py-1 rounded text-sm hover:bg-gray-100 hover:text-black transition"
+            className="border px-3 py-1 rounded text-sm hover:bg-gray-100 hover:text-black transition cursor-pointer"
             onClick={onEdit}
           >
             Chỉnh sửa thông tin
