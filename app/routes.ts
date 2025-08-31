@@ -19,8 +19,14 @@ export default [
     route("/system/customers", "features/system/customers/index.tsx"),
     route("/system/suppliers", "features/system/suppliers/index.tsx"),
     route("/system/imports", "features/system/import-orders/index.tsx"),
-    route("/system/decentralization", "features/system/decentralization/index.tsx"),
+    route(
+      "/system/decentralization",
+      "features/system/decentralization/index.tsx"
+    ),
     route("/system/set-roles", "features/system/set-roles/index.tsx"),
+    route("/system/categories", "features/system/categories/index.tsx"),
+    route("/system/imports/history", "features/system/import-record/index.tsx"),
+    route("/system/inventory", "features/system/inventory/index.tsx"),
   ]),
   //   route("login", "features/auth/login.tsx"),
 ] satisfies RouteConfig;

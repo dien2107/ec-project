@@ -106,6 +106,7 @@ export default function ShoppingCart() {
 
   return (
     <div className="max-w-[1280px] mx-auto p-4 md:p-6">
+      <h1 className="text-xl font-bold mb-6">Giỏ hàng</h1>
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Cart Items Section */}
         <div className="flex-1">
@@ -113,28 +114,27 @@ export default function ShoppingCart() {
             {/* Header */}
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold">Giỏ hàng</h1>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
-                      className="border-gray-400"
-                    />
-                    <span className="text-sm">
-                      Chọn tất cả ({cartItems.length})
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-500 hover:text-red-600"
-                    onClick={handleClearSelected}
-                    disabled={selectedCount === 0}
-                  >
-                    Xóa
-                  </Button>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    className="border-gray-400"
+                  />
+                  <span className="text-sm">
+                    Chọn tất cả ({cartItems.length})
+                  </span>
                 </div>
+
+                {/* Nút xóa được đẩy sang phải */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500 hover:text-red-600"
+                  onClick={handleClearSelected}
+                  disabled={selectedCount === 0}
+                >
+                  Xóa
+                </Button>
               </div>
             </div>
 
