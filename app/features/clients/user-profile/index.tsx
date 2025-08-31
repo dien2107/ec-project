@@ -13,6 +13,7 @@ import Sidebar from "~/features/clients/user-profile/components/sidebar";
 import OrderStatusTabs from "~/features/clients/user-profile/components/order-status";
 import OrderCard from "~/features/clients/user-profile/components/order-card";
 import OrderDetailsModal from "~/features/clients/user-profile/components/order-detail";
+import AddressManagement from "../address";
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("thong-tin");
@@ -24,7 +25,7 @@ export default function UserProfilePage() {
   const filteredOrders = useMemo(() => {
     return statusFilter === "Tất cả"
       ? mockOrders
-      : mockOrders.filter((o) => o.status === statusFilter);
+      : mockOrders.filter(o => o.status === statusFilter);
   }, [statusFilter]);
 
   return (
@@ -69,7 +70,7 @@ export default function UserProfilePage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredOrders.map((order) => (
+                      {filteredOrders.map(order => (
                         <OrderCard
                           key={order.id}
                           order={order}
@@ -85,9 +86,10 @@ export default function UserProfilePage() {
             {activeTab === "thong-tin" && <UserInfo />}
 
             {activeTab === "dia-chi" && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-gray-500 text-center">
-                Trang địa chỉ sẽ được cập nhật sau
-              </div>
+              // <div className="bg-white rounded-lg shadow-sm p-6 text-gray-500 text-center">
+              //   Trang địa chỉ sẽ được cập nhật sau
+              // </div>
+              <AddressManagement></AddressManagement>
             )}
           </div>
         </div>
