@@ -14,7 +14,7 @@ export default [
   // Page custom riêng, không dùng default layout
   route("", "./layouts/admin-layout.tsx", [
     route("/system", "features/system/index.tsx"),
-    route("/system/dashboard", "features/system/index.tsx"),
+    // route("/system/dashboard", "features/system/index.tsx"),
     route("/system/products", "features/system/products/index.tsx"),
     route("/system/orders", "features/system/orders/index.tsx"),
     route("/system/promotions", "features/system/promotions/index.tsx"),
