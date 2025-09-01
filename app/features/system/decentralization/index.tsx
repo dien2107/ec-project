@@ -21,7 +21,6 @@ type UserGroup = {
   name: string;
   level: number;
   isActive: boolean;
-  icon: string;
   memberCount: number;
   permissions: Permission[];
 };
@@ -60,23 +59,19 @@ const GroupModal: React.FC<{
 }> = ({ isOpen, onClose, group, onSave, mode }) => {
   const [formData, setFormData] = useState({
     name: group?.name || '',
-    icon: group?.icon || '👥',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const emojiOptions = ['👑', '💼', '📊', '📱', '📦', '💰', '⚙️', '👥', '🎯', '🏢'];
 
   React.useEffect(() => {
     if (group) {
       setFormData({
         name: group.name,
-        icon: group.icon,
       });
     } else {
       setFormData({
         name: '',
-        icon: '👥',
       });
     }
     setErrors({});
@@ -140,29 +135,6 @@ const GroupModal: React.FC<{
             <p className="text-red-500 text-sm mt-1">{errors.name}</p>
           )}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Icon nhóm
-          </label>
-          <div className="grid grid-cols-5 gap-2">
-            {emojiOptions.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, icon: emoji }))}
-                className={`p-3 text-xl rounded-lg border-2 transition-all ${
-                  formData.icon === emoji
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="flex gap-3 pt-4 border-t">
           <button
             type="button"
@@ -327,7 +299,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm Admin",
       level: 0,
       isActive: true,
-      icon: "👑",
       memberCount: 3,
       permissions: features.map((f) => ({
         feature: f,
@@ -345,7 +316,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm kinh doanh",
       level: 0,
       isActive: false,
-      icon: "💼",
       memberCount: 12,
       permissions: features.map((f) => ({
         feature: f,
@@ -363,7 +333,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm quản lý kinh doanh",
       level: 0,
       isActive: false,
-      icon: "📊",
       memberCount: 5,
       permissions: features.map((f) => ({
         feature: f,
@@ -381,7 +350,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm marketing",
       level: 0,
       isActive: false,
-      icon: "📱",
       memberCount: 8,
       permissions: features.map((f) => ({
         feature: f,
@@ -399,7 +367,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm kho vận",
       level: 0,
       isActive: false,
-      icon: "📦",
       memberCount: 6,
       permissions: features.map((f) => ({
         feature: f,
@@ -417,7 +384,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm kế toán",
       level: 0,
       isActive: false,
-      icon: "💰",
       memberCount: 4,
       permissions: features.map((f) => ({
         feature: f,
@@ -435,7 +401,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm kỹ thuật",
       level: 0,
       isActive: false,
-      icon: "⚙️",
       memberCount: 7,
       permissions: features.map((f) => ({
         feature: f,
@@ -453,7 +418,6 @@ const PermissionManagement: React.FC = () => {
       name: "Nhóm hành chính - nhân sự",
       level: 0,
       isActive: false,
-      icon: "👥",
       memberCount: 3,
       permissions: features.map((f) => ({
         feature: f,
@@ -691,15 +655,6 @@ const PermissionManagement: React.FC = () => {
                       onClick={() => handleGroupChange(group.id)}
                       className="flex items-center gap-4 w-full"
                     >
-                      <div className={`
-                        w-10 h-10 rounded-lg flex items-center justify-center text-lg transition-all duration-200
-                        ${activeGroup === group.id 
-                          ? "bg-blue-200" 
-                          : "bg-gray-100 group-hover:bg-gray-200"
-                        }
-                      `}>
-                        {group.icon}
-                      </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -777,7 +732,6 @@ const PermissionManagement: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xl">
-                    {activeGroupData?.icon}
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900">

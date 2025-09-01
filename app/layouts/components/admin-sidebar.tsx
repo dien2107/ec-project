@@ -11,6 +11,7 @@ import {
   PackagePlus,
   History,
   Tag,
+  RefreshCcw,
 } from "lucide-react";
 
 import {
@@ -66,6 +67,11 @@ const mainMangeItems = {
       title: "Khuyến mãi",
       url: "/system/promotions",
       icon: Tag,
+    },
+    {
+      title: "Đổi/Trả hàng",
+      url: "/system/returns",
+      icon: RefreshCcw, 
     },
   ],
 };
