@@ -2,11 +2,13 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   route("", "./layouts/customer-layout.tsx", [
-    index("features/customers/home/index.tsx"),
-    route("/categories", "features/customers/categories/index.tsx"),
-    route("/payments", "features/customers/payment/index.tsx"),
-    route("/products/:id", "features/customers/product-detail/index.tsx"),
-    route("/profile", "features/customers/user-profile/index.tsx"),
+    index("features/clients/home/index.tsx"),
+    route("/categories", "features/clients/categories/index.tsx"),
+    route("/payments", "features/clients/payment/index.tsx"),
+    route("/products/:id", "features/clients/product-detail/index.tsx"),
+    route("/profile", "features/clients/user-profile/index.tsx"),
+    route("/cart", "features/clients/cart/index.tsx"),
+    route("/address", "features/clients/address/index.tsx"),
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout
@@ -16,6 +18,17 @@ export default [
     route("/system/products", "features/system/products/index.tsx"),
     route("/system/orders", "features/system/orders/index.tsx"),
     route("/system/promotions", "features/system/promotions/index.tsx"),
+    route("/system/customers", "features/system/customers/index.tsx"),
+    route("/system/suppliers", "features/system/suppliers/index.tsx"),
+    route("/system/imports", "features/system/import-orders/index.tsx"),
+    route(
+      "/system/decentralization",
+      "features/system/decentralization/index.tsx"
+    ),
+    route("/system/set-roles", "features/system/set-roles/index.tsx"),
+    route("/system/categories", "features/system/categories/index.tsx"),
+    route("/system/imports/history", "features/system/import-record/index.tsx"),
+    route("/system/inventory", "features/system/inventory/index.tsx"),
   ]),
   //   route("login", "features/auth/login.tsx"),
 ] satisfies RouteConfig;

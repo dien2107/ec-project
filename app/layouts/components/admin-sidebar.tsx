@@ -74,13 +74,13 @@ const permissionsItems = {
   group_label: "Phân quyền",
   items: [
     {
-      title: "Vai trò",
-      url: "/system/roles",
+      title: "Thiết lập quyền hạn",
+      url: "/system/decentralization",
       icon: ShieldCheck,
     },
     {
-      title: "Quyền hạn",
-      url: "/system/permissions",
+      title: "Phân quyền nhân viên",
+      url: "/system/set-roles",
       icon: Key,
     },
   ],
