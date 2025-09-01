@@ -14,6 +14,7 @@ export default [
     route("/system", "features/system/index.tsx"),
     route("/system/products", "features/system/products/index.tsx"),
     route("/system/orders", "features/system/orders/index.tsx"),
+    route("/system/promotions", "features/system/promotions/index.tsx"),
   ]),
   //   route("login", "features/auth/login.tsx"),
 ] satisfies RouteConfig;
