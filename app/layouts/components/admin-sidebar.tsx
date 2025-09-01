@@ -10,6 +10,7 @@ import {
   Key,
   PackagePlus,
   History,
+  Tag,
 } from "lucide-react";
 
 import {
@@ -60,6 +61,11 @@ const mainMangeItems = {
       title: "Nhà cung cấp",
       url: "/system/suppliers",
       icon: Truck,
+    },
+    {
+      title: "Khuyến mãi",
+      url: "/system/promotions",
+      icon: Tag,
     },
   ],
 };

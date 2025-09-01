@@ -38,7 +38,6 @@ export default function Products() {
   const handleRenderExpandedRowContent = (
     product: Product
   ): React.ReactNode => {
-    console.log(product);
     return (
       <div className="flex flex-col p-2">
         <div className="flex items-center justify-between mb-3">
