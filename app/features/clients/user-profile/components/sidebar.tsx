@@ -1,4 +1,4 @@
-import { User, MapPin, ShoppingCart } from "lucide-react";
+import { User, MapPin, ShoppingCart, KeyRound } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
 export default function Sidebar({
@@ -14,6 +14,7 @@ export default function Sidebar({
     { id: "thong-tin", label: "Thông tin tài khoản", icon: User },
     { id: "dia-chi", label: "Địa chỉ giao hàng", icon: MapPin },
     { id: "don-hang", label: "Đơn hàng của tôi", icon: ShoppingCart },
+    { id: "doi-mat-khau", label: "Đổi mật khẩu", icon: KeyRound },
   ];
 
   return (

@@ -16,6 +16,7 @@ export default [
     route("/system", "features/system/index.tsx"),
     // route("/system/dashboard", "features/system/index.tsx"),
     route("/system/products", "features/system/products/index.tsx"),
+    route("/system/returns", "features/system/order-return/index.tsx"),
     route("/system/orders", "features/system/orders/index.tsx"),
     route("/system/promotions", "features/system/promotions/index.tsx"),
     route("/system/customers", "features/system/customers/index.tsx"),
