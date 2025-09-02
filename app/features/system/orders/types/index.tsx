@@ -1,7 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { Button } from "~/components/ui/button";
-import { Eye, ArrowUpDown, ChevronUp } from "lucide-react";
+import { Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { SortableHeader } from "../../components/data-table";
 
 export type address = {
   id: number;
@@ -76,13 +77,11 @@ export const getColumns = (
     accessorKey: "id",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Mã đơn
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader
+          column={column}
+          title="Mã đơn"
+          className="justify-start"
+        />
       );
     },
   },
@@ -90,13 +89,11 @@ export const getColumns = (
     accessorKey: "address.recipient_name",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Khách hàng
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader
+          column={column}
+          title="Khách hàng"
+          className="justify-start"
+        />
       );
     },
   },
@@ -104,18 +101,16 @@ export const getColumns = (
     accessorKey: "created_at",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ngày đặt
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader
+          column={column}
+          title="Ngày đặt"
+          className="justify-start"
+        />
       );
     },
     cell: ({ row }) => {
       return (
-        <div className="text-center">
+        <div className="text-start">
           {row.original.created_at.toLocaleDateString("en-GB")}
         </div>
       );
@@ -124,11 +119,11 @@ export const getColumns = (
   {
     accessorKey: "total_amount",
     header: () => {
-      return <div className="text-center">Tổng tiền</div>;
+      return <div className="flex flex-start">Tổng tiền</div>;
     },
     cell: ({ row }) => {
       return (
-        <div className="text-right font-medium">
+        <div className="text-left font-medium">
           {formatVND(row.getValue("total_amount"))}
         </div>
       );
@@ -137,7 +132,7 @@ export const getColumns = (
   {
     accessorKey: "status",
     header: () => {
-      return <div className="text-center">Trạng thái</div>;
+      return <div className="flex justify-start">Trạng thái</div>;
     },
     meta: {
       filterConfig: {
@@ -154,9 +149,8 @@ export const getColumns = (
     },
     cell: ({ row }) => {
       const status = row.original.status;
-
       return (
-        <div className="text-center">
+        <div className="text-left">
           {status === "pending" ? (
             <div>
               <span className="bg-yellow-500 text-white text-sm font-medium py-2 px-3 rounded-2xl">
@@ -197,7 +191,7 @@ export const getColumns = (
   {
     accessorKey: "actions",
     header: () => {
-      return <div className="text-right">Thao tác</div>;
+      return <div className="flex justify-end">Thao tác</div>;
     },
     cell: ({ row }) => {
       const order = row.original;

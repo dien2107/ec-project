@@ -238,3 +238,7 @@ body {
   background: transparent;
 }
 
+/* CSS Table Header Button  */
+th button {
+  @apply w-full h-full hover:bg-[#f1f5f9cc] py-1 px-4 hover:text-[#647AA8] rounded-none;
+}

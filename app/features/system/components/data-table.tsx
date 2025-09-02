@@ -40,7 +40,13 @@ import Pagination from "~/components/common/pagination";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
-import { ChevronDown, Plus } from "lucide-react";
+import {
+  ChevronDown,
+  Plus,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+} from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -60,6 +66,33 @@ interface DataTableProps<TData, TValue> {
   expandedRowContent?: (product: TData) => React.ReactNode;
   globalFilterFn?: (row: any, columnId: string, filterValue: string) => boolean;
   globalFilterPlaceholder?: string;
+}
+
+export function SortableHeader({
+  column,
+  title,
+  className,
+  children,
+}: {
+  column: any;
+  title?: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const sorted = column.getIsSorted() as string | false;
+  return (
+    <Button
+      variant="ghost"
+      className={`flex items-center gap-1 ${className}`}
+      onClick={column.getToggleSortingHandler()}
+    >
+      {children ? <>{children}</> : title}
+      {{
+        asc: <ArrowUp className="ml-1" />,
+        desc: <ArrowDown className="ml-1" />,
+      }[sorted as string] ?? <ArrowUpDown className="ml-1" />}
+    </Button>
+  );
 }
 
 export default function DataTable<TData, TValue>({
@@ -104,11 +137,12 @@ export default function DataTable<TData, TValue>({
       globalFilter,
     },
     onGlobalFilterChange: setGlobalFilter,
+    enableSortingRemoval: true,
   });
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md ">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white p-0 rounded-lg shadow-md ">
+      <div className="flex justify-between items-center mb-4 pt-6 px-6">
         <h3 className="text-xl font-semibold">{title}</h3>
         <div className="flex justify-center items-center space-x-2">
           {showGlobalFilter && (
@@ -210,7 +244,7 @@ export default function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-hidden border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -219,7 +253,7 @@ export default function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="bg-[#454A4C] text-white font-semibold"
+                      className="bg-[#F8FAFC] text-[#647AA8] font-semibold"
                     >
                       {header.isPlaceholder
                         ? null
@@ -279,7 +313,7 @@ export default function DataTable<TData, TValue>({
       </div>
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex justify-center pb-6">
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

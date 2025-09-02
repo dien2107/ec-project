@@ -13,7 +13,7 @@ import DeleteProductDialog from "./components/delete-product-dialog";
 
 export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 5;
   const totalPages = Math.ceil(fakeProducts.length / pageSize);
 
   const paginatedData = fakeProducts.slice(
