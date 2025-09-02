@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronUp, SquarePen, Trash } from "lucide-react";
+import { ChevronUp, SquarePen, Trash, MessageSquare } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
 
@@ -21,6 +21,23 @@ export type ProductImages = {
   display_order: number;
 };
 
+export type ReviewImages = {
+  review_image_id: number;
+  image_url: string;
+};
+
+export type Review = {
+  review_id: number;
+  username: string;
+  rating: number;
+  content: string;
+  status: string;
+  helpful_count: number;
+  created_at: Date;
+  updated_at: Date;
+  images: ReviewImages[];
+};
+
 export type Product = {
   id: number;
   name: string;
@@ -35,6 +52,7 @@ export type Product = {
   updated_at: Date;
   product_variant: ProductVariant[];
   images: ProductImages[];
+  reviews: Review[];
 };
 
 function formatVND(amount: number) {
@@ -46,7 +64,8 @@ function formatVND(amount: number) {
 
 export const getColumns = (
   handleEdit: (product: Product) => void,
-  handleDelete: (product: Product) => void
+  handleDelete: (product: Product) => void,
+  handleReview: (product: Product) => void
 ): ColumnDef<Product>[] => [
   {
     id: "expander",
@@ -267,13 +286,25 @@ export const getColumns = (
       const product = row.original;
 
       return (
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => handleEdit(product)}>
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleReview(product)}
+          >
+            <MessageSquare />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleEdit(product)}
+          >
             <SquarePen />
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             color="destructive"
+            size="icon"
             onClick={() => handleDelete(product)}
           >
             <Trash stroke="red" />
