@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
+  className?: string;
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   currentPage: number;
@@ -96,6 +97,7 @@ export function SortableHeader({
 }
 
 export default function DataTable<TData, TValue>({
+  className,
   columns,
   data,
   currentPage,
@@ -141,7 +143,7 @@ export default function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="bg-white p-0 rounded-lg shadow-md ">
+    <div className={`bg-white p-0 rounded-lg shadow-md ${className}`}>
       <div className="flex justify-between items-center mb-4 pt-6 px-6">
         <h3 className="text-xl font-semibold">{title}</h3>
         <div className="flex justify-center items-center space-x-2">
