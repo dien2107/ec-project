@@ -2,7 +2,7 @@ import type { Product } from "../types";
 
 export const fakeProducts: Product[] = [
   {
-    id: "1",
+    id: 1,
     name: "Áo thun YaMe Basic",
     slug: "ao-thun-yame-basic",
     material_id: 1,
@@ -33,9 +33,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 5,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "2",
+    id: 2,
     name: "Áo sơ mi YaMe trắng",
     slug: "ao-so-mi-yame-trang",
     material_id: 2,
@@ -66,9 +92,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 6,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "3",
+    id: 3,
     name: "Hoodie YaMe Streetwear",
     slug: "hoodie-yame-streetwear",
     material_id: 3,
@@ -99,9 +151,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 2,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "4",
+    id: 4,
     name: "Quần short YaMe kaki",
     slug: "quan-short-yame-kaki",
     material_id: 4,
@@ -132,9 +210,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 4,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "5",
+    id: 5,
     name: "Quần jeans YaMe xanh",
     slug: "quan-jeans-yame-xanh",
     material_id: 5,
@@ -165,9 +269,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 5,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "6",
+    id: 6,
     name: "Áo polo YaMe Slimfit",
     slug: "ao-polo-yame-slimfit",
     material_id: 6,
@@ -198,9 +328,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 4,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "7",
+    id: 7,
     name: "Áo khoác bomber YaMe",
     slug: "ao-khoac-bomber-yame",
     material_id: 7,
@@ -231,9 +387,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 1,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "8",
+    id: 8,
     name: "Áo tanktop YaMe Gym",
     slug: "ao-tanktop-yame-gym",
     material_id: 8,
@@ -264,9 +446,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 7,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "9",
+    id: 9,
     name: "Giày sneaker YaMe trắng",
     slug: "giay-sneaker-yame-trang",
     material_id: 9,
@@ -297,9 +505,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 3,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "10",
+    id: 10,
     name: "Balo YaMe Urban",
     slug: "balo-yame-urban",
     material_id: 10,
@@ -330,9 +564,35 @@ export const fakeProducts: Product[] = [
         stock_quantity: 5,
       },
     ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
+      },
+    ],
   },
   {
-    id: "11",
+    id: 11,
     name: "Nón bucket YaMe",
     slug: "non-bucket-yame",
     material_id: 11,
@@ -361,6 +621,32 @@ export const fakeProducts: Product[] = [
         size_id: 1,
         size_name: "S",
         stock_quantity: 12,
+      },
+    ],
+    images: [
+      {
+        product_image_id: 1,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/fd302622-1a7d-ba00-ea4b-001c884f3bf1.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 1",
+        is_primary: true,
+        display_order: 1,
+      },
+      {
+        product_image_id: 2,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 2",
+        is_primary: false,
+        display_order: 2,
+      },
+      {
+        product_image_id: 3,
+        image_url:
+          "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6acf118c-a733-bf00-a48c-001c884f4285.jpg",
+        alt_text: "Áo thun cổ tròn - ảnh 3",
+        is_primary: false,
+        display_order: 3,
       },
     ],
   },

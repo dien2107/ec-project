@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronUp, SquarePen, Trash } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { SortableHeader } from "../../components/data-table";
 
 export type ProductVariant = {
   product_variant_id: number;
@@ -12,8 +13,16 @@ export type ProductVariant = {
   stock_quantity: number;
 };
 
+export type ProductImages = {
+  product_image_id: number;
+  image_url: string;
+  alt_text: string;
+  is_primary: boolean;
+  display_order: number;
+};
+
 export type Product = {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   material_id: number;
@@ -25,6 +34,7 @@ export type Product = {
   created_at: Date;
   updated_at: Date;
   product_variant: ProductVariant[];
+  images: ProductImages[];
 };
 
 function formatVND(amount: number) {
@@ -46,6 +56,7 @@ export const getColumns = (
         <Button
           variant="ghost"
           size="icon"
+          className="w-2"
           onClick={() => row.toggleExpanded()}
         >
           {row.getIsExpanded() ? (
@@ -58,30 +69,35 @@ export const getColumns = (
     },
   },
   {
+    accessorKey: "images",
+    header: ({ column }) => {
+      return <div className="text-start">Ảnh</div>;
+    },
+    cell: ({ row }) => {
+      const images = row.original.images;
+      const primaryImage = images.find((img) => img.is_primary);
+      return (
+        <div className="aspect-ratio[9/16] w-12">
+          <img
+            src={primaryImage?.image_url}
+            alt={primaryImage?.alt_text}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "id",
     header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+      return <SortableHeader column={column} title="ID" className="w-[40px]" />;
     },
   },
   {
     accessorKey: "name",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader column={column} title="Tên" className="justify-start" />
       );
     },
     meta: {
@@ -103,13 +119,12 @@ export const getColumns = (
     accessorKey: "base_price",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Giá cơ bản
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader column={column} className="w-[80px]">
+          <div className="flex flex-col items-start ">
+            <span>Giá</span>
+            <span>cơ bản</span>
+          </div>
+        </SortableHeader>
       );
     },
     cell: ({ row }) => {
@@ -122,13 +137,12 @@ export const getColumns = (
     accessorKey: "sale_price",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Giá giảm
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader column={column} className="w-[80px]">
+          <div className="flex flex-col items-start ">
+            <span>Giá</span>
+            <span>bán</span>
+          </div>
+        </SortableHeader>
       );
     },
     cell: ({ row }) => {
@@ -156,13 +170,12 @@ export const getColumns = (
     accessorKey: "discount_percent",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Giảm giá
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader column={column} className="w-[80px]">
+          <div className="flex flex-col items-start ">
+            <span>Giảm</span>
+            <span>giá %</span>
+          </div>
+        </SortableHeader>
       );
     },
     cell: ({ row }) => {
@@ -183,7 +196,15 @@ export const getColumns = (
   },
   {
     accessorKey: "status",
-    header: "Trạng thái",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Trạng thái"
+          className="w-[100px]"
+        />
+      );
+    },
     meta: {
       filterConfig: {
         type: "select",
@@ -197,13 +218,13 @@ export const getColumns = (
     },
     cell: ({ row }) => {
       return (
-        <div>
+        <div className="w-[100px] text-center">
           {row.original.status ? (
-            <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center">
+            <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
               Hoạt động
             </div>
           ) : (
-            <div className="bg-gray-200 text-gray-400 py-1 px-2 rounded-lg text-center">
+            <div className="bg-gray-200 text-gray-400 py-1 px-2 rounded-lg text-center whitespace-normal break-words">
               Không hoạt động
             </div>
           )}
@@ -221,13 +242,12 @@ export const getColumns = (
     accessorKey: "created_at",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ngày tạo
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <SortableHeader column={column} title="Giá bán" className="w-[80px]">
+          <div className="flex flex-col items-start">
+            <span>Ngày</span>
+            <span>tạo</span>
+          </div>
+        </SortableHeader>
       );
     },
     cell: ({ row }) => {
@@ -240,12 +260,14 @@ export const getColumns = (
   },
   {
     id: "actions",
-    header: "Thao tác",
+    header: ({ column }) => {
+      return <div className="flex justify-end px-4">Thao tác</div>;
+    },
     cell: ({ row }) => {
       const product = row.original;
 
       return (
-        <div className="flex space-x-2">
+        <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => handleEdit(product)}>
             <SquarePen />
           </Button>

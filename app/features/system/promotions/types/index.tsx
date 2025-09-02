@@ -60,6 +60,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
+          className="justify-start"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Tên mã
@@ -90,7 +91,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[60px]"
+          className="w-[60px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Loại
@@ -155,7 +156,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[80px]"
+          className="w-[80px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <div className="flex flex-col items-start p-1">
@@ -180,7 +181,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[100px]"
+          className="w-[100px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <div className="flex flex-col items-start p-1">
@@ -205,7 +206,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[60px]"
+          className="w-[60px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <div className="flex flex-col items-start p-1">
@@ -230,7 +231,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[90px]"
+          className="w-[90px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <div className="flex flex-col items-start">
@@ -255,7 +256,7 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[90px]"
+          className="w-[90px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <div className="flex flex-col items-start">
@@ -280,10 +281,10 @@ export const getColumns = (
       return (
         <Button
           variant="ghost"
-          className="my-2 w-[80px]"
+          className="w-[80px]"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-start">
             <span>Trạng</span>
             <span>thái</span>
           </div>
@@ -331,13 +332,13 @@ export const getColumns = (
   {
     id: "actions",
     header: ({ column }) => {
-      return <div className="text-right">Thao tác</div>;
+      return <div className="flex justify-end px-4">Thao tác</div>;
     },
     cell: ({ row }) => {
       const promotion = row.original;
 
       return (
-        <div className="flex space-x-2">
+        <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => handleEdit(promotion)}>
             <SquarePen />
           </Button>
