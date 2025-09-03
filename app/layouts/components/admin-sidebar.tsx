@@ -12,6 +12,7 @@ import {
   History,
   Tag,
   RefreshCcw,
+  CreditCard,
 } from "lucide-react";
 
 import {
@@ -71,7 +72,12 @@ const mainMangeItems = {
     {
       title: "Đổi/Trả hàng",
       url: "/system/returns",
-      icon: RefreshCcw, 
+      icon: RefreshCcw,
+    },
+    {
+      title: "Phương thức thanh toán",
+      url: "/system/payment",
+      icon: CreditCard,
     },
   ],
 };
