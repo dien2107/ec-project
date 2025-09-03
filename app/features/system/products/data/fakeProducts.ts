@@ -59,6 +59,95 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [
+      {
+        review_id: 1,
+        username: "nguyenvanA",
+        rating: 4.5,
+        status: "visible",
+        helpful_count: 12,
+        content: "Sản phẩm rất tốt, chất lượng vượt mong đợi!",
+        images: [
+          {
+            review_image_id: 1,
+            image_url: "https://example.com/review1_img1.jpg",
+          },
+          {
+            review_image_id: 2,
+            image_url: "https://example.com/review1_img2.jpg",
+          },
+        ],
+        created_at: new Date("2025-09-01T08:30:00Z"),
+        updated_at: new Date("2025-09-01T08:30:00Z"),
+      },
+      {
+        review_id: 5,
+        username: "nguyenthoa",
+        rating: 2,
+        status: "visible",
+        helpful_count: 1,
+        content: "Sản phẩm rất tệ, chất lượng không như mong đợi!",
+        images: [
+          {
+            review_image_id: 2,
+            image_url: "https://example.com/review1_img2.jpg",
+          },
+        ],
+        created_at: new Date("2025-09-01T08:30:00Z"),
+        updated_at: new Date("2025-09-01T08:30:00Z"),
+      },
+      {
+        review_id: 2,
+        username: "tranthib",
+        rating: 3,
+        status: "visible",
+        helpful_count: 4,
+        content: "Hài lòng ở mức trung bình, màu sắc hơi khác hình.",
+        images: [
+          {
+            review_image_id: 3,
+            image_url: "https://example.com/review2_img1.jpg",
+          },
+        ],
+        created_at: new Date("2025-09-01T12:15:00Z"),
+        updated_at: new Date("2025-09-01T12:15:00Z"),
+      },
+      {
+        review_id: 3,
+        username: "lehongc",
+        rating: 1,
+        status: "hidden",
+        helpful_count: 0,
+        content: "Chất lượng kém, vải mỏng quá.",
+        images: [],
+        created_at: new Date("2025-08-30T10:45:00Z"),
+        updated_at: new Date("2025-08-30T10:45:00Z"),
+      },
+      {
+        review_id: 4,
+        username: "phamquand",
+        rating: 4,
+        status: "visible",
+        helpful_count: 7,
+        content: "Đẹp, vừa vặn, đáng tiền.",
+        images: [
+          {
+            review_image_id: 4,
+            image_url: "https://example.com/review4_img1.jpg",
+          },
+          {
+            review_image_id: 5,
+            image_url: "https://example.com/review4_img2.jpg",
+          },
+          {
+            review_image_id: 6,
+            image_url: "https://example.com/review4_img3.jpg",
+          },
+        ],
+        created_at: new Date("2025-09-02T09:00:00Z"),
+        updated_at: new Date("2025-09-02T09:00:00Z"),
+      },
+    ],
   },
   {
     id: 2,
@@ -118,6 +207,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 3,
@@ -177,6 +267,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 4,
@@ -236,6 +327,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 5,
@@ -295,6 +387,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 6,
@@ -354,6 +447,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 7,
@@ -413,6 +507,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 8,
@@ -472,6 +567,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 9,
@@ -531,6 +627,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 10,
@@ -590,6 +687,7 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
   {
     id: 11,
@@ -649,5 +747,6 @@ export const fakeProducts: Product[] = [
         display_order: 3,
       },
     ],
+    reviews: [],
   },
 ];

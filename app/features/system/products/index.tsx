@@ -10,6 +10,7 @@ import ProductVariant from "./components/product-variant";
 import AddProductDialog from "./components/add-product-dialog";
 import EditProductDialog from "./components/edit-product-dialog";
 import DeleteProductDialog from "./components/delete-product-dialog";
+import ReviewDialog from "./components/review-dialog";
 
 export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,6 +25,7 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -33,6 +35,11 @@ export default function Products() {
   const handleDelete = (product: Product) => {
     setSelectedProduct(product);
     setIsDeleteOpen(true);
+  };
+
+  const handleReview = (product: Product) => {
+    setSelectedProduct(product);
+    setIsReviewOpen(true);
   };
 
   const handleRenderExpandedRowContent = (
@@ -62,7 +69,7 @@ export default function Products() {
     );
   };
 
-  const columns = getColumns(handleEdit, handleDelete);
+  const columns = getColumns(handleEdit, handleDelete, handleReview);
 
   return (
     <>
@@ -90,6 +97,13 @@ export default function Products() {
 
       {/* Delete Modal */}
       <DeleteProductDialog open={isDeleteOpen} setIsOpen={setIsDeleteOpen} />
+
+      {/* Review Modal */}
+      <ReviewDialog
+        open={isReviewOpen}
+        setIsOpen={setIsReviewOpen}
+        product={selectedProduct}
+      />
     </>
   );
 }
