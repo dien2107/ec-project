@@ -31,6 +31,7 @@ export default [
     route("/system/imports/history", "features/system/import-record/index.tsx"),
     route("/system/inventory", "features/system/inventory/index.tsx"),
     route("/system/payment", "features/system/payment/index.tsx"),
+    route("/system/material", "features/system/material/index.tsx"),
   ]),
-  //   route("login", "features/auth/login.tsx"),
+  route("login", "features/clients/auth/index.tsx"),
 ] satisfies RouteConfig;

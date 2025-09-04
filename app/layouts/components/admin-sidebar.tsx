@@ -13,6 +13,7 @@ import {
   Tag,
   RefreshCcw,
   CreditCard,
+  Shirt,
 } from "lucide-react";
 
 import {
@@ -38,6 +39,11 @@ const mainMangeItems = {
       title: "Sản phẩm",
       url: "/system/products",
       icon: ShoppingBag,
+    },
+    {
+      title: "Chất liệu",
+      url: "/system/material",
+      icon: Shirt,
     },
     {
       title: "Đơn hàng",
