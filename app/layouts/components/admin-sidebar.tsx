@@ -14,6 +14,7 @@ import {
   RefreshCcw,
   CreditCard,
   Shirt,
+  Palette,
 } from "lucide-react";
 
 import {
@@ -26,6 +27,7 @@ import {
 import AdminSidebarUser from "./admin-sidebar-user";
 import AdminSidebarMenuGroup from "./admin-sidebar-menu-group";
 import AdminCompany from "./admin-company";
+import Colors from "~/features/system/colors";
 
 const mainMangeItems = {
   group_label: "Quản lý chính",
@@ -44,6 +46,11 @@ const mainMangeItems = {
       title: "Chất liệu",
       url: "/system/material",
       icon: Shirt,
+    },
+    {
+      title: "Màu sắc",
+      url: "/system/colors",
+      icon: Palette,
     },
     {
       title: "Đơn hàng",
