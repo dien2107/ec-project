@@ -52,6 +52,11 @@ const mainMangeItems = {
       url: "/system/colors",
       icon: Palette,
     },
+        {
+      title: " Kích thước",
+      url: "/system/sizes",
+      icon: Tag,
+    },
     {
       title: "Đơn hàng",
       url: "/system/orders",
