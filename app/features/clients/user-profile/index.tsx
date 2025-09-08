@@ -15,6 +15,7 @@ import OrderCard from "~/features/clients/user-profile/components/order-card";
 import OrderDetailsModal from "~/features/clients/user-profile/components/order-detail";
 import AddressManagement from "../address";
 import ChangePassword from "~/features/clients/user-profile/components/change-password";
+import PaymentCards from "./components/payment-cards";
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("thong-tin");
@@ -86,13 +87,13 @@ export default function UserProfilePage() {
 
             {activeTab === "thong-tin" && <UserInfo />}
             {activeTab === "doi-mat-khau" && <ChangePassword />}
-
             {activeTab === "dia-chi" && (
               // <div className="bg-white rounded-lg shadow-sm p-6 text-gray-500 text-center">
               //   Trang địa chỉ sẽ được cập nhật sau
               // </div>
               <AddressManagement></AddressManagement>
             )}
+            {activeTab === "thanh-toan" && <PaymentCards />}
           </div>
         </div>
 
