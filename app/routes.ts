@@ -32,6 +32,7 @@ export default [
     route("/system/inventory", "features/system/inventory/index.tsx"),
     route("/system/payment", "features/system/payment/index.tsx"),
     route("/system/material", "features/system/material/index.tsx"),
+    route("/system/colors", "features/system/colors/index.tsx"),
   ]),
   route("login", "features/clients/auth/index.tsx"),
 ] satisfies RouteConfig;
