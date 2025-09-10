@@ -112,3 +112,41 @@ export const mockPaymentMethods: PaymentMethod[] = [
     createdDate: "28/11/2024",
   },
 ];
+// Mock data
+export const mockBankAccounts = [
+  {
+    id: 1,
+    bankName: "Vietcombank",
+    accountName: "CÔNG TY TNHH ABC",
+    accountNumber: "1234567890",
+    enabled: true,
+    logo: "🏦",
+  },
+  {
+    id: 2,
+    bankName: "Techcombank",
+    accountName: "CÔNG TY TNHH ABC",
+    accountNumber: "0987654321",
+    enabled: true,
+    logo: "🏛️",
+  },
+];
+
+export const mockEWallets = [
+  {
+    id: 1,
+    name: "MoMo",
+    identifier: "0912345678",
+    ownerName: "Nguyễn Văn A",
+    enabled: true,
+    logo: "🔴",
+  },
+  {
+    id: 2,
+    name: "ZaloPay",
+    identifier: "0987654321",
+    ownerName: "Nguyễn Văn A",
+    enabled: false,
+    logo: "🔵",
+  },
+];
