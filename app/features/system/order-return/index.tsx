@@ -526,17 +526,23 @@ export default function OrderReturn() {
       </div>
 
       {/* Search fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Input
           type="text"
-          placeholder="🔎 Tìm theo sản phẩm (tên hoặc SKU)..."
+          placeholder="Tìm theo sản phẩm (tên hoặc SKU)..."
           value={productSearch}
           onChange={(e) => setProductSearch(e.target.value)}
         />
         <Input
           type="text"
-          placeholder="👤 Tìm theo tên khách hàng..."
+          placeholder="Tìm theo tên khách hàng..."
           value={customerSearch}
+          onChange={(e) => setCustomerSearch(e.target.value)}
+        />
+        <Input
+          type="text"
+          placeholder="Tìm theo số điện thoại..."
+          value={phoneSearch}
           onChange={(e) => setCustomerSearch(e.target.value)}
         />
       </div>
