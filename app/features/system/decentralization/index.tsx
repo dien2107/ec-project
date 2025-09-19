@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Users, Shield, Settings, ChevronRight, Check, Plus, Edit2, Trash2, X } from "lucide-react";
+import { Users, Shield, Settings, ChevronRight, Check, Plus, Edit2, Trash2, X, ChevronDown } from "lucide-react";
 
 // Kiểu dữ liệu cho từng row (mỗi chức năng)
 type Permission = {
@@ -199,6 +199,7 @@ const DeleteConfirmModal: React.FC<{
     </Modal>
   );
 };
+
 const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ checked, onCheckedChange, label }) => (
   <div className="flex items-center justify-center">
     <div className="relative">
@@ -223,60 +224,69 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ checked, onCheckedChang
         )}
       </div>
     </div>
+    {label && <span className="ml-2 text-sm text-gray-700">{label}</span>}
   </div>
 );
 
-// Kiểu cho cột
-type Column<T> = {
-  accessorKey: keyof T;
-  header: string;
-  cell?: (props: { row: { original: T; index: number } }) => React.ReactNode;
-};
+// PermissionRow Component - Expandable row cho mỗi resource/feature
+const PermissionRow: React.FC<{
+  permission: Permission;
+  index: number;
+  isExpanded: boolean;
+  onToggleExpand: (index: number) => void;
+  onTogglePermission: (index: number, key: keyof Permission) => void;
+}> = ({ permission, index, isExpanded, onToggleExpand, onTogglePermission }) => {
+  type PermissionKey = Exclude<keyof Permission, 'feature'>;
+  const permissionKeys: PermissionKey[] = [
+    'TruyCap', 'ThemMoi', 'Sua', 'Xoa', 'Duyet', 'ThanhToan', 'XemTatCa'
+  ];
+  const labels: Record<PermissionKey, string> = {
+    TruyCap: 'Truy cập',
+    ThemMoi: 'Thêm mới',
+    Sua: 'Sửa',
+    Xoa: 'Xóa',
+    Duyet: 'Duyệt',
+    ThanhToan: 'Thanh toán',
+    XemTatCa: 'Xem tất cả'
+  };
 
-// Props cho DataTable
-type DataTableProps<T> = {
-  columns: Column<T>[];
-  data: T[];
-  title?: string;
-};
+  return (
+    <div className="border-b border-gray-200 last:border-b-0">
+      {/* Resource header */}
+      <div 
+        className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => onToggleExpand(index)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Shield className="w-4 h-4 text-blue-600" />
+          </div>
+          <span className="font-medium text-gray-900">{permission.feature}</span>
+        </div>
+        <ChevronDown 
+          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+        />
+      </div>
 
-// Component DataTable với styling cải tiến
-const DataTable = <T extends object>({ columns, data }: DataTableProps<T>) => (
-  <div className="w-full">
-    <div className="overflow-hidden rounded-lg border border-gray-200">
-      <table className="w-full">
-        <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-          <tr>
-            {columns.map((column, index) => (
-              <th
-                key={index}
-                className="px-6 py-4 text-left text-sm font-semibold text-gray-700 border-b border-gray-200"
-              >
-                {column.header}
-              </th>
+      {/* Expanded permissions */}
+      {isExpanded && (
+        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {permissionKeys.map((key) => (
+              <div key={key as string} className="flex items-center space-x-2">
+                <CustomCheckbox
+                  checked={permission[key]}
+                  onCheckedChange={() => onTogglePermission(index, key)}
+                  label={labels[key]}
+                />
+              </div>
             ))}
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-100">
-          {data.map((row, rowIndex) => (
-            <tr 
-              key={rowIndex} 
-              className="hover:bg-gray-50 transition-colors duration-150"
-            >
-              {columns.map((column, colIndex) => (
-                <td key={colIndex} className="px-6 py-4 text-sm">
-                  {column.cell
-                    ? column.cell({ row: { original: row, index: rowIndex } })
-                    : (row[column.accessorKey] as React.ReactNode)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 const PermissionManagement: React.FC = () => {
   // Danh sách các chức năng với icons
@@ -437,6 +447,9 @@ const PermissionManagement: React.FC = () => {
     userGroups.find((g) => g.id === activeGroup)?.permissions || []
   );
 
+  // State cho expanded rows
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set([0])); // Mở rộng row đầu tiên mặc định
+
   // Modal states
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -449,6 +462,8 @@ const PermissionManagement: React.FC = () => {
     const group = userGroups.find((g) => g.id === groupId);
     if (group) {
       setData([...group.permissions]);
+      // Reset expanded rows khi chuyển group
+      setExpandedRows(new Set([0]));
     }
   };
 
@@ -459,6 +474,19 @@ const PermissionManagement: React.FC = () => {
         i === rowIndex ? { ...row, [key]: !row[key] } : row
       )
     );
+  };
+
+  // Toggle expand row
+  const toggleExpand = (rowIndex: number) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowIndex)) {
+        newSet.delete(rowIndex);
+      } else {
+        newSet.add(rowIndex);
+      }
+      return newSet;
+    });
   };
 
   // Group management functions
@@ -519,92 +547,6 @@ const PermissionManagement: React.FC = () => {
       }
     }
   };
-
-  // Định nghĩa cột cho DataTable
-  const columns: Column<Permission>[] = [
-    {
-      accessorKey: "feature",
-      header: "Chức năng",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Shield className="w-4 h-4 text-blue-600" />
-          </div>
-          <span className="font-medium text-gray-900">{row.original.feature}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "TruyCap",
-      header: "Truy cập",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.TruyCap}
-          onCheckedChange={() => toggle(row.index, "TruyCap")}
-        />
-      ),
-    },
-    {
-      accessorKey: "ThemMoi",
-      header: "Thêm mới",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.ThemMoi}
-          onCheckedChange={() => toggle(row.index, "ThemMoi")}
-        />
-      ),
-    },
-    {
-      accessorKey: "Sua",
-      header: "Sửa",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.Sua}
-          onCheckedChange={() => toggle(row.index, "Sua")}
-        />
-      ),
-    },
-    {
-      accessorKey: "Xoa",
-      header: "Xóa",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.Xoa}
-          onCheckedChange={() => toggle(row.index, "Xoa")}
-        />
-      ),
-    },
-    {
-      accessorKey: "Duyet",
-      header: "Duyệt",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.Duyet}
-          onCheckedChange={() => toggle(row.index, "Duyet")}
-        />
-      ),
-    },
-    {
-      accessorKey: "ThanhToan",
-      header: "Thanh toán",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.ThanhToan}
-          onCheckedChange={() => toggle(row.index, "ThanhToan")}
-        />
-      ),
-    },
-    {
-      accessorKey: "XemTatCa",
-      header: "Xem tất cả",
-      cell: ({ row }) => (
-        <CustomCheckbox
-          checked={row.original.XemTatCa}
-          onCheckedChange={() => toggle(row.index, "XemTatCa")}
-        />
-      ),
-    },
-  ];
 
   const activeGroupData = userGroups.find((g) => g.id === activeGroup);
 
@@ -752,7 +694,21 @@ const PermissionManagement: React.FC = () => {
             </div>
             
             <div className="p-6">
-              <DataTable<Permission> columns={columns} data={data} />
+              {/* Custom Permission Table với expandable rows */}
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                <div className="divide-y divide-gray-200">
+                  {data.map((permission, index) => (
+                    <PermissionRow
+                      key={index}
+                      permission={permission}
+                      index={index}
+                      isExpanded={expandedRows.has(index)}
+                      onToggleExpand={toggleExpand}
+                      onTogglePermission={toggle}
+                    />
+                  ))}
+                </div>
+              </div>
 
               {/* Action buttons */}
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
