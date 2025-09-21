@@ -63,12 +63,11 @@ export type Order = {
   items: order_item[];
 };
 
-function formatVND(amount: number) {
-  return new Intl.NumberFormat("vi-VN", {
+const formatVND = (amount: number) =>
+  Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
   }).format(amount);
-}
 
 export const getColumns = (
   handleView: (order: Order) => void

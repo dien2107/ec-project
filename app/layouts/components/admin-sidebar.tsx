@@ -11,6 +11,10 @@ import {
   PackagePlus,
   History,
   Tag,
+  RefreshCcw,
+  CreditCard,
+  Shirt,
+  Palette,
 } from "lucide-react";
 
 import {
@@ -23,6 +27,7 @@ import {
 import AdminSidebarUser from "./admin-sidebar-user";
 import AdminSidebarMenuGroup from "./admin-sidebar-menu-group";
 import AdminCompany from "./admin-company";
+import Colors from "~/features/system/colors";
 
 const mainMangeItems = {
   group_label: "Quản lý chính",
@@ -36,6 +41,21 @@ const mainMangeItems = {
       title: "Sản phẩm",
       url: "/system/products",
       icon: ShoppingBag,
+    },
+    {
+      title: "Chất liệu",
+      url: "/system/material",
+      icon: Shirt,
+    },
+    {
+      title: "Màu sắc",
+      url: "/system/colors",
+      icon: Palette,
+    },
+        {
+      title: " Kích thước",
+      url: "/system/sizes",
+      icon: Tag,
     },
     {
       title: "Đơn hàng",
@@ -66,6 +86,16 @@ const mainMangeItems = {
       title: "Khuyến mãi",
       url: "/system/promotions",
       icon: Tag,
+    },
+    {
+      title: "Đổi/Trả hàng",
+      url: "/system/returns",
+      icon: RefreshCcw,
+    },
+    {
+      title: "Phương thức thanh toán",
+      url: "/system/payment",
+      icon: CreditCard,
     },
   ],
 };

@@ -16,6 +16,7 @@ export default [
     route("/system", "features/system/index.tsx"),
     // route("/system/dashboard", "features/system/index.tsx"),
     route("/system/products", "features/system/products/index.tsx"),
+    route("/system/returns", "features/system/order-return/index.tsx"),
     route("/system/orders", "features/system/orders/index.tsx"),
     route("/system/promotions", "features/system/promotions/index.tsx"),
     route("/system/customers", "features/system/customers/index.tsx"),
@@ -32,6 +33,10 @@ export default [
 
     // Redux test
     route("/system/redux-test", "features/system/redux-test/index.tsx"),
+    route("/system/payment", "features/system/payment/index.tsx"),
+    route("/system/material", "features/system/material/index.tsx"),
+    route("/system/colors", "features/system/colors/index.tsx"),
+    route("/system/sizes", "features/system/sizes/index.tsx"),
   ]),
-  //   route("login", "features/auth/login.tsx"),
+  route("login", "features/clients/auth/index.tsx"),
 ] satisfies RouteConfig;

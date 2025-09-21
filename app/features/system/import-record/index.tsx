@@ -11,40 +11,7 @@ import {
 import { type ColumnDef, type CellContext } from "@tanstack/react-table";
 import DataTable from "~/features/system/components/data-table";
 import { Button } from "~/components/ui/button";
-
-// ------------------- Types -------------------
-interface ImportItem {
-  id: string;
-  productName: string;
-  category: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-}
-
-interface ImportRecord {
-  id: string;
-  supplier: string;
-  quantity: number;
-  totalAmount: number;
-  importDate: string;
-  createdBy: string;
-  status: "completed" | "pending" | "cancelled";
-  items: ImportItem[];
-  notes?: string;
-}
-
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-interface ImportDetailModalProps {
-  importRecord: ImportRecord | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { ImportDetailModalProps, ImportRecord, ModalProps } from "./types";
 
 // ------------------- Mock data -------------------
 const mockImportRecords: ImportRecord[] = [
