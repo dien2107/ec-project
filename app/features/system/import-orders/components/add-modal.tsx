@@ -1,80 +1,171 @@
 
-import * as React from "react";
-import type { ImportOrder } from "../types";
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import type { AddImportOrderDialogProps, ImportOrderFormData } from "../types";
 import { mockSuppliers } from "../../suppliers/data/mockSuppliers";
 
-interface AddModalProps {
-  open: boolean;
-  onClose: () => void;
-  onAdd: (order: ImportOrder) => void;
-}
+export function AddImportOrderModal({ open, onClose, onAdd }: AddImportOrderDialogProps) {
+  const [formData, setFormData] = useState<ImportOrderFormData>({
+    supplier: "",
+    quantity: 0,
+    total: 0,
+    status: "pending",
+    orderDate: "",
+    expectedDate: "",
+  });
 
-const initialForm: ImportOrder = {
-  id: "",
-  supplier: "",
-  quantity: 0,
-  total: 0,
-  status: "pending",
-  orderDate: "",
-  expectedDate: "",
-};
-
-export function AddImportOrderModal({ open, onClose, onAdd }: AddModalProps) {
-  const [form, setForm] = React.useState<ImportOrder>(initialForm);
-
-  React.useEffect(() => {
-    if (open) setForm(initialForm);
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        supplier: "",
+        quantity: 0,
+        total: 0,
+        status: "pending",
+        orderDate: "",
+        expectedDate: "",
+      });
+    }
   }, [open]);
 
-  if (!open) return null;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Create new order with generated ID
+    const newOrder = {
+      id: `IMP-${Date.now()}`,
+      ...formData,
+    };
+    
+    onAdd(newOrder);
+    onClose();
+  };
+
+  const handleChange = (field: keyof ImportOrderFormData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-4">Tạo đơn nhập hàng</h4>
-        <div className="space-y-3">
-          <select
-            className="w-full border px-3 py-2 rounded"
-            value={form.supplier}
-            onChange={e => setForm({ ...form, supplier: e.target.value })}
-          >
-            <option value="">Chọn nhà cung cấp</option>
-            {mockSuppliers.map(sup => (
-              <option key={sup.id} value={sup.name}>{sup.name}</option>
-            ))}
-          </select>
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.quantity}
-            type="number"
-            onChange={e => setForm({ ...form, quantity: Number(e.target.value) })}
-            placeholder="Số lượng"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.total}
-            type="number"
-            onChange={e => setForm({ ...form, total: Number(e.target.value) })}
-            placeholder="Tổng tiền"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.orderDate}
-            onChange={e => setForm({ ...form, orderDate: e.target.value })}
-            placeholder="Ngày đặt"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.expectedDate}
-            onChange={e => setForm({ ...form, expectedDate: e.target.value })}
-            placeholder="Ngày dự kiến"
-          />
-        </div>
-        <div className="flex justify-end gap-2 mt-6">
-          <button className="px-4 py-2 rounded bg-gray-200" onClick={onClose}>Huỷ</button>
-          <button className="px-4 py-2 rounded bg-blue-600 text-white" onClick={() => onAdd(form)}>Tạo mới</button>
-        </div>
-      </div>
-    </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Tạo đơn nhập hàng</DialogTitle>
+          <DialogDescription>
+            Điền thông tin để tạo đơn nhập hàng mới.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="supplier">Nhà cung cấp *</Label>
+              <Select value={formData.supplier} onValueChange={(value) => handleChange("supplier", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn nhà cung cấp" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockSuppliers.map(supplier => (
+                    <SelectItem key={supplier.id} value={supplier.name}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Trạng thái</Label>
+              <Select value={formData.status} onValueChange={(value: "pending" | "approved" | "received") => handleChange("status", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Chờ duyệt</SelectItem>
+                  <SelectItem value="approved">Đã duyệt</SelectItem>
+                  <SelectItem value="received">Đã nhận</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Số lượng *</Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={formData.quantity}
+                onChange={(e) => handleChange("quantity", Number(e.target.value))}
+                placeholder="Nhập số lượng"
+                required
+                min="1"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="total">Tổng tiền *</Label>
+              <Input
+                id="total"
+                type="number"
+                value={formData.total}
+                onChange={(e) => handleChange("total", Number(e.target.value))}
+                placeholder="Nhập tổng tiền"
+                required
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="orderDate">Ngày đặt *</Label>
+              <Input
+                id="orderDate"
+                type="date"
+                value={formData.orderDate}
+                onChange={(e) => handleChange("orderDate", e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expectedDate">Ngày dự kiến *</Label>
+              <Input
+                id="expectedDate"
+                type="date"
+                value={formData.expectedDate}
+                onChange={(e) => handleChange("expectedDate", e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Hủy
+            </Button>
+            <Button type="submit">
+              Tạo đơn nhập hàng
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

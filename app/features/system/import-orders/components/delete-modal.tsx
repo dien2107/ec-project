@@ -1,25 +1,47 @@
-import * as React from "react";
-import type { ImportOrder } from "../types";
+import React from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
+import type { DeleteImportOrderDialogProps } from "../types";
 
-interface DeleteModalProps {
-  open: boolean;
-  order: ImportOrder | null;
-  onClose: () => void;
-  onDelete: (order: ImportOrder) => void;
-}
+export function DeleteImportOrderModal({ open, order, onClose, onDelete }: DeleteImportOrderDialogProps) {
+  const handleDelete = () => {
+    if (order) {
+      onDelete(order);
+      onClose();
+    }
+  };
 
-export function DeleteImportOrderModal({ open, order, onClose, onDelete }: DeleteModalProps) {
-  if (!open || !order) return null;
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-4">Xoá đơn nhập hàng</h4>
-        <p>Bạn có chắc chắn muốn xoá đơn <b>{order.id}</b> không?</p>
-        <div className="flex justify-end gap-2 mt-6">
-          <button className="px-4 py-2 rounded bg-gray-200" onClick={onClose}>Huỷ</button>
-          <button className="px-4 py-2 rounded bg-red-600 text-white" onClick={() => onDelete(order)}>Xoá</button>
-        </div>
-      </div>
-    </div>
+    <AlertDialog open={open} onOpenChange={onClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Xác nhận xóa đơn nhập hàng</AlertDialogTitle>
+          <AlertDialogDescription>
+            Bạn có chắc chắn muốn xóa đơn nhập hàng{" "}
+            <span className="font-semibold text-destructive">"{order?.id}"</span> không?
+            <br />
+            <br />
+            Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến đơn hàng này sẽ bị xóa vĩnh viễn.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Xóa đơn nhập hàng
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

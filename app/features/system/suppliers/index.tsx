@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
 import AddSupplierDialog from "./components/add-supplier-dialog";
 import EditSupplierDialog from "./components/edit-supplier-dialog";
 import DeleteSupplierDialog from "./components/delete-supplier-dialog";
@@ -40,33 +42,35 @@ export default function Suppliers() {
 
     return (
         <div className="container">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold">Quản lý nhà cung cấp</h3>
+                <Button onClick={() => setIsAddOpen(true)} className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Thêm nhà cung cấp
+                </Button>
             </div>
-                        <>
-                                <DataTable
-                                        columns={columns}
-                                        data={paginatedData}
-                                        currentPage={currentPage}
-                                        totalPages={totalPages}
-                                        onPageChange={setCurrentPage}
-                                        title=""
-                                        showGlobalFilter={true}
-                                        showFilter={true}
-                                        filterPlaceholder="Tìm nhà cung cấp..."
-                                        showAddButton={true}
-                                        addButtonTitle="Thêm nhà cung cấp"
-                                        onAddClick={() => setIsAddOpen(true)}
-                                />
-                                                <AddSupplierDialog open={isAddOpen} setIsOpen={setIsAddOpen} />
-                                                <EditSupplierDialog open={isEditOpen} setIsOpen={setIsEditOpen} supplier={selectedSupplier} />
-                                                <DeleteSupplierDialog
-                                                    open={isDeleteOpen}
-                                                    setIsOpen={setIsDeleteOpen}
-                                                    onDelete={handleDeleteConfirm}
-                                                    supplierName={selectedSupplier?.name}
-                                                />
-                        </>
+            
+            <DataTable
+                columns={columns}
+                data={paginatedData}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                title="Danh sách nhà cung cấp"
+                showGlobalFilter={true}
+                showFilter={true}
+                filterPlaceholder="Tìm nhà cung cấp..."
+                showAddButton={false}
+            />
+            
+            <AddSupplierDialog open={isAddOpen} setIsOpen={setIsAddOpen} />
+            <EditSupplierDialog open={isEditOpen} setIsOpen={setIsEditOpen} supplier={selectedSupplier} />
+            <DeleteSupplierDialog
+                open={isDeleteOpen}
+                setIsOpen={setIsDeleteOpen}
+                onDelete={handleDeleteConfirm}
+                supplierName={selectedSupplier?.name}
+            />
         </div>
     );
 }

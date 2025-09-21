@@ -1,65 +1,162 @@
-import * as React from "react";
-import type { ImportOrder } from "../types";
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import type { EditImportOrderDialogProps, ImportOrderFormData } from "../types";
 
-interface EditModalProps {
-  open: boolean;
-  order: ImportOrder | null;
-  onClose: () => void;
-  onSave: (order: ImportOrder) => void;
-}
+export function EditImportOrderModal({ open, order, onClose, onSave }: EditImportOrderDialogProps) {
+  const [formData, setFormData] = useState<ImportOrderFormData>({
+    supplier: "",
+    quantity: 0,
+    total: 0,
+    status: "pending",
+    orderDate: "",
+    expectedDate: "",
+  });
 
-export function EditImportOrderModal({ open, order, onClose, onSave }: EditModalProps) {
-  const [form, setForm] = React.useState<ImportOrder | null>(order);
-
-  React.useEffect(() => {
-    setForm(order);
+  useEffect(() => {
+    if (order) {
+      setFormData({
+        supplier: order.supplier,
+        quantity: order.quantity,
+        total: order.total,
+        status: order.status,
+        orderDate: order.orderDate,
+        expectedDate: order.expectedDate,
+      });
+    }
   }, [order]);
 
-  if (!open || !form) return null;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (order) {
+      onSave({
+        ...order,
+        ...formData,
+      });
+      onClose();
+    }
+  };
+
+  const handleChange = (field: keyof ImportOrderFormData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-4">Sửa đơn nhập hàng</h4>
-        <div className="space-y-3">
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.supplier}
-            onChange={e => setForm({ ...form, supplier: e.target.value })}
-            placeholder="Nhà cung cấp"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.quantity}
-            type="number"
-            onChange={e => setForm({ ...form, quantity: Number(e.target.value) })}
-            placeholder="Số lượng"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.total}
-            type="number"
-            onChange={e => setForm({ ...form, total: Number(e.target.value) })}
-            placeholder="Tổng tiền"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.orderDate}
-            onChange={e => setForm({ ...form, orderDate: e.target.value })}
-            placeholder="Ngày đặt"
-          />
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={form.expectedDate}
-            onChange={e => setForm({ ...form, expectedDate: e.target.value })}
-            placeholder="Ngày dự kiến"
-          />
-        </div>
-        <div className="flex justify-end gap-2 mt-6">
-          <button className="px-4 py-2 rounded bg-gray-200" onClick={onClose}>Huỷ</button>
-          <button className="px-4 py-2 rounded bg-blue-600 text-white" onClick={() => form && onSave(form)}>Lưu</button>
-        </div>
-      </div>
-    </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Sửa đơn nhập hàng</DialogTitle>
+          <DialogDescription>
+            Cập nhật thông tin đơn nhập hàng.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="supplier">Nhà cung cấp *</Label>
+              <Input
+                id="supplier"
+                value={formData.supplier}
+                onChange={(e) => handleChange("supplier", e.target.value)}
+                placeholder="Nhập tên nhà cung cấp"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Trạng thái</Label>
+              <Select value={formData.status} onValueChange={(value: "pending" | "approved" | "received") => handleChange("status", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Chờ duyệt</SelectItem>
+                  <SelectItem value="approved">Đã duyệt</SelectItem>
+                  <SelectItem value="received">Đã nhận</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Số lượng *</Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={formData.quantity}
+                onChange={(e) => handleChange("quantity", Number(e.target.value))}
+                placeholder="Nhập số lượng"
+                required
+                min="1"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="total">Tổng tiền *</Label>
+              <Input
+                id="total"
+                type="number"
+                value={formData.total}
+                onChange={(e) => handleChange("total", Number(e.target.value))}
+                placeholder="Nhập tổng tiền"
+                required
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="orderDate">Ngày đặt *</Label>
+              <Input
+                id="orderDate"
+                type="date"
+                value={formData.orderDate}
+                onChange={(e) => handleChange("orderDate", e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expectedDate">Ngày dự kiến *</Label>
+              <Input
+                id="expectedDate"
+                type="date"
+                value={formData.expectedDate}
+                onChange={(e) => handleChange("expectedDate", e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Hủy
+            </Button>
+            <Button type="submit">
+              Lưu thay đổi
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

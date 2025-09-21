@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
 import DataTable from "../components/data-table";
 import { getColorColumns, type Color } from "./types";
 import { mockColors } from "./data/mockColors";
@@ -58,22 +60,14 @@ export default function Colors() {
 
   return (
     <div className="container">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-2xl font-bold">Quản lý màu sắc</h3>
-          <div className="flex items-center gap-4 mt-2">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold">{colors.length}</span>
-              <span className="text-gray-600">Tổng số</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-green-600">
-                {colors.filter(c => c.status === "active").length}
-              </span>
-              <span className="text-gray-600">Hoạt động</span>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold flex items-center gap-2">
+          <span>🎨</span> Quản lý màu sắc
+        </h3>
+        <Button onClick={() => setIsAddOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Thêm màu
+        </Button>
       </div>
 
       <DataTable
@@ -86,9 +80,7 @@ export default function Colors() {
         showGlobalFilter={true}
         showFilter={true}
         filterPlaceholder="Tìm kiếm màu sắc..."
-        showAddButton={true}
-        addButtonTitle="Thêm màu"
-        onAddClick={() => setIsAddOpen(true)}
+        showAddButton={false}
       />
 
       <AddColorDialog 

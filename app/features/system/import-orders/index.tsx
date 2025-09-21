@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
 import DataTable from "../components/data-table";
 import { mockImportOrders as initialOrders } from "./data/mockImportOrders";
 import type { ImportOrder } from "./types";
 import { AddImportOrderModal } from "./components/add-modal";
 import { EditImportOrderModal } from "./components/edit-modal";
 import { DeleteImportOrderModal } from "./components/delete-modal";
-import { getImportOrderColumns } from "./types/index.jsx";
+import { getImportOrderColumns } from "./types";
 
 
 export default function ImportOrders() {
@@ -54,25 +56,29 @@ export default function ImportOrders() {
 
   return (
     <div className="container">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold flex items-center gap-2">
           <span>📦</span> Đơn nhập hàng
         </h3>
+        <Button onClick={() => setIsAddOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Tạo đơn nhập hàng
+        </Button>
       </div>
+      
       <DataTable
         columns={columns}
         data={paginatedData}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
-        title=""
+        title="Danh sách đơn nhập hàng"
         showGlobalFilter={true}
         filterPlaceholder="Tìm kiếm đơn nhập hàng..."
         showFilter={true}
-        showAddButton={true}
-        addButtonTitle="Tạo đơn nhập hàng"
-        onAddClick={() => setIsAddOpen(true)}
+        showAddButton={false}
       />
+      
       <AddImportOrderModal open={isAddOpen} onClose={() => setIsAddOpen(false)} onAdd={handleAdd} />
       <EditImportOrderModal open={isEditOpen} order={selectedOrder} onClose={() => setIsEditOpen(false)} onSave={handleEditSave} />
       <DeleteImportOrderModal open={isDeleteOpen} order={selectedOrder} onClose={() => setIsDeleteOpen(false)} onDelete={handleDeleteConfirm} />

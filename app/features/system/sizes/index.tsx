@@ -1,11 +1,12 @@
 import React, { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
 import DataTable from "../components/data-table";
 import { getSizeColumns, type Size } from "./types";
 import { mockSizes } from "./data/mockSizes";
 import AddSizeDialog from "./components/add-size-dialog";
 import EditSizeDialog from "./components/edit-size-dialog";
 import DeleteSizeDialog from "./components/delete-size-dialog";
-import { tr } from "date-fns/locale";
 
 export default function Sizes() {
     const [sizes, setSizes] = useState<Size[]>(mockSizes);
@@ -60,13 +61,13 @@ export default function Sizes() {
     return (
         <div className="container">
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold">Quản lý kích thước</h3>
-            </div>
-
-            <div className="mb-4">
-                <p className="text-gray-600">
-                    Tổng cộng: <span className="font-medium">{sizes.length} kích thước</span>
-                </p>
+                <h3 className="text-2xl font-bold flex items-center gap-2">
+                    <span>📏</span> Quản lý kích thước
+                </h3>
+                <Button onClick={() => setIsAddOpen(true)} className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Thêm kích thước
+                </Button>
             </div>
 
             <DataTable
@@ -79,9 +80,7 @@ export default function Sizes() {
                 showGlobalFilter={true}
                 showFilter={true}
                 filterPlaceholder="Tìm kiếm kích thước..."
-                showAddButton={true}
-                addButtonTitle="Thêm kích thước"
-                onAddClick={() => setIsAddOpen(true)}
+                showAddButton={false}
             />
 
             <AddSizeDialog

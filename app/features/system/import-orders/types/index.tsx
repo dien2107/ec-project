@@ -1,8 +1,8 @@
 
-import * as React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
-import { SquarePen, Trash } from "lucide-react";
+import { SortableHeader } from "../../components/data-table";
+import { Edit, Trash2 } from "lucide-react";
 
 export type ImportOrder = {
   id: string;
@@ -14,38 +14,116 @@ export type ImportOrder = {
   expectedDate: string;
 };
 
+export interface ImportOrderFormData {
+  supplier: string;
+  quantity: number;
+  total: number;
+  status: "pending" | "approved" | "received";
+  orderDate: string;
+  expectedDate: string;
+}
+
+export interface AddImportOrderDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (order: ImportOrder) => void;
+}
+
+export interface EditImportOrderDialogProps {
+  open: boolean;
+  order: ImportOrder | null;
+  onClose: () => void;
+  onSave: (order: ImportOrder) => void;
+}
+
+export interface DeleteImportOrderDialogProps {
+  open: boolean;
+  order: ImportOrder | null;
+  onClose: () => void;
+  onDelete: (order: ImportOrder) => void;
+}
+
 const statusMap: Record<string, { label: string; className: string }> = {
-  pending: { label: "Chờ duyệt", className: "bg-gray-100 text-gray-700" },
-  approved: { label: "Đã duyệt", className: "bg-blue-600 text-white" },
-  received: { label: "Đã nhận", className: "bg-blue-400 text-white" },
+  pending: { label: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
+  approved: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
+  received: { label: "Đã nhận", className: "bg-green-100 text-green-800" },
 };
+
+const formatVND = (amount: number) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
 
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
   handleDelete: (order: ImportOrder) => void
 ): ColumnDef<ImportOrder>[] => [
-  { accessorKey: "id", header: "Mã đơn hàng" },
-  { accessorKey: "supplier", header: "Nhà cung cấp" },
-  { accessorKey: "quantity", header: "Số lượng" },
+  {
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Mã đơn hàng"
+          className="justify-start"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "supplier",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Nhà cung cấp"
+          className="justify-start"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "quantity",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Số lượng"
+          className="justify-center"
+        />
+      );
+    },
+    cell: ({ getValue }) => {
+      const quantity = getValue() as number;
+      return <div className="text-center">{quantity.toLocaleString('vi-VN')}</div>;
+    },
+  },
   {
     accessorKey: "total",
-    header: "Tổng tiền",
-    cell: ({ row }: { row: { original: ImportOrder } }) => {
-      return React.createElement("span", null, `$ ${row.original.total.toLocaleString("vi-VN")} đ`);
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Tổng tiền"
+          className="justify-end"
+        />
+      );
+    },
+    cell: ({ getValue }) => {
+      const total = getValue() as number;
+      return <div className="text-right font-medium">{formatVND(total)}</div>;
     },
   },
   {
     accessorKey: "status",
-    header: "Trạng thái",
-    cell: ({ row }: { row: { original: ImportOrder } }) => {
-      const status = row.original.status as keyof typeof statusMap;
-      const map = statusMap[status] || { label: status, className: "" };
-      return React.createElement(
-        "span",
-        {
-          className: `px-3 py-1 rounded-2xl text-sm font-medium ${map.className}`,
-        },
-        map.label
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Trạng thái"
+          className="justify-start"
+        />
       );
     },
     meta: {
@@ -56,26 +134,78 @@ export const getImportOrderColumns = (
           { value: "all", label: "Tất cả trạng thái" },
           { value: "pending", label: "Chờ duyệt" },
           { value: "approved", label: "Đã duyệt" },
+          { value: "received", label: "Đã nhận" },
         ],
       },
     },
-    filterFn: (row: any, id: string, value: string) => {
+    cell: ({ getValue }) => {
+      const status = getValue() as keyof typeof statusMap;
+      const statusInfo = statusMap[status] || { label: status, className: "bg-gray-100 text-gray-800" };
+      return (
+        <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusInfo.className}`}>
+          {statusInfo.label}
+        </span>
+      );
+    },
+    filterFn: (row, id, value) => {
       if (!value || value === "all") return true;
       return row.getValue(id) === value;
     },
   },
-  { accessorKey: "orderDate", header: "Ngày đặt" },
-  { accessorKey: "expectedDate", header: "Ngày dự kiến" },
+  {
+    accessorKey: "orderDate",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Ngày đặt"
+          className="justify-start"
+        />
+      );
+    },
+    cell: ({ getValue }) => {
+      const date = getValue() as string;
+      return new Date(date).toLocaleDateString('vi-VN');
+    },
+  },
+  {
+    accessorKey: "expectedDate",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Ngày dự kiến"
+          className="justify-start"
+        />
+      );
+    },
+    cell: ({ getValue }) => {
+      const date = getValue() as string;
+      return new Date(date).toLocaleDateString('vi-VN');
+    },
+  },
   {
     id: "actions",
     header: "Thao tác",
-    cell: ({ row }: { row: { original: ImportOrder } }) => (
+        cell: ({ row }) => (
       <div className="flex gap-2">
-        <Button size="icon" variant="outline" onClick={() => handleEdit(row.original)}>
-          <SquarePen className="w-4 h-4" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleEdit(row.original)}
+          className="h-8 w-8 p-0 hover:bg-green-100"
+          title="Chỉnh sửa"
+        >
+          <Edit className="h-4 w-4 text-green-600" />
         </Button>
-        <Button size="icon" variant="destructive" onClick={() => handleDelete(row.original)}>
-          <Trash className="w-4 h-4" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleDelete(row.original)}
+          className="h-8 w-8 p-0 hover:bg-red-100"
+          title="Xóa"
+        >
+          <Trash2 className="h-4 w-4 text-red-600" />
         </Button>
       </div>
     ),

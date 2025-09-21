@@ -1,15 +1,26 @@
-import * as React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
+import { SortableHeader } from "../../components/data-table";
 
-export type Color = {
+export interface Color {
   id: string;
   name: string;
   hexCode: string;
   description: string;
   status: "active" | "inactive";
-};
+}
+
+export interface CreateColorData {
+  name: string;
+  hexCode: string;
+  description: string;
+  status: "active" | "inactive";
+}
+
+export interface UpdateColorData extends CreateColorData {
+  id: string;
+}
 
 const statusMap: Record<string, { label: string; className: string }> = {
   active: { label: "Hoạt động", className: "bg-green-600 text-white" },
@@ -22,21 +33,25 @@ export const getColorColumns = (
 ): ColumnDef<Color>[] => [
   {
     accessorKey: "id",
-    header: "Mã màu",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mã màu" />
+    ),
     cell: ({ row }) => (
       <span className="font-mono text-sm">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "name",
-    header: "Tên màu",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Tên màu" />
+    ),
     cell: ({ row }) => (
       <span className="font-medium">{row.original.name}</span>
     ),
   },
   {
     accessorKey: "hexCode",
-    header: "Màu hiện thị",
+    header: "Màu hiển thị",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div 
@@ -49,14 +64,18 @@ export const getColorColumns = (
   },
   {
     accessorKey: "description",
-    header: "Mô tả",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mô tả" />
+    ),
     cell: ({ row }) => (
       <span className="text-gray-600">{row.original.description}</span>
     ),
   },
   {
     accessorKey: "status",
-    header: "Trạng thái",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Trạng thái" />
+    ),
     cell: ({ row }) => {
       const status = row.original.status as keyof typeof statusMap;
       const map = statusMap[status] || { label: status, className: "" };
