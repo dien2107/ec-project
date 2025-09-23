@@ -1,4 +1,14 @@
 import React from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 
 interface DeleteSizeDialogProps {
   open: boolean;
@@ -13,32 +23,27 @@ export default function DeleteSizeDialog({
   onDelete, 
   sizeName 
 }: DeleteSizeDialogProps) {
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-[10px] p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-4">Xác nhận xóa</h4>
-        <p className="text-gray-600 mb-6">
-          Bạn có chắc chắn muốn xóa kích thước <strong>"{sizeName}"</strong>? 
-          Hành động này không thể hoàn tác.
-        </p>
-        
-        <div className="flex justify-end gap-2">
-          <button 
-            className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300" 
-            onClick={() => setIsOpen(false)}
-          >
-            Hủy
-          </button>
-          <button 
-            className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700" 
+    <AlertDialog open={open} onOpenChange={setIsOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Xác nhận xóa kích thước</AlertDialogTitle>
+          <AlertDialogDescription>
+            Bạn có chắc chắn muốn xóa kích thước <strong>"{sizeName}"</strong>?
+            <br />
+            Hành động này không thể hoàn tác và có thể ảnh hưởng đến các sản phẩm đang sử dụng kích thước này.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogAction
             onClick={onDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Xóa
-          </button>
-        </div>
-      </div>
-    </div>
+            Xóa kích thước
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

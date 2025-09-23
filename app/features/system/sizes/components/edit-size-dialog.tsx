@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import type { Size } from "../types";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Textarea } from "~/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import type { Size, UpdateSizeData } from "../types";
 
 interface EditSizeDialogProps {
   open: boolean;
@@ -9,7 +15,7 @@ interface EditSizeDialogProps {
 }
 
 export default function EditSizeDialog({ open, setIsOpen, size, onSave }: EditSizeDialogProps) {
-  const [form, setForm] = useState<Size>({
+  const [form, setForm] = useState<UpdateSizeData>({
     id: "",
     name: "",
     code: "",
@@ -26,44 +32,48 @@ export default function EditSizeDialog({ open, setIsOpen, size, onSave }: EditSi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (form.name && form.code) {
-      onSave(form);
+      onSave(form as Size);
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-[10px] p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-4">Sửa kích thước</h4>
+    <Dialog open={open} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Sửa kích thước</DialogTitle>
+          <DialogDescription>
+            Cập nhật thông tin kích thước
+          </DialogDescription>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Tên kích thước</label>
-              <input
-                className="w-full border border-gray-300 px-3 py-2 rounded-md"
+            <div className="space-y-2">
+              <Label htmlFor="name">Tên kích thước</Label>
+              <Input
+                id="name"
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
                 placeholder="Nhập tên kích thước"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Mã kích thước</label>
-              <input
-                className="w-full border border-gray-300 px-3 py-2 rounded-md"
+            <div className="space-y-2">
+              <Label htmlFor="code">Mã kích thước</Label>
+              <Input
+                id="code"
                 value={form.code}
                 onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
                 placeholder="XS, S, M, L..."
+                className="font-mono"
                 required
               />
             </div>
           </div>
           
-          <div>
-            <label className="block text-sm font-medium mb-1">Mô tả</label>
-            <textarea
-              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+          <div className="space-y-2">
+            <Label htmlFor="description">Mô tả</Label>
+            <Textarea
+              id="description"
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
               placeholder="Nhập mô tả kích thước"
@@ -71,35 +81,29 @@ export default function EditSizeDialog({ open, setIsOpen, size, onSave }: EditSi
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Trạng thái</label>
-            <select
-              className="w-full border border-gray-300 px-3 py-2 rounded-md"
-              value={form.status}
-              onChange={e => setForm({ ...form, status: e.target.value as "active" | "inactive" })}
-            >
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Ngưng hoạt động</option>
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="status">Trạng thái</Label>
+            <Select value={form.status} onValueChange={(value: "active" | "inactive") => setForm({ ...form, status: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Hoạt động</SelectItem>
+                <SelectItem value="inactive">Ngưng hoạt động</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="flex justify-end gap-2 mt-6">
-            <button 
-              type="button"
-              className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300" 
-              onClick={() => setIsOpen(false)}
-            >
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
               Hủy
-            </button>
-            <button 
-              type="submit"
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-            >
+            </Button>
+            <Button type="submit">
               Lưu thay đổi
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

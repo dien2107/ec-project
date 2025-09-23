@@ -1,24 +1,50 @@
 import React from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
+import type { DeleteSupplierDialogProps } from "../types/index";
 
-interface DeleteSupplierDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  onDelete: () => void;
-  supplierName?: string;
-}
+export default function DeleteSupplierDialog({ 
+  open, 
+  setIsOpen, 
+  onDelete, 
+  supplierName 
+}: DeleteSupplierDialogProps) {
+  const handleDelete = () => {
+    onDelete();
+    setIsOpen(false);
+  };
 
-export default function DeleteSupplierDialog({ open, setIsOpen, onDelete, supplierName }: DeleteSupplierDialogProps) {
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-  <div className="bg-white p-6 rounded-[10px] shadow w-full max-w-md relative">
-        <h2 className="text-lg font-bold mb-4">Xóa nhà cung cấp</h2>
-        <p>Bạn có chắc chắn muốn xóa nhà cung cấp <b>{supplierName}</b> không?</p>
-        <div className="flex gap-2 mt-6 justify-end">
-          <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setIsOpen(false)}>Hủy</button>
-          <button className="px-4 py-2 bg-red-600 text-white rounded" onClick={onDelete}>Xóa</button>
-        </div>
-      </div>
-    </div>
+    <AlertDialog open={open} onOpenChange={setIsOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Xác nhận xóa nhà cung cấp</AlertDialogTitle>
+          <AlertDialogDescription>
+            Bạn có chắc chắn muốn xóa nhà cung cấp{" "}
+            <span className="font-semibold text-destructive">"{supplierName}"</span> không?
+            <br />
+            <br />
+            Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến nhà cung cấp này sẽ bị xóa vĩnh viễn.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Xóa nhà cung cấp
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

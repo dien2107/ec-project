@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "~/components/ui/button";
 
 export default function Banner() {
   const bgUrl =
@@ -21,9 +22,12 @@ export default function Banner() {
           Khám phá các thiết kế mới nhất từ YAME. Phong cách trẻ trung, độc đáo
           dành cho giới trẻ Việt Nam.
         </p>
-        <button className="px-6 py-2 bg-white text-black rounded font-semibold hover:bg-gray-100 transition cursor-pointer">
+        <Button 
+          size="lg" 
+          className="bg-white text-black hover:bg-gray-100 font-semibold shadow-lg"
+        >
           Khám phá ngay
-        </button>
+        </Button>
       </div>
     </section>
   );

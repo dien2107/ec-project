@@ -1,69 +1,99 @@
 import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import type { UserInfoEditProps } from "../../types/user-profile.types";
 
-interface UserInfoEditProps {
-  name: string;
-  email: string;
-  phone: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSave: () => void;
-  onClose: () => void;
-}
-
-export default function UserInfoEdit({ name, email, phone, onChange, onSave, onClose }: UserInfoEditProps) {
+export default function UserInfoEdit({ 
+  username,
+  full_name, 
+  email, 
+  phone, 
+  onChange, 
+  onSave, 
+  onClose,
+  open 
+}: UserInfoEditProps) {
   return (
-<div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-      <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Chỉnh sửa thông tin cá nhân</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer">×</button>
-        </div>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Chỉnh sửa thông tin cá nhân</DialogTitle>
+          <DialogDescription>
+            Cập nhật thông tin cá nhân của bạn. Nhấn lưu khi hoàn tất.
+          </DialogDescription>
+        </DialogHeader>
+        
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
             onSave();
           }}
-          className="flex flex-col gap-4"
+          className="space-y-4"
         >
-          <div>
-            <label className="block text-sm mb-1" htmlFor="name">Họ và tên</label>
-            <input
-              id="name"
-              name="name"
-              value={name}
+          <div className="space-y-2">
+            <Label htmlFor="username">Tên đăng nhập</Label>
+            <Input
+              id="username"
+              name="username"
+              value={username}
               onChange={onChange}
               required
-              className="border rounded px-3 py-2 w-full"
             />
           </div>
-          <div>
-            <label className="block text-sm mb-1" htmlFor="email">Email</label>
-            <input
+          
+          <div className="space-y-2">
+            <Label htmlFor="full_name">Họ và tên</Label>
+            <Input
+              id="full_name"
+              name="full_name"
+              value={full_name}
+              onChange={onChange}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
               id="email"
               name="email"
               type="email"
               value={email}
               onChange={onChange}
               required
-              className="border rounded px-3 py-2 w-full"
             />
           </div>
-          <div>
-            <label className="block text-sm mb-1" htmlFor="phone">Số điện thoại</label>
-            <input
+          
+          <div className="space-y-2">
+            <Label htmlFor="phone">Số điện thoại</Label>
+            <Input
               id="phone"
               name="phone"
               value={phone}
               onChange={onChange}
               required
-              className="border rounded px-3 py-2 w-full"
             />
           </div>
-          <div className="flex justify-end gap-2 mt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded border cursor-pointer">Hủy</button>
-            <button type="submit" className="px-4 py-2 rounded bg-gray-400 text-black cursor-pointer">Lưu thay đổi</button>
-          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Hủy
+            </Button>
+            <Button type="submit">
+              Lưu thay đổi
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

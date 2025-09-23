@@ -1,8 +1,8 @@
 import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
-import { ArrowUpDown, ChevronUp, SquarePen, Trash } from "lucide-react";
-import type { S } from "node_modules/react-router/dist/development/context-jKip1TFB.mjs";
+import { ArrowUpDown, SquarePen, Trash } from "lucide-react";
+import { SortableHeader } from "../../components/data-table";
 
 export type Supplier = {
   id: string;
@@ -14,18 +14,115 @@ export type Supplier = {
   createdAt: string;
 };
 
+export interface SupplierFormData {
+  name: string;
+  contact: string;
+  info: string;
+  status: "active" | "inactive";
+}
+
+export interface AddSupplierDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+export interface EditSupplierDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  supplier: Supplier | null;
+}
+
+export interface DeleteSupplierDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  onDelete: () => void;
+  supplierName?: string;
+}
+
 export const getSupplierColumns = (
   handleEdit: (supplier: Supplier) => void,
   handleDelete: (supplier: Supplier) => void
 ): ColumnDef<Supplier>[] => [
-  { accessorKey: "id", header: "ID" },
-  { accessorKey: "name", header: "Nhà cung cấp" },
-  { accessorKey: "contact", header: "Liên hệ" },
-  { accessorKey: "info", header: "Thông tin" },
-  { accessorKey: "productCount", header: "Số sản phẩm" },
+  {
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Mã NCC"
+          className="justify-start"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Nhà cung cấp"
+          className="justify-start"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "contact",
+    header: "Liên hệ",
+    cell: ({ getValue }) => {
+      const contact = getValue() as string;
+      const lines = contact.split('\n');
+      return (
+        <div className="space-y-1">
+          {lines.map((line, index) => (
+            <div key={index} className="text-sm">
+              {line}
+            </div>
+          ))}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "info",
+    header: "Thông tin",
+    cell: ({ getValue }) => {
+      const info = getValue() as string;
+      return (
+        <div className="max-w-[200px] truncate" title={info}>
+          {info}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "productCount",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Số sản phẩm"
+          className="justify-center"
+        />
+      );
+    },
+    cell: ({ getValue }) => {
+      const count = getValue() as number;
+      return <div className="text-center">{count}</div>;
+    },
+  },
   {
     accessorKey: "status",
-    header: "Trạng thái",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Trạng thái"
+          className="justify-start"
+        />
+      );
+    },
     meta: {
       filterConfig: {
         type: "select",
@@ -58,24 +155,42 @@ export const getSupplierColumns = (
     },
   },
   {
+    accessorKey: "createdAt",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Ngày tạo"
+          className="justify-start"
+        />
+      );
+    },
+    cell: ({ getValue }) => {
+      const date = getValue() as string;
+      return new Date(date).toLocaleDateString('vi-VN');
+    },
+  },
+  {
     id: "actions",
     header: "Thao tác",
     cell: ({ row }) => {
       return (
         <div className="flex gap-2">
           <Button
-            size="icon"
+            size="sm"
             variant="outline"
             onClick={() => handleEdit(row.original)}
           >
-            <SquarePen className="w-4 h-4" />
+            <SquarePen className="w-4 h-4 mr-1" />
+            Sửa
           </Button>
           <Button
-            size="icon"
+            size="sm"
             variant="destructive"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash className="w-4 h-4" />
+            <Trash className="w-4 h-4 mr-1" />
+            Xóa
           </Button>
         </div>
       );

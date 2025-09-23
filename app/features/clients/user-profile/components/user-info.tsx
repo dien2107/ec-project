@@ -3,11 +3,16 @@
 import React, { useState } from "react";
 import UserInfoView from "./user-info/user-info-view";
 import UserInfoEdit from "./user-info/user-info-edit";
+import type { UserDisplayInfo } from "../types/user-profile.types";
 
-const mockUser = {
-	name: "Nguyễn Văn A",
+const mockUser: UserDisplayInfo = {
+	username: "nguyenvana2024",
+	full_name: "Nguyễn Văn A",
 	email: "nguyenvana@example.com",
 	phone: "0912345678",
+	is_active: true,
+	is_verify: true,
+	created_at: "2024-01-15",
 };
 
 
@@ -34,27 +39,31 @@ export default function UserInfo() {
 		<div className="max-w-4xl mx-auto mt-8">
 			<h2 className="text-2xl font-semibold mb-6">Tài khoản của tôi</h2>
 			<div className="flex gap-6">
-				{/* Sidebar */}
-				{/* Main content */}
 				<UserInfoView
-					name={user.name}
+					username={user.username}
+					full_name={user.full_name}
 					email={user.email}
 					phone={user.phone}
+					is_active={user.is_active}
+					is_verify={user.is_verify}
+					created_at={user.created_at}
 					onEdit={handleEdit}
 				/>
 			</div>
 
-			{/* Dialog chỉnh sửa */}
-			{open && (
-				<UserInfoEdit
-					name={editUser.name}
-					email={editUser.email}
-					phone={editUser.phone}
-					onChange={handleChange}
-					onSave={handleSave}
-					onClose={() => setOpen(false)}
-				/>
-			)}
+			<UserInfoEdit
+				open={open}
+				username={editUser.username}
+				full_name={editUser.full_name}
+				email={editUser.email}
+				phone={editUser.phone}
+				is_active={editUser.is_active}
+				is_verify={editUser.is_verify}
+				created_at={editUser.created_at}
+				onChange={handleChange}
+				onSave={handleSave}
+				onClose={() => setOpen(false)}
+			/>
 		</div>
 	);
 }

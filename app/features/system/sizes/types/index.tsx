@@ -1,15 +1,26 @@
-import * as React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
+import { SortableHeader } from "../../components/data-table";
 
-export type Size = {
+export interface Size {
   id: string;
   name: string;
   code: string;
   description: string;
   status: "active" | "inactive";
-};
+}
+
+export interface CreateSizeData {
+  name: string;
+  code: string;
+  description: string;
+  status: "active" | "inactive";
+}
+
+export interface UpdateSizeData extends CreateSizeData {
+  id: string;
+}
 
 const statusMap: Record<string, { label: string; className: string }> = {
   active: { label: "Hoạt động", className: "bg-green-600 text-white" },
@@ -22,14 +33,18 @@ export const getSizeColumns = (
 ): ColumnDef<Size>[] => [
   {
     accessorKey: "id",
-    header: "Mã kích thước",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mã kích thước" />
+    ),
     cell: ({ row }) => (
       <span className="font-mono text-sm">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "code",
-    header: "Tên kích thước",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mã size" />
+    ),
     cell: ({ row }) => (
       <div className="flex items-center">
         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
@@ -39,15 +54,28 @@ export const getSizeColumns = (
     ),
   },
   {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Tên kích thước" />
+    ),
+    cell: ({ row }) => (
+      <span className="font-medium">{row.original.name}</span>
+    ),
+  },
+  {
     accessorKey: "description",
-    header: "Mô tả",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mô tả" />
+    ),
     cell: ({ row }) => (
       <span className="text-gray-600">{row.original.description}</span>
     ),
   },
   {
     accessorKey: "status",
-    header: "Trạng thái",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Trạng thái" />
+    ),
     cell: ({ row }) => {
       const status = row.original.status as keyof typeof statusMap;
       const map = statusMap[status] || { label: status, className: "" };

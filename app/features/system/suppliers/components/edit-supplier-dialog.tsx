@@ -1,45 +1,124 @@
-import React from "react";
-import type { Supplier } from "../types";
-
-interface EditSupplierDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  supplier: Supplier | null;
-}
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Textarea } from "~/components/ui/textarea";
+import type { EditSupplierDialogProps, SupplierFormData } from "../types/index";
 
 export default function EditSupplierDialog({ open, setIsOpen, supplier }: EditSupplierDialogProps) {
-  if (!open) return null;
+  const [formData, setFormData] = useState<SupplierFormData>({
+    name: "",
+    contact: "",
+    info: "",
+    status: "active",
+  });
+
+  useEffect(() => {
+    if (supplier) {
+      setFormData({
+        name: supplier.name,
+        contact: supplier.contact,
+        info: supplier.info,
+        status: supplier.status,
+      });
+    }
+  }, [supplier]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement edit supplier logic
+    console.log("Updating supplier:", formData);
+    setIsOpen(false);
+  };
+
+  const handleChange = (field: keyof SupplierFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-  <div className="bg-white p-6 rounded-[10px] shadow w-full max-w-2xl relative">
-        <h2 className="text-xl font-bold mb-6">Sửa nhà cung cấp</h2>
-        <button className="absolute top-2 right-2 text-gray-400 hover:text-black cursor-pointer" onClick={() => setIsOpen(false)}>&times;</button>
-        <form className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block mb-1 font-medium">Tên nhà cung cấp</label>
-            <input className="w-full border rounded px-3 py-2 disabled:bg-gray-100" defaultValue={supplier?.name} placeholder="Nhập tên nhà cung cấp" disabled />
+    <Dialog open={open} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Sửa nhà cung cấp</DialogTitle>
+          <DialogDescription>
+            Cập nhật thông tin nhà cung cấp trong hệ thống.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Tên nhà cung cấp *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                placeholder="Nhập tên nhà cung cấp"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Trạng thái</Label>
+              <Select value={formData.status} onValueChange={(value: "active" | "inactive") => handleChange("status", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Hoạt động</SelectItem>
+                  <SelectItem value="inactive">Không hoạt động</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div>
-            <label className="block mb-1 font-medium">Liên hệ</label>
-            <input className="w-full border rounded px-3 py-2" defaultValue={supplier?.contact} placeholder="Nhập thông tin liên hệ" />
+
+          <div className="space-y-2">
+            <Label htmlFor="contact">Thông tin liên hệ</Label>
+            <Textarea
+              id="contact"
+              value={formData.contact}
+              onChange={(e) => handleChange("contact", e.target.value)}
+              placeholder="Tên liên hệ, email, số điện thoại (mỗi thông tin một dòng)"
+              rows={3}
+            />
           </div>
-          <div>
-            <label className="block mb-1 font-medium">Thông tin</label>
-            <input className="w-full border rounded px-3 py-2" defaultValue={supplier?.info} placeholder="Nhập thông tin" />
+
+          <div className="space-y-2">
+            <Label htmlFor="info">Thông tin bổ sung</Label>
+            <Textarea
+              id="info"
+              value={formData.info}
+              onChange={(e) => handleChange("info", e.target.value)}
+              placeholder="Địa chỉ, ghi chú khác"
+              rows={2}
+            />
           </div>
-          <div>
-            <label className="block mb-1 font-medium">Trạng thái</label>
-            <select className="w-full border rounded px-3 py-2" defaultValue={supplier?.status}>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-            </select>
-          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+              Hủy
+            </Button>
+            <Button type="submit">
+              Lưu thay đổi
+            </Button>
+          </DialogFooter>
         </form>
-        <div className="flex justify-end gap-2 mt-6">
-          <button className="px-4 py-2 bg-gray-200 rounded cursor-pointer" onClick={() => setIsOpen(false)} type="button">Hủy</button>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer" type="submit">Lưu thay đổi</button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
