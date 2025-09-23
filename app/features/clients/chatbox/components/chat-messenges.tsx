@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export type Message = {
   from: "bot" | "me";
@@ -11,13 +12,13 @@ type ChatMessagesProps = {
 };
 export const ChatMessages = ({ messages }: ChatMessagesProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
-    <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
+    <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-white scrollbar-custom">
       {messages.map((msg, i) => (
         <div
           key={i}
@@ -26,7 +27,7 @@ export const ChatMessages = ({ messages }: ChatMessagesProps) => {
           }`}
           style={{
             animationDelay: `${i * 0.1}s`,
-            animationFillMode: 'both'
+            animationFillMode: "both",
           }}
         >
           {msg.from === "bot" && (
@@ -34,7 +35,7 @@ export const ChatMessages = ({ messages }: ChatMessagesProps) => {
               <Bot className="w-4 h-4 text-blue-600" />
             </div>
           )}
-          
+
           <div className="flex flex-col max-w-[75%]">
             <div
               className={`px-4 py-2.5 rounded-2xl shadow-sm relative ${
@@ -43,7 +44,12 @@ export const ChatMessages = ({ messages }: ChatMessagesProps) => {
                   : "bg-white border border-gray-200 rounded-bl-md shadow-md"
               }`}
             >
-              <p className="text-sm leading-relaxed">{msg.text}</p>
+              {msg.from === "bot" ? (
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              ) : (
+                <p className="text-sm leading-relaxed">{msg.text}</p>
+              )}
+              {/* <p className="text-sm leading-relaxed">{msg.text}</p> */}
               {msg.from === "me" && (
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rotate-45 transform"></div>
               )}
@@ -51,12 +57,21 @@ export const ChatMessages = ({ messages }: ChatMessagesProps) => {
                 <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-white border-l border-b border-gray-200 rotate-45 transform"></div>
               )}
             </div>
-            
-            <div className={`text-xs text-gray-400 mt-1 px-1 ${
-              msg.from === "me" ? "text-right" : "text-left"
-            }`}>
-              {msg.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || 
-               new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
+            <div
+              className={`text-xs text-gray-400 mt-1 px-1 ${
+                msg.from === "me" ? "text-right" : "text-left"
+              }`}
+            >
+              {msg.timestamp
+                ? new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
             </div>
           </div>
 

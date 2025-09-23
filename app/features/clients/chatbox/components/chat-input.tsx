@@ -1,20 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Send, Bot } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 type ChatInputProps = {
   onSend: (msg: string) => void;
+  isTyping: boolean;
 };
 
-export const ChatInput = ({ onSend }: ChatInputProps) => {
+export const ChatInput = ({ onSend, isTyping }: ChatInputProps) => {
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
 
   const handleSend = () => {
     if (!input.trim()) return;
     onSend(input);
     setInput("");
-    setIsTyping(true);
-    setTimeout(() => setIsTyping(false), 2000);
   };
 
   return (
@@ -24,13 +23,22 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
           <Bot className="w-3 h-3" />
           <span>AI đang soạn tin nhắn</span>
           <div className="flex gap-1">
-            <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div
+              className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></div>
+            <div
+              className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            ></div>
+            <div
+              className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></div>
           </div>
         </div>
       )}
-      
+
       <div className="flex items-center gap-3 p-4">
         <div className="flex-1 relative">
           <input
@@ -42,18 +50,18 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
           />
         </div>
-        
-        <button
+
+        <Button
           onClick={handleSend}
-          disabled={!input.trim()}
+          disabled={!input.trim() && isTyping}
           className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 transform ${
-            input.trim()
+            input.trim() && !isTyping
               ? "bg-blue-600 hover:bg-blue-700 hover:scale-105 text-white"
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
           }`}
         >
           <Send className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
     </div>
   );
