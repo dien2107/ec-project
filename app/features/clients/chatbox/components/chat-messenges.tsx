@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import { Bot, User } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 
 export type Message = {
   from: "bot" | "me";
   text: string;
+  success?: boolean;
   timestamp?: Date;
+  chatHistory?: [];
+  isNewSession?: boolean;
 };
 type ChatMessagesProps = {
   messages: Message[];
@@ -45,11 +47,15 @@ export const ChatMessages = ({ messages }: ChatMessagesProps) => {
               }`}
             >
               {msg.from === "bot" ? (
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                // <ReactMarkdown>{msg.text}</ReactMarkdown>
+
+                <p
+                  className="text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: msg.text }}
+                />
               ) : (
                 <p className="text-sm leading-relaxed">{msg.text}</p>
               )}
-              {/* <p className="text-sm leading-relaxed">{msg.text}</p> */}
               {msg.from === "me" && (
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rotate-45 transform"></div>
               )}
