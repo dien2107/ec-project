@@ -5,6 +5,7 @@ import { ChatHeader } from "./components/chat-header";
 import { ChatInput } from "./components/chat-input";
 import { Button } from "~/components/ui/button";
 import io, { type Socket } from "socket.io-client";
+import { v4 as uuidv4 } from "uuid";
 
 const Chatbox = () => {
   const [open, setOpen] = useState(false);
@@ -14,13 +15,41 @@ const Chatbox = () => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    socketRef.current = io(import.meta.env.VITE_API_BASE_URL);
+    let sessionId = localStorage.getItem("chat_session_id");
+    if (!sessionId) {
+      sessionId = uuidv4();
+      localStorage.setItem("chat_session_id", sessionId);
+    }
 
-    setIsTyping(true);
+    socketRef.current = io(import.meta.env.VITE_API_BASE_URL, {
+      auth: { sessionId },
+    });
 
     const handleServerMsg = (msg: Message) => {
-      setMessages((prev) => [...prev, msg]);
-      setIsTyping(false);
+      console.log(msg);
+      if (msg.success === false) {
+        setIsTyping(true);
+        setMessages((prev) => [...prev, msg]);
+        setIsTyping(false);
+      }
+      // New session
+      else if (msg.isNewSession) {
+        setIsTyping(true);
+        setMessages((prev) => [...prev, msg]);
+        setIsTyping(false);
+      }
+      // Continue session (reload chat history)
+      else if (msg.chatHistory && msg.chatHistory.length > 0) {
+        setIsTyping(true);
+        setMessages(msg.chatHistory);
+        setIsTyping(false);
+      }
+      // Continue session (normal message)
+      else {
+        setIsTyping(true);
+        setMessages((prev) => [...prev, msg]);
+        setIsTyping(false);
+      }
     };
 
     socketRef.current?.on("server_message", handleServerMsg);

@@ -251,3 +251,8 @@ div[bis_skin_checked],
 *[__processed_*] {
   /* Reset browser extension injected styles */
 }
+
+/* Chatbot */
+.chatbot-product-link {
+  @apply text-blue-600 underline hover:text-blue-800;
+}
