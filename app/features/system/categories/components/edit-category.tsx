@@ -17,14 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type Category } from "../types";
-
-interface EditCategoryDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  category: Category | null;
-  onSave: (categoryData: Partial<Category>) => void;
-}
+import { type Category, type EditCategoryDialogProps } from "../types";
 
 export default function EditCategoryDialog({
   open,

@@ -52,7 +52,7 @@ const mainMangeItems = {
       url: "/system/colors",
       icon: Palette,
     },
-        {
+    {
       title: " Kích thước",
       url: "/system/sizes",
       icon: Tag,
@@ -96,6 +96,11 @@ const mainMangeItems = {
       title: "Phương thức thanh toán",
       url: "/system/payment",
       icon: CreditCard,
+    },
+    {
+      title: "Phương thức giao hàng",
+      url: "/system/shipping",
+      icon: Truck,
     },
   ],
 };

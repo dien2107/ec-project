@@ -94,7 +94,7 @@ export const getColumns = (
     },
     cell: ({ row }) => {
       const images = row.original.images;
-      const primaryImage = images.find((img) => img.is_primary);
+      const primaryImage = images.find(img => img.is_primary);
       return (
         <div className="aspect-ratio[9/16] w-12">
           <img

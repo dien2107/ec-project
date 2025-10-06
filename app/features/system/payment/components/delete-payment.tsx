@@ -8,14 +8,10 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { type PaymentMethod } from "../types";
-
-interface DeletePaymentMethodDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  paymentMethod: PaymentMethod | null;
-  onDelete: (categoryId: string) => void;
-}
+import {
+  type DeletePaymentMethodDialogProps,
+  type PaymentMethod,
+} from "../types";
 
 export default function DeletePaymentMethodDialog({
   open,

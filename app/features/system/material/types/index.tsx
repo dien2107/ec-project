@@ -2,6 +2,7 @@ import { Edit, Trash2, Star } from "lucide-react";
 import { type ColumnDef, type CellContext } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { SortableHeader } from "../../components/data-table";
 
 export interface Material {
   id: string;
@@ -70,23 +71,6 @@ const getMaterialTypeColor = (type: Material["type"]) => {
       return "bg-gray-100 text-gray-800 hover:bg-gray-100";
   }
 };
-
-const renderRating = (value: number) => {
-  return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map(star => (
-        <Star
-          key={star}
-          className={`h-4 w-4 ${
-            star <= value ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-          }`}
-        />
-      ))}
-      <span className="text-sm text-gray-600 ml-1">({value}/5)</span>
-    </div>
-  );
-};
-
 export const getColumns = (
   handleEdit: (material: Material) => void,
   handleDelete: (material: Material) => void
@@ -100,14 +84,35 @@ export const getColumns = (
   },
   {
     accessorKey: "name",
-    header: "Tên chất liệu",
+    header: ({ column }) => {
+      return <SortableHeader column={column} title="Tên chất liệu" />;
+    },
     cell: ({ getValue }) => (
       <span className="font-medium">{getValue() as string}</span>
     ),
   },
   {
     accessorKey: "type",
-    header: "Loại",
+    header: ({ column }) => {
+      return <SortableHeader column={column} title="Loại" />;
+    },
+    meta: {
+      filterConfig: {
+        type: "select",
+        placeholder: "Loại chất liệu",
+        options: [
+          { value: "all", label: "Tất cả loại" },
+          { value: "cotton", label: "Cotton" },
+          { value: "polyester", label: "Polyester" },
+          { value: "silk", label: "Silk" },
+          { value: "wool", label: "Wool" },
+          { value: "linen", label: "Linen" },
+          { value: "denim", label: "Denim" },
+          { value: "leather", label: "Leather" },
+          { value: "synthetic", label: "Synthetic" },
+        ],
+      },
+    },
     cell: ({ getValue }: CellContext<Material, unknown>) => {
       const type = getValue() as Material["type"];
       return (
@@ -118,6 +123,10 @@ export const getColumns = (
           {getMaterialTypeLabel(type)}
         </Badge>
       );
+    },
+    filterFn: (row, id, value) => {
+      if (!value || value === "all") return true;
+      return row.getValue(id) === value;
     },
   },
   {
@@ -132,25 +141,28 @@ export const getColumns = (
       );
     },
   },
-  // {
-  //   accessorKey: "durability",
-  //   header: "Độ bền",
-  //   cell: ({ getValue }) => {
-  //     const durability = getValue() as number;
-  //     return renderRating(durability);
-  //   },
-  // },
-  // {
-  //   accessorKey: "comfort",
-  //   header: "Độ thoải mái",
-  //   cell: ({ getValue }) => {
-  //     const comfort = getValue() as number;
-  //     return renderRating(comfort);
-  //   },
-  // },
   {
     accessorKey: "status",
-    header: "Trạng thái",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Trạng thái"
+          className="w-[100px]"
+        />
+      );
+    },
+    meta: {
+      filterConfig: {
+        type: "select",
+        placeholder: "Trạng thái",
+        options: [
+          { value: "all", label: "Tất cả trạng thái" },
+          { value: "active", label: "Hoạt động" },
+          { value: "inactive", label: "Không hoạt động" },
+        ],
+      },
+    },
     cell: ({ getValue }: CellContext<Material, unknown>) => {
       const status = getValue() as Material["status"];
       return (
@@ -165,6 +177,10 @@ export const getColumns = (
           {status === "active" ? "Hoạt động" : "Không hoạt động"}
         </Badge>
       );
+    },
+    filterFn: (row, id, value) => {
+      if (!value || value === "all") return true;
+      return row.getValue(id) === value;
     },
   },
   {
