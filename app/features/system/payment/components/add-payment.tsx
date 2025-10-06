@@ -19,11 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type PaymentMethod } from "../types";
-
-interface AddPaymentMethodDialogProps {
-  onSave: (methodData: Partial<PaymentMethod>) => void;
-}
+import { type AddPaymentMethodDialogProps, type PaymentMethod } from "../types";
 
 export default function AddPaymentMethodDialog({
   onSave,

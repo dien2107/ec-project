@@ -98,24 +98,6 @@ export default function CategoryManagement() {
           <AddCategoryDialog onSave={handleSaveCategory} />
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-600">
-            Tổng cộng: {filteredCategories.length} danh mục
-          </div>
-          <select
-            value={statusFilter}
-            onChange={e =>
-              setStatusFilter(e.target.value as "all" | "active" | "inactive")
-            }
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-          </select>
-        </div>
-
         <DataTable
           columns={columns}
           data={paginatedData}

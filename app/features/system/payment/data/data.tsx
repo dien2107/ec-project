@@ -1,4 +1,4 @@
-import { type PaymentMethod } from "../types";
+import { type BankAccount, type EWallet, type PaymentMethod } from "../types";
 
 export const mockPaymentMethods: PaymentMethod[] = [
   {
@@ -113,7 +113,7 @@ export const mockPaymentMethods: PaymentMethod[] = [
   },
 ];
 // Mock data
-export const mockBankAccounts = [
+export const mockBankAccounts: BankAccount[] = [
   {
     id: 1,
     bankName: "Vietcombank",
@@ -132,7 +132,7 @@ export const mockBankAccounts = [
   },
 ];
 
-export const mockEWallets = [
+export const mockEWallets: EWallet[] = [
   {
     id: 1,
     name: "MoMo",

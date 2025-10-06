@@ -9,13 +9,7 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { type Category } from "../types";
-
-interface CategoryDetailDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  category: Category | null;
-}
+import { type Category, type CategoryDetailDialogProps } from "../types";
 
 export default function CategoryDetailDialog({
   open,

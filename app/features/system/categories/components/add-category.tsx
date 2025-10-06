@@ -19,11 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type Category } from "../types";
-
-interface AddCategoryDialogProps {
-  onSave: (categoryData: Partial<Category>) => void;
-}
+import { type AddCategoryDialogProps, type Category } from "../types";
 
 export default function AddCategoryDialog({ onSave }: AddCategoryDialogProps) {
   const [open, setOpen] = useState(false);

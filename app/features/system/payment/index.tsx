@@ -16,6 +16,7 @@ import {
 import { BankAccountModal } from "./components/bank-acount-dialog";
 import { EWalletModal } from "./components/ewallet-dialog";
 import { mockBankAccounts, mockEWallets } from "./data/data";
+import type { BankAccount, EWallet } from "./types";
 
 const PaymentMethods = () => {
   const [paymentMethods, setPaymentMethods] = useState({
@@ -23,22 +24,21 @@ const PaymentMethods = () => {
     cod: true,
     eWallet: true,
   });
-
-  const [bankAccounts, setBankAccounts] = useState(mockBankAccounts);
-  const [eWallets, setEWallets] = useState(mockEWallets);
   const [showBankModal, setShowBankModal] = useState(false);
   const [showEWalletModal, setShowEWalletModal] = useState(false);
-  const [editingBank, setEditingBank] = useState(null);
-  const [editingWallet, setEditingWallet] = useState(null);
-
-  const togglePaymentMethod = method => {
+  const [bankAccounts, setBankAccounts] =
+    useState<BankAccount[]>(mockBankAccounts);
+  const [eWallets, setEWallets] = useState<EWallet[]>(mockEWallets);
+  const [editingBank, setEditingBank] = useState<BankAccount | null>(null);
+  const [editingWallet, setEditingWallet] = useState<EWallet | null>(null);
+  const togglePaymentMethod = (method: keyof typeof paymentMethods) => {
     setPaymentMethods(prev => ({
       ...prev,
       [method]: !prev[method],
     }));
   };
 
-  const toggleBankAccount = id => {
+  const toggleBankAccount = (id: number) => {
     setBankAccounts(prev =>
       prev.map(bank =>
         bank.id === id ? { ...bank, enabled: !bank.enabled } : bank
@@ -46,7 +46,7 @@ const PaymentMethods = () => {
     );
   };
 
-  const toggleEWallet = id => {
+  const toggleEWallet = (id: number) => {
     setEWallets(prev =>
       prev.map(wallet =>
         wallet.id === id ? { ...wallet, enabled: !wallet.enabled } : wallet
@@ -54,21 +54,21 @@ const PaymentMethods = () => {
     );
   };
 
-  const handleEditBank = bank => {
+  const handleEditBank = (bank: BankAccount) => {
     setEditingBank(bank);
     setShowBankModal(true);
   };
 
-  const handleEditWallet = wallet => {
+  const handleEditWallet = (wallet: EWallet) => {
     setEditingWallet(wallet);
     setShowEWalletModal(true);
   };
 
-  const handleDeleteBank = id => {
+  const handleDeleteBank = (id: number) => {
     setBankAccounts(prev => prev.filter(bank => bank.id !== id));
   };
 
-  const handleDeleteWallet = id => {
+  const handleDeleteWallet = (id: number) => {
     setEWallets(prev => prev.filter(wallet => wallet.id !== id));
   };
 

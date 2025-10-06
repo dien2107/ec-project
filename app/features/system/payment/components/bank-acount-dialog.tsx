@@ -25,35 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-
-const bankAccountSchema = z.object({
-  bankName: z.string().min(1, "Tên ngân hàng là bắt buộc"),
-  accountName: z.string().min(1, "Tên chủ tài khoản là bắt buộc"),
-  accountNumber: z.string().min(1, "Số tài khoản là bắt buộc"),
-});
-
-type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
-
-const bankOptions = [
-  "Vietcombank",
-  "Techcombank",
-  "VietinBank",
-  "BIDV",
-  "Agribank",
-  "SacomBank",
-  "VPBank",
-  "TPBank",
-  "MBBank",
-  "HDBank",
-];
-
-interface BankAccountModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  editingBank?: any;
-  onSave: (data: BankAccountFormValues) => void;
-  onCancel: () => void;
-}
+import {
+  bankAccountSchema,
+  bankOptions,
+  type BankAccountFormValues,
+  type BankAccountModalProps,
+} from "../types";
 
 export const BankAccountModal: React.FC<BankAccountModalProps> = ({
   open,

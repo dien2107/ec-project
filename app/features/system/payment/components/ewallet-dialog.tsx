@@ -1,7 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+
 import {
   Dialog,
   DialogContent,
@@ -25,32 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-
-const eWalletSchema = z.object({
-  name: z.string().min(1, "Tên ví điện tử là bắt buộc"),
-  ownerName: z.string().min(1, "Tên chủ ví là bắt buộc"),
-  identifier: z.string().min(1, "Số điện thoại/ID ví là bắt buộc"),
-});
-
-type EWalletFormValues = z.infer<typeof eWalletSchema>;
-
-const walletOptions = [
-  "MoMo",
-  "ZaloPay",
-  "ShopeePay",
-  "ViettelPay",
-  "VNPay",
-  "PayPal",
-  "GrabPay",
-];
-
-interface EWalletModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  editingWallet?: any;
-  onSave: (data: EWalletFormValues) => void;
-  onCancel: () => void;
-}
+import {
+  eWalletSchema,
+  walletOptions,
+  type EWalletFormValues,
+  type EWalletModalProps,
+} from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export const EWalletModal: React.FC<EWalletModalProps> = ({
   open,

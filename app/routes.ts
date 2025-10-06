@@ -30,6 +30,7 @@ export default [
     route("/system/categories", "features/system/categories/index.tsx"),
     route("/system/imports/history", "features/system/import-record/index.tsx"),
     route("/system/inventory", "features/system/inventory/index.tsx"),
+    route("/system/shipping", "features/system/shipping/index.tsx"),
 
     // Redux test
     route("/system/redux-test", "features/system/redux-test/index.tsx"),

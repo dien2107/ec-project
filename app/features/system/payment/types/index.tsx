@@ -10,7 +10,8 @@ import {
 import { type ColumnDef, type CellContext } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 export interface PaymentMethod {
   id: string;
   name: string;
@@ -22,8 +23,93 @@ export interface PaymentMethod {
   status: "active" | "inactive";
   createdDate: string;
 }
+export interface BankAccount {
+  id: number;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  enabled: boolean;
+  logo: string;
+}
 
-const getPaymentMethodIcon = (type: PaymentMethod["type"]) => {
+export interface EWallet {
+  id: number;
+  name: string;
+  identifier: string;
+  ownerName: string;
+  enabled: boolean;
+  logo: string;
+}
+export interface AddPaymentMethodDialogProps {
+  onSave: (methodData: Partial<PaymentMethod>) => void;
+}
+export const bankAccountSchema = z.object({
+  bankName: z.string().min(1, "Tên ngân hàng là bắt buộc"),
+  accountName: z.string().min(1, "Tên chủ tài khoản là bắt buộc"),
+  accountNumber: z.string().min(1, "Số tài khoản là bắt buộc"),
+});
+
+export type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
+
+export const bankOptions = [
+  "Vietcombank",
+  "Techcombank",
+  "VietinBank",
+  "BIDV",
+  "Agribank",
+  "SacomBank",
+  "VPBank",
+  "TPBank",
+  "MBBank",
+  "HDBank",
+];
+
+export interface BankAccountModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingBank?: any;
+  onSave: (data: BankAccountFormValues) => void;
+  onCancel: () => void;
+}
+export interface DeletePaymentMethodDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  paymentMethod: PaymentMethod | null;
+  onDelete: (categoryId: string) => void;
+}
+export interface EditPaymentMethodDialog {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  paymentMethod: PaymentMethod | null;
+  onSave: (categoryData: Partial<PaymentMethod>) => void;
+}
+export const eWalletSchema = z.object({
+  name: z.string().min(1, "Tên ví điện tử là bắt buộc"),
+  ownerName: z.string().min(1, "Tên chủ ví là bắt buộc"),
+  identifier: z.string().min(1, "Số điện thoại/ID ví là bắt buộc"),
+});
+
+export type EWalletFormValues = z.infer<typeof eWalletSchema>;
+
+export const walletOptions = [
+  "MoMo",
+  "ZaloPay",
+  "ShopeePay",
+  "ViettelPay",
+  "VNPay",
+  "PayPal",
+  "GrabPay",
+];
+
+export interface EWalletModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingWallet?: any;
+  onSave: (data: EWalletFormValues) => void;
+  onCancel: () => void;
+}
+
+export const getPaymentMethodIcon = (type: PaymentMethod["type"]) => {
   const iconProps = { className: "h-4 w-4" };
   switch (type) {
     case "bank_transfer":
@@ -39,7 +125,7 @@ const getPaymentMethodIcon = (type: PaymentMethod["type"]) => {
   }
 };
 
-const getPaymentMethodTypeLabel = (type: PaymentMethod["type"]) => {
+export const getPaymentMethodTypeLabel = (type: PaymentMethod["type"]) => {
   switch (type) {
     case "bank_transfer":
       return "Chuyển khoản";
@@ -54,7 +140,7 @@ const getPaymentMethodTypeLabel = (type: PaymentMethod["type"]) => {
   }
 };
 
-const getPaymentMethodTypeColor = (type: PaymentMethod["type"]) => {
+export const getPaymentMethodTypeColor = (type: PaymentMethod["type"]) => {
   switch (type) {
     case "bank_transfer":
       return "bg-blue-100 text-blue-800 hover:bg-blue-100";

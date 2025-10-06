@@ -2,6 +2,7 @@ import { Eye, Edit, Trash2 } from "lucide-react";
 import { type ColumnDef, type CellContext } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { SortableHeader } from "../../components/data-table";
 
 export interface Category {
   id: string;
@@ -11,7 +12,28 @@ export interface Category {
   status: "active" | "inactive";
   createdDate: string;
 }
+export interface EditCategoryDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  category: Category | null;
+  onSave: (categoryData: Partial<Category>) => void;
+}
+export interface DeleteCategoryDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  category: Category | null;
+  onDelete: (categoryId: string) => void;
+}
 
+export interface CategoryDetailDialogProps {
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  category: Category | null;
+}
+
+export interface AddCategoryDialogProps {
+  onSave: (categoryData: Partial<Category>) => void;
+}
 export const getColumns = (
   handleView: (category: Category) => void,
   handleEdit: (category: Category) => void,
@@ -52,21 +74,46 @@ export const getColumns = (
   },
   {
     accessorKey: "status",
-    header: "Trạng thái",
-    cell: ({ getValue }: CellContext<Category, unknown>) => {
-      const status = getValue() as Category["status"];
+    header: ({ column }) => {
       return (
-        <Badge
-          variant={status === "active" ? "default" : "secondary"}
-          className={
-            status === "active"
-              ? "bg-green-100 text-green-800 hover:bg-green-100"
-              : "bg-gray-100 text-gray-800 hover:bg-gray-100"
-          }
-        >
-          {status === "active" ? "Hoạt động" : "Không hoạt động"}
-        </Badge>
+        <SortableHeader
+          column={column}
+          title="Trạng thái"
+          className="w-[100px]"
+        />
       );
+    },
+    meta: {
+      filterConfig: {
+        type: "select",
+        placeholder: "Trạng thái",
+        options: [
+          { value: "all", label: "Tất cả" },
+          { value: "active", label: "Hoạt động" },
+          { value: "inactive", label: "Không hoạt động" },
+        ],
+      },
+    },
+    cell: ({ row }) => {
+      return (
+        <div className="w-[100px] text-center">
+          {row.original.status ? (
+            <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
+              Hoạt động
+            </div>
+          ) : (
+            <div className="bg-gray-200 text-gray-400 py-1 px-2 rounded-lg text-center whitespace-normal break-words">
+              Không hoạt động
+            </div>
+          )}
+        </div>
+      );
+    },
+    filterFn: (row, id, value) => {
+      if (!value) return true;
+      if (value === "all") return true;
+      const rowValue = row.getValue(id) ? "active" : "inactive";
+      return rowValue === value;
     },
   },
   {
