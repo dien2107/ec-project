@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import { Package, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -27,20 +27,20 @@ export default function Products() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = useCallback((product: Product) => {
     setSelectedProduct(product);
     setIsEditOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (product: Product) => {
+  const handleDelete = useCallback((product: Product) => {
     setSelectedProduct(product);
     setIsDeleteOpen(true);
-  };
+  }, []);
 
-  const handleReview = (product: Product) => {
+  const handleReview = useCallback((product: Product) => {
     setSelectedProduct(product);
     setIsReviewOpen(true);
-  };
+  }, []);
 
   const handleRenderExpandedRowContent = (
     product: Product
@@ -69,7 +69,10 @@ export default function Products() {
     );
   };
 
-  const columns = getColumns(handleEdit, handleDelete, handleReview);
+  const columns = useMemo(
+    () => getColumns(handleEdit, handleDelete, handleReview),
+    [handleEdit, handleDelete, handleReview]
+  );
 
   return (
     <>
