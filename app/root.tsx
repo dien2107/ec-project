@@ -8,6 +8,7 @@ import {
 } from "react-router";
 import { Provider } from "react-redux";
 import { store } from "~/redux/store";
+import { Toaster } from "react-hot-toast";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -47,6 +48,7 @@ export default function App() {
   return (
     <Provider store={store}>
       <Outlet />
+      <Toaster />
     </Provider>
   );
 }

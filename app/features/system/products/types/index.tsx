@@ -55,6 +55,18 @@ export type Product = {
   reviews: Review[];
 };
 
+export interface CreateProduct {
+  name: string;
+  slug: string;
+  materialId: number;
+  categoryId: number;
+  productGroupId: number;
+  colorId: number;
+  discountPercentage: number;
+  fileImage: File;
+  altText?: string;
+}
+
 function formatVND(amount: number) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
