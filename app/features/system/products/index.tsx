@@ -58,12 +58,12 @@ export default function Products() {
           </Button>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          {product.product_variant.map((variant) => (
+          {/* {product.product_variant.map((variant) => (
             <ProductVariant
               key={variant.product_variant_id}
               variant={variant}
             />
-          ))}
+          ))} */}
         </div>
       </div>
     );
@@ -96,7 +96,11 @@ export default function Products() {
       </div>
 
       {/* Edit Modal */}
-      <EditProductDialog open={isEditOpen} setIsOpen={setIsEditOpen} />
+      <EditProductDialog
+        open={isEditOpen}
+        setIsOpen={setIsEditOpen}
+        selectedProduct={selectedProduct}
+      />
 
       {/* Delete Modal */}
       <DeleteProductDialog open={isDeleteOpen} setIsOpen={setIsDeleteOpen} />

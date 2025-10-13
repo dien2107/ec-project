@@ -18,11 +18,19 @@ export interface ProductGroup {
   name: string;
 }
 
+export interface Status {
+  statusId: number;
+  name: string;
+  displayName: string;
+  entityType: string;
+}
+
 export interface ProductFormMeta {
   categories: Category[];
   materials: Material[];
   colors: Color[];
   productGroups: ProductGroup[];
+  statuses: Status[];
 }
 
 export interface ApiResponse<T> {

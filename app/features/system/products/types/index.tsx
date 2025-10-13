@@ -13,12 +13,14 @@ export type ProductVariant = {
   stock_quantity: number;
 };
 
-export type ProductImages = {
-  product_image_id: number;
-  image_url: string;
-  alt_text: string;
-  is_primary: boolean;
-  display_order: number;
+export type ProductImage = {
+  productImageId: number;
+  imageUrl: string;
+  altText: string;
+  isPrimary: boolean;
+  displayOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type ReviewImages = {
@@ -38,21 +40,54 @@ export type Review = {
   images: ReviewImages[];
 };
 
+export type Material = {
+  materialId: number;
+  name: string;
+};
+
+export type Category = {
+  categoryId: number;
+  name: string;
+};
+
+export type Color = {
+  colorId: number;
+  name: string;
+};
+
+export type ProductGroup = {
+  productGroupId: number;
+  name: string;
+};
+
+export type Status = {
+  statusId: number;
+  name: string;
+  displayName: string;
+  entityType: string;
+};
+
+export type PrimaryImage = {
+  productImageId: number;
+  imageUrl: string;
+  altText: string;
+};
+
 export type Product = {
-  id: number;
+  productId: number;
   name: string;
   slug: string;
-  material_id: number;
-  category_id: number;
-  base_price: number;
-  sale_price: number;
-  discount_percent: number;
-  status: boolean;
-  created_at: Date;
-  updated_at: Date;
-  product_variant: ProductVariant[];
-  images: ProductImages[];
-  reviews: Review[];
+  basePrice: number;
+  discountPercentage: number;
+  sellingPrice: number;
+  createdAt: Date;
+  updatedAt: Date;
+  material: Material;
+  category: Category;
+  color: Color;
+  productGroup: ProductGroup;
+  status: Status;
+  primaryImage: PrimaryImage;
 };
 
 export interface CreateProduct {
@@ -100,26 +135,7 @@ export const getColumns = (
     },
   },
   {
-    accessorKey: "images",
-    header: ({ column }) => {
-      return <div className="text-start">Ảnh</div>;
-    },
-    cell: ({ row }) => {
-      const images = row.original.images;
-      const primaryImage = images.find((img) => img.is_primary);
-      return (
-        <div className="aspect-ratio[9/16] w-12">
-          <img
-            src={primaryImage?.image_url}
-            alt={primaryImage?.alt_text}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "id",
+    accessorKey: "productId",
     header: ({ column }) => {
       return <SortableHeader column={column} title="ID" className="w-[40px]" />;
     },
@@ -160,7 +176,7 @@ export const getColumns = (
     },
     cell: ({ row }) => {
       return (
-        <div className="text-right">{formatVND(row.original.base_price)}</div>
+        <div className="text-right">{formatVND(row.original.basePrice)}</div>
       );
     },
   },
@@ -179,18 +195,18 @@ export const getColumns = (
     cell: ({ row }) => {
       return (
         <div>
-          {row.original.discount_percent > 0 ? (
+          {row.original.discountPercentage > 0 ? (
             <div className="flex flex-col">
               <div className="text-right font-medium">
-                {formatVND(row.original.sale_price)}
+                {formatVND(row.original.sellingPrice)}
               </div>
               <div className="text-right line-through text-gray-400">
-                {formatVND(row.original.base_price)}
+                {formatVND(row.original.basePrice)}
               </div>
             </div>
           ) : (
             <div className="text-right font-medium">
-              {formatVND(row.original.sale_price)}
+              {formatVND(row.original.sellingPrice)}
             </div>
           )}
         </div>
@@ -212,9 +228,9 @@ export const getColumns = (
     cell: ({ row }) => {
       return (
         <div className="flex m-auto">
-          {row.original.discount_percent > 0 ? (
+          {row.original.discountPercentage > 0 ? (
             <div className="inline-block mx-auto min-w-12 py-1 px-2 bg-[#EF4444] rounded-lg text-white text-center">
-              {row.original.discount_percent}%
+              {row.original.discountPercentage}%
             </div>
           ) : (
             <div className="inline-block mx-auto min-w-12 py-1 px-2 bg-gray-200 rounded-lg text-gray-400 text-center">
@@ -284,7 +300,7 @@ export const getColumns = (
     cell: ({ row }) => {
       return (
         <div className="text-center text-gray-400">
-          {row.original.created_at.toLocaleDateString("en-GB")}
+          {row.original.createdAt.toLocaleDateString("en-GB")}
         </div>
       );
     },

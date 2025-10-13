@@ -40,8 +40,6 @@ export default function ReviewDialog({
   const [photoIndex, setPhotoIndex] = useState(0);
   const swiperRef = useRef<SwiperClass | null>(null);
 
-  console.log(photoIndex);
-
   const columns = getColumns(selectedReview, setSelectedReview);
 
   const renderStars = (rating: number) => {
