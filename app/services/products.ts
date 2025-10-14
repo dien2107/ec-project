@@ -1,5 +1,5 @@
-import instance from "../customize-axios";
-import type { CreateProduct, UpdateProduct } from "./types";
+import instance from "./customize-axios";
+import type { UpdateProduct } from "~/features/system/products/types/update-product";
 
 export const createProduct = async (formData: FormData) => {
   try {
@@ -17,7 +17,7 @@ export const createProduct = async (formData: FormData) => {
 
 export const updateProduct = async (productId: number, data: UpdateProduct) => {
   try {
-    const response = await instance.put(`/products/${productId}`, data);
+    const response = await instance.patch(`/products/${productId}`, data);
     return response.data;
   } catch (error) {
     console.error("Error updating product:", error);

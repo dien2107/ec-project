@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from "~/components/ui/dialog";
 
 import DataTable from "../../components/data-table";
 
-import { getColumns } from "../columns/review-columns";
+import { getColumns } from "../columns/review";
 import type { Product, Review } from "../types";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperClass } from "swiper";

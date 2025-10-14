@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Plus, X } from "lucide-react";
-import { uploadSingleProductImage } from "~/services/product-images";
+import {
+  uploadSingleProductImage,
+  deleteSingleProductImage,
+} from "~/services/product-images";
 import type { Product, ProductImage } from "../types";
 import toast from "react-hot-toast";
 
@@ -16,6 +19,8 @@ export default function DropzoneProductImage({
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onDrop = (acceptedFiles: File[]) => {
     setSelectedFile(acceptedFiles[0] || null);
@@ -41,33 +46,70 @@ export default function DropzoneProductImage({
     e: React.ChangeEvent<HTMLInputElement>,
     isPrimary: boolean
   ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    setIsLoading(true);
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    if (!selectedProduct || !selectedProduct.productId) {
-      toast.error("Không tìm thấy id của sản phẩm!");
-      return;
+      if (!selectedProduct || !selectedProduct.productId) {
+        toast.error("Không tìm thấy id của sản phẩm!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("FileImage", file as Blob);
+      formData.append("IsPrimary", isPrimary ? "true" : "false");
+
+      const response = await uploadSingleProductImage(
+        selectedProduct.productId,
+        formData
+      );
+      if (response.isSuccess) {
+        toast.success("Tải ảnh lên thành công!");
+        reloadImages();
+        // Reset input file
+        setFileInputKey((k) => k + 1);
+      }
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const formData = new FormData();
-    formData.append("FileImage", file as Blob);
-    formData.append("IsPrimary", isPrimary ? "true" : "false");
-
-    const response = await uploadSingleProductImage(
-      selectedProduct.productId,
-      formData
-    );
-    if (response.isSuccess) {
-      toast.success("Tải ảnh lên thành công!");
-      reloadImages();
-    } else {
-      toast.error("Tải ảnh lên thất bại!");
+  const handleDeleteImage = async (productImageId: number) => {
+    setIsLoading(true);
+    try {
+      if (!selectedProduct || !selectedProduct.productId) {
+        toast.error("Không tìm thấy id của sản phẩm!");
+        return;
+      }
+      const response = await deleteSingleProductImage(
+        selectedProduct.productId,
+        productImageId
+      );
+      if (response.isSuccess) {
+        toast.success("Xóa ảnh thành công!");
+        reloadImages();
+        // Reset input file
+        setFileInputKey((k) => k + 1);
+      }
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
+    <div className="relative">
       <div className="flex flex-col items-start gap-4 min-w-0">
+        {/* Loading overlay chỉ phủ phần này */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center z-10">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        )}
         {/* Start: Primary Image */}
         {primaryImage ? (
           <div className="flex-1 w-full">
@@ -132,7 +174,7 @@ export default function DropzoneProductImage({
         {/* Start: Secondary Images */}
         <div className="min-w-0 w-full">
           <div className="text-sm font-medium mb-2 inline-block">Ảnh phụ</div>
-          <div className="w-full min-w-0">
+          <div className="w-full min-w-0 ">
             <div className="flex items-center gap-4 overflow-x-auto scrollbar-custom min-w-0">
               {productImages
                 .filter((pi) => !pi.isPrimary)
@@ -148,6 +190,7 @@ export default function DropzoneProductImage({
                     />
                     <button
                       type="button"
+                      onClick={() => handleDeleteImage(pi.productImageId)}
                       className="absolute cursor-pointer top-1 right-1 bg-white rounded-full p-1 shadow hover:bg-red-500 hover:text-white transition-colors"
                       title="Xóa ảnh"
                     >
@@ -157,6 +200,7 @@ export default function DropzoneProductImage({
                 ))}
               <div className="w-40 h-40 border-2 border-dashed rounded-lg flex items-center justify-center hover:border-blue-400 transition-colors cursor-pointer relative flex-shrink-0">
                 <input
+                  key={fileInputKey}
                   id="childImage"
                   type="file"
                   accept="image/*"

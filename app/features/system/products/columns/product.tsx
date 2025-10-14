@@ -2,105 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { ChevronUp, SquarePen, Trash, MessageSquare } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
-
-export type ProductVariant = {
-  product_variant_id: number;
-  color_id: number;
-  color_name: string;
-  code_hex: string;
-  size_id: number;
-  size_name: string;
-  stock_quantity: number;
-};
-
-export type ProductImage = {
-  productImageId: number;
-  imageUrl: string;
-  altText: string;
-  isPrimary: boolean;
-  displayOrder: number;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type ReviewImages = {
-  review_image_id: number;
-  image_url: string;
-};
-
-export type Review = {
-  review_id: number;
-  username: string;
-  rating: number;
-  content: string;
-  status: string;
-  helpful_count: number;
-  created_at: Date;
-  updated_at: Date;
-  images: ReviewImages[];
-};
-
-export type Material = {
-  materialId: number;
-  name: string;
-};
-
-export type Category = {
-  categoryId: number;
-  name: string;
-};
-
-export type Color = {
-  colorId: number;
-  name: string;
-};
-
-export type ProductGroup = {
-  productGroupId: number;
-  name: string;
-};
-
-export type Status = {
-  statusId: number;
-  name: string;
-  displayName: string;
-  entityType: string;
-};
-
-export type PrimaryImage = {
-  productImageId: number;
-  imageUrl: string;
-  altText: string;
-};
-
-export type Product = {
-  productId: number;
-  name: string;
-  slug: string;
-  basePrice: number;
-  discountPercentage: number;
-  sellingPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
-  material: Material;
-  category: Category;
-  color: Color;
-  productGroup: ProductGroup;
-  status: Status;
-  primaryImage: PrimaryImage;
-};
-
-export interface CreateProduct {
-  name: string;
-  slug: string;
-  materialId: number;
-  categoryId: number;
-  productGroupId: number;
-  colorId: number;
-  discountPercentage: number;
-  fileImage: File;
-  altText?: string;
-}
+import type { Product } from "../types/product";
 
 function formatVND(amount: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -133,11 +35,36 @@ export const getColumns = (
         </Button>
       );
     },
+    sticky: true,
   },
   {
     accessorKey: "productId",
     header: ({ column }) => {
-      return <SortableHeader column={column} title="ID" className="w-[40px]" />;
+      return <SortableHeader column={column} title="ID" className="w-[80px]" />;
+    },
+    cell: ({ row }) => {
+      const id = row.original.productId;
+      const paddedId = String(id).padStart(3, "0");
+      return <span className="font-mono font-bold ">PRO{paddedId}</span>;
+    },
+    sticky: true,
+  },
+  {
+    accessorKey: "primaryImage",
+    header: ({ column }) => (
+      <div className="text-center font-medium w-full">Ảnh</div>
+    ),
+    cell: ({ row }) => {
+      const imageUrl = row.original.primaryImage?.imageUrl;
+      return (
+        <div className="flex justify-center items-center w-[80px] h-[80px]">
+          <img
+            src={imageUrl}
+            alt="Ảnh sản phẩm"
+            className="object-cover rounded-md w-14 h-14 border"
+          />
+        </div>
+      );
     },
   },
   {
@@ -147,23 +74,24 @@ export const getColumns = (
         <SortableHeader column={column} title="Tên" className="justify-start" />
       );
     },
-    meta: {
-      filterConfig: {
-        type: "text",
-        placeholder: "Tìm tên sản phẩm...",
-      },
-    },
     cell: ({ row }) => {
+      const MAX_LENGTH = 30;
+      const name = row.original.name;
+      const slug = row.original.slug;
+      const shortName =
+        name.length > MAX_LENGTH ? name.slice(0, MAX_LENGTH) + "..." : name;
+      const shortSlug =
+        slug.length > MAX_LENGTH ? slug.slice(0, MAX_LENGTH) + "..." : slug;
       return (
         <div className="flex flex-col">
-          <span className="font-medium">{row.original.name}</span>
-          <span className="text-xs text-gray-400">{row.original.slug}</span>
+          <span className="font-medium">{shortName}</span>
+          <span className="text-xs text-gray-400">{shortSlug}</span>
         </div>
       );
     },
   },
   {
-    accessorKey: "base_price",
+    accessorKey: "basePrice",
     header: ({ column }) => {
       return (
         <SortableHeader column={column} className="w-[80px]">
@@ -181,7 +109,7 @@ export const getColumns = (
     },
   },
   {
-    accessorKey: "sale_price",
+    accessorKey: "sellingPrice",
     header: ({ column }) => {
       return (
         <SortableHeader column={column} className="w-[80px]">
@@ -214,7 +142,7 @@ export const getColumns = (
     },
   },
   {
-    accessorKey: "discount_percent",
+    accessorKey: "discountPercentage",
     header: ({ column }) => {
       return (
         <SortableHeader column={column} className="w-[80px]">
@@ -252,27 +180,23 @@ export const getColumns = (
         />
       );
     },
-    meta: {
-      filterConfig: {
-        type: "select",
-        placeholder: "Trạng thái",
-        options: [
-          { value: "all", label: "Tất cả" },
-          { value: "active", label: "Hoạt động" },
-          { value: "inactive", label: "Không hoạt động" },
-        ],
-      },
-    },
     cell: ({ row }) => {
+      const statusName = row.original.status.name;
       return (
         <div className="w-[100px] text-center">
-          {row.original.status ? (
+          {statusName === "Active" && (
             <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
               Hoạt động
             </div>
-          ) : (
-            <div className="bg-gray-200 text-gray-400 py-1 px-2 rounded-lg text-center whitespace-normal break-words">
+          )}
+          {statusName === "Inactive" && (
+            <div className="bg-red-200 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
               Không hoạt động
+            </div>
+          )}
+          {statusName === "Draft" && (
+            <div className="bg-gray-200 text-gray-400 py-1 px-2 rounded-lg text-center whitespace-normal break-words">
+              Nháp
             </div>
           )}
         </div>
@@ -286,10 +210,10 @@ export const getColumns = (
     },
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: ({ column }) => {
       return (
-        <SortableHeader column={column} title="Giá bán" className="w-[80px]">
+        <SortableHeader column={column} title="Ngày tạo" className="w-[80px]">
           <div className="flex flex-col items-start">
             <span>Ngày</span>
             <span>tạo</span>
@@ -298,9 +222,37 @@ export const getColumns = (
       );
     },
     cell: ({ row }) => {
+      const dateStr = row.original.createdAt;
+      const dateObj = new Date(dateStr);
       return (
         <div className="text-center text-gray-400">
-          {row.original.createdAt.toLocaleDateString("en-GB")}
+          {dateObj.toLocaleDateString("en-GB")}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Ngày cập nhật"
+          className="w-[80px]"
+        >
+          <div className="flex flex-col items-start">
+            <span>Ngày</span>
+            <span>cập nhật</span>
+          </div>
+        </SortableHeader>
+      );
+    },
+    cell: ({ row }) => {
+      const dateStr = row.original.updatedAt;
+      const dateObj = new Date(dateStr);
+      return (
+        <div className="text-center text-gray-400">
+          {dateObj.toLocaleDateString("en-GB")}
         </div>
       );
     },
@@ -329,14 +281,17 @@ export const getColumns = (
           >
             <SquarePen />
           </Button>
-          <Button
-            variant="ghost"
-            color="destructive"
-            size="icon"
-            onClick={() => handleDelete(product)}
-          >
-            <Trash stroke="red" />
-          </Button>
+
+          {product.status.name == "Draft" && (
+            <Button
+              variant="ghost"
+              color="destructive"
+              size="icon"
+              onClick={() => handleDelete(product)}
+            >
+              <Trash stroke="red" />
+            </Button>
+          )}
         </div>
       );
     },

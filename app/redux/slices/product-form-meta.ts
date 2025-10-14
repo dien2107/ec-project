@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
-import type { ProductFormMeta, ApiResponse } from "./types";
+import type { ApiResponse } from "~/types/api-response";
+import type { ProductFormMeta } from "~/features/system/products/types";
 
 interface ProductFormMetaState {
   meta: ApiResponse<ProductFormMeta> | null;

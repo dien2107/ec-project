@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import type { TypedUseSelectorHook } from "react-redux";
-import exampleReducer from "./slices/exampleSlice";
-import productFormMetaReducer from "./slices/products";
+import productFormMetaReducer from "./slices/product-form-meta";
+import productListDataReducer from "./slices/products";
 
 export const store = configureStore({
   reducer: {
-    example: exampleReducer,
     productMeta: productFormMetaReducer,
+    productList: productListDataReducer,
   },
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware()

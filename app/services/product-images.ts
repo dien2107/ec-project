@@ -1,5 +1,4 @@
-import instance from "../customize-axios";
-// import type {} from "./types";
+import instance from "./customize-axios";
 
 export const uploadSingleProductImage = async (
   productId: number,
@@ -28,6 +27,21 @@ export const getAllImagesByProductId = async (productId: number) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching product images:", error);
+    throw error;
+  }
+};
+
+export const deleteSingleProductImage = async (
+  productId: number,
+  productImageId: number
+) => {
+  try {
+    const response = await instance.delete(
+      `/products/${productId}/images/${productImageId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting product image:", error);
     throw error;
   }
 };
