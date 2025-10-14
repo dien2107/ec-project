@@ -17,14 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type PaymentMethod } from "../types";
-
-interface EditPaymentMethodDialog {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  paymentMethod: PaymentMethod | null;
-  onSave: (categoryData: Partial<PaymentMethod>) => void;
-}
+import { type EditPaymentMethodDialog, type PaymentMethod } from "../types";
 
 export default function EditPaymentMethodDialog({
   open,

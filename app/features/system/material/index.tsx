@@ -10,33 +10,11 @@ import { mockMaterials } from "./data/data";
 
 export default function MaterialManagement() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
-  const [typeFilter, setTypeFilter] = useState<
-    | "all"
-    | "cotton"
-    | "polyester"
-    | "silk"
-    | "wool"
-    | "linen"
-    | "denim"
-    | "leather"
-    | "synthetic"
-  >("all");
   const [materials, setMaterials] = useState<Material[]>(mockMaterials);
   const pageSize = 10;
 
-  // Filter materials based on status and type
-  const filteredMaterials = materials.filter(material => {
-    const statusMatch =
-      statusFilter === "all" || material.status === statusFilter;
-    const typeMatch = typeFilter === "all" || material.type === typeFilter;
-    return statusMatch && typeMatch;
-  });
-
-  const totalPages = Math.ceil(filteredMaterials.length / pageSize);
-  const paginatedData = filteredMaterials.slice(
+  const totalPages = Math.ceil(mockMaterials.length / pageSize);
+  const paginatedData = mockMaterials.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -114,54 +92,6 @@ export default function MaterialManagement() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-2xl font-bold">Quản lý chất liệu</h3>
           <AddMaterialDialog onSave={handleSaveMaterial} />
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-600">
-            Tổng cộng: {filteredMaterials.length} chất liệu
-          </div>
-          <div className="flex gap-3">
-            <select
-              value={typeFilter}
-              onChange={e =>
-                setTypeFilter(
-                  e.target.value as
-                    | "all"
-                    | "cotton"
-                    | "polyester"
-                    | "silk"
-                    | "wool"
-                    | "linen"
-                    | "denim"
-                    | "leather"
-                    | "synthetic"
-                )
-              }
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Tất cả loại</option>
-              <option value="cotton">Cotton</option>
-              <option value="polyester">Polyester</option>
-              <option value="silk">Silk</option>
-              <option value="wool">Wool</option>
-              <option value="linen">Linen</option>
-              <option value="denim">Denim</option>
-              <option value="leather">Leather</option>
-              <option value="synthetic">Synthetic</option>
-            </select>
-            <select
-              value={statusFilter}
-              onChange={e =>
-                setStatusFilter(e.target.value as "all" | "active" | "inactive")
-              }
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-            </select>
-          </div>
         </div>
 
         <DataTable

@@ -8,14 +8,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { type Category } from "../types";
-
-interface DeleteCategoryDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  category: Category | null;
-  onDelete: (categoryId: string) => void;
-}
+import { type Category, type DeleteCategoryDialogProps } from "../types";
 
 export default function DeleteCategoryDialog({
   open,
