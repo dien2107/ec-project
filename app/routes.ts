@@ -31,9 +31,6 @@ export default [
     route("/system/imports/history", "features/system/import-record/index.tsx"),
     route("/system/inventory", "features/system/inventory/index.tsx"),
     route("/system/shipping", "features/system/shipping/index.tsx"),
-
-    // Redux test
-    route("/system/redux-test", "features/system/redux-test/index.tsx"),
     route("/system/payment", "features/system/payment/index.tsx"),
     route("/system/material", "features/system/material/index.tsx"),
     route("/system/colors", "features/system/colors/index.tsx"),

@@ -3,7 +3,7 @@ import { Star, StarHalf, Eye, EyeClosed } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
 
-import type { Review } from "../types";
+import type { Review } from "../types/review";
 
 const renderStars = (rating: number) => {
   const stars = [];

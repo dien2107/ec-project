@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from "~/components/ui/dialog";
 
 import DataTable from "../../components/data-table";
 
-import { getColumns } from "../columns/review-columns";
+import { getColumns } from "../columns/review";
 import type { Product, Review } from "../types";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperClass } from "swiper";
@@ -39,8 +39,6 @@ export default function ReviewDialog({
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const swiperRef = useRef<SwiperClass | null>(null);
-
-  console.log(photoIndex);
 
   const columns = getColumns(selectedReview, setSelectedReview);
 

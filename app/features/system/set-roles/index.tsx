@@ -18,9 +18,27 @@ export interface User {
 
 // Dữ liệu mẫu ban đầu
 const initialUsers: User[] = [
-  { id: 1, name: "Nguyễn Văn A", email: "a@example.com", roles: ["Admin", "Manager"], status: "active" },
-  { id: 2, name: "Trần Thị B", email: "b@example.com", roles: ["Staff", "Editor"], status: "inactive" },
-  { id: 3, name: "Lê Văn C", email: "c@example.com", roles: ["Viewer", "Editor"], status: "banned" },
+  {
+    id: 1,
+    name: "Nguyễn Văn A",
+    email: "a@example.com",
+    roles: ["Admin", "Manager"],
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Trần Thị B",
+    email: "b@example.com",
+    roles: ["Staff", "Editor"],
+    status: "inactive",
+  },
+  {
+    id: 3,
+    name: "Lê Văn C",
+    email: "c@example.com",
+    roles: ["Viewer", "Editor"],
+    status: "banned",
+  },
 ];
 
 export default function UserPermissionSystem() {
@@ -68,7 +86,9 @@ export default function UserPermissionSystem() {
 
     if (safeUser.id) {
       // Cập nhật user
-      setUsers((prev) => prev.map((u) => (u.id === safeUser.id ? safeUser : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === safeUser.id ? safeUser : u))
+      );
       alert(`Đã cập nhật nhân viên ${safeUser.name}.`);
     } else {
       // Thêm user mới
@@ -82,83 +102,81 @@ export default function UserPermissionSystem() {
     setIsModalOpen(false);
   };
 
-// Cột bảng
-const columns: ColumnDef<User>[] = [
-  {
-    accessorKey: "name",
-    header: () => <div className="text-center">Tên nhân viên</div>,
-    size: 150,
-    cell: ({ row }) => (
-      <div className="text-center">{row.original.name}</div>
-    ),
-  },
-  {
-    accessorKey: "email",
-    header: () => <div className="text-center">Email</div>,
-    size: 200,
-    cell: ({ row }) => (
-      <div className="text-center">{row.original.email}</div>
-    ),
-  },
-  {
-    accessorKey: "roles",
-    header: () => <div className="text-center">Quyền</div>,
-    size: 200,
-    cell: ({ row }) => (
-      <div className="flex flex-wrap gap-1 justify-center">
-        {row.original.roles.map((role, index) => (
-          <span
-            key={index}
-            className="px-2 py-1 bg-gray-100 text-sm rounded-full text-gray-700"
-          >
-            {role}
-          </span>
-        ))}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: () => <div className="text-center">Trạng thái</div>,
-    size: 120,
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const statusConfig = {
-        active: { label: "Hoạt động", color: "bg-green-100 text-green-700" },
-        inactive: { label: "Ngưng", color: "bg-yellow-100 text-yellow-700" },
-        banned: { label: "Cấm", color: "bg-red-100 text-red-700" },
-      } as const;
-      return (
-        <div className="flex justify-center">
-          <span
-            className={`px-3 py-1 text-sm font-medium rounded-full ${statusConfig[status].color}`}
-          >
-            {statusConfig[status].label}
-          </span>
-        </div>
-      );
+  // Cột bảng
+  const columns: ColumnDef<User>[] = [
+    {
+      accessorKey: "name",
+      header: () => <div className="text-center">Tên nhân viên</div>,
+      size: 150,
+      cell: ({ row }) => <div className="text-center">{row.original.name}</div>,
     },
-  },
-  {
-    id: "actions",
-    header: () => <div className="text-center">Hành động</div>,
-    size: 80,
-    cell: ({ row }) => (
-      <div className="flex justify-center gap-2">
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleOpenModal(row.original);
-          }}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-  },
-];
+    {
+      accessorKey: "email",
+      header: () => <div className="text-center">Email</div>,
+      size: 200,
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.email}</div>
+      ),
+    },
+    {
+      accessorKey: "roles",
+      header: () => <div className="text-center">Quyền</div>,
+      size: 200,
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1 justify-center">
+          {row.original.roles.map((role, index) => (
+            <span
+              key={index}
+              className="px-2 py-1 bg-gray-100 text-sm rounded-full text-gray-700"
+            >
+              {role}
+            </span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="text-center">Trạng thái</div>,
+      size: 120,
+      cell: ({ row }) => {
+        const status = row.original.status;
+        const statusConfig = {
+          active: { label: "Hoạt động", color: "bg-green-100 text-green-700" },
+          inactive: { label: "Ngưng", color: "bg-yellow-100 text-yellow-700" },
+          banned: { label: "Cấm", color: "bg-red-100 text-red-700" },
+        } as const;
+        return (
+          <div className="flex justify-center">
+            <span
+              className={`px-3 py-1 text-sm font-medium rounded-full ${statusConfig[status].color}`}
+            >
+              {statusConfig[status].label}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: () => <div className="text-center">Hành động</div>,
+      size: 80,
+      cell: ({ row }) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenModal(row.original);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   // Phân trang
   const totalPages = Math.ceil(users.length / itemsPerPage);
@@ -189,7 +207,9 @@ const columns: ColumnDef<User>[] = [
         />
       ) : (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
-          <p className="text-slate-500">Không có người dùng nào trong danh sách.</p>
+          <p className="text-slate-500">
+            Không có người dùng nào trong danh sách.
+          </p>
         </div>
       )}
 

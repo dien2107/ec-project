@@ -1,10 +1,10 @@
-import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import { Button } from "~/components/ui/button";
+
 import {
   Dialog,
   DialogClose,
@@ -16,14 +16,16 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
-import { fetchProductFormMeta } from "~/redux/slices/products";
-import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { useAppSelector } from "~/redux/store";
 import { createProduct } from "~/services/products";
+import { Plus, Loader2 } from "lucide-react";
+import type { Category, Material, Color, ProductGroup } from "../types/product";
 
 export default function AddProductDialog() {
   const [open, setOpen] = useState(false);
   const [imageError, setImageError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Định nghĩa hàm onDrop
   const onDrop = (acceptedFiles: File[]) => {
@@ -46,21 +48,15 @@ export default function AddProductDialog() {
       productGroupId: null as number | null,
       colorId: null as number | null,
       fileImage: File,
-      altText: "",
     },
   });
 
-  const dispatch = useAppDispatch();
   const { meta } = useAppSelector((state) => state.productMeta);
 
-  const categories = meta?.data?.categories || [];
-  const materials = meta?.data?.materials || [];
-  const productGroups = meta?.data?.productGroups || [];
-  const colors = meta?.data?.colors || [];
-
-  useEffect(() => {
-    dispatch(fetchProductFormMeta());
-  }, [dispatch]);
+  const categories: Category[] = meta?.data?.categories || [];
+  const materials: Material[] = meta?.data?.materials || [];
+  const productGroups: ProductGroup[] = meta?.data?.productGroups || [];
+  const colors: Color[] = meta?.data?.colors || [];
 
   // Truyền onDrop vào useDropzone
   const { getRootProps, getInputProps } = useDropzone({
@@ -88,17 +84,14 @@ export default function AddProductDialog() {
 
   const handleSubmitClick = async (data: any) => {
     try {
+      setIsLoading(true);
+
       const isValid = await trigger();
-      if (!isValid) {
-        return;
-      }
+      if (!isValid) return;
 
       if (!selectedFile) {
         setImageError("Vui lòng chọn ảnh sản phẩm!");
-        return;
-      }
-
-      if (!isValid || !selectedFile) {
+        setIsLoading(false);
         return;
       }
 
@@ -119,7 +112,6 @@ export default function AddProductDialog() {
         data.productGroupId ? data.productGroupId.toString() : ""
       );
       formData.append("FileImage", selectedFile);
-      formData.append("AltText", data.altText ?? "");
 
       const response = await createProduct(formData);
       if (response) {
@@ -132,6 +124,8 @@ export default function AddProductDialog() {
       } else {
         toast.error("Có lỗi xảy ra khi thêm sản phẩm!");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -163,6 +157,7 @@ export default function AddProductDialog() {
                     id="productName"
                     placeholder="Nhập tên sản phẩm"
                     className="mt-1"
+                    disabled={isLoading}
                     {...register("name", {
                       required: "Tên sản phẩm không được để trống",
                       minLength: {
@@ -200,6 +195,7 @@ export default function AddProductDialog() {
                           }))}
                           placeholder="Chọn thể loại"
                           isSearchable
+                          isDisabled={isLoading}
                           styles={reactSelectStyles}
                           classNamePrefix="scrollbar-custom"
                           onChange={(option) =>
@@ -235,6 +231,7 @@ export default function AddProductDialog() {
                     id="slug"
                     placeholder="Slug-san-pham"
                     className="mt-1"
+                    disabled={isLoading}
                     {...register("slug", {
                       required: "Slug không được để trống",
                       pattern: {
@@ -271,6 +268,7 @@ export default function AddProductDialog() {
                             label: mat.name,
                           }))}
                           placeholder="Chọn chất liệu"
+                          isDisabled={isLoading}
                           isSearchable
                           styles={reactSelectStyles}
                           onChange={(option) =>
@@ -318,6 +316,7 @@ export default function AddProductDialog() {
                             label: color.name,
                           }))}
                           styles={reactSelectStyles}
+                          isDisabled={isLoading}
                           placeholder="Chọn màu sắc"
                           isSearchable
                           onChange={(option) =>
@@ -363,6 +362,7 @@ export default function AddProductDialog() {
                             label: group.name,
                           }))}
                           styles={reactSelectStyles}
+                          isDisabled={isLoading}
                           placeholder="Chọn nhóm sản phẩm"
                           isSearchable
                           onChange={(option) =>
@@ -394,11 +394,11 @@ export default function AddProductDialog() {
                   </label>
                   <div
                     {...getRootProps()}
-                    className={`border-dashed min-h-40 border-2 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors
+                    className={`border-dashed min-h-60 border-2 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors
       ${selectedFile ? "border-gray-500 bg-blue-50" : "border-gray-300 bg-transparent hover:border-blue-400"}
     `}
                   >
-                    <input {...getInputProps()} />
+                    <input {...getInputProps()} disabled={isLoading} />
                     <p className="text-gray-500 mb-2">
                       Kéo thả hoặc bấm vào đây để chọn ảnh
                     </p>
@@ -406,7 +406,7 @@ export default function AddProductDialog() {
                       <img
                         src={URL.createObjectURL(selectedFile)}
                         alt={selectedFile.name}
-                        className="w-32 h-32 object-cover rounded shadow mt-2"
+                        className="w-36 h-36 object-cover rounded shadow mt-2"
                       />
                     )}
                   </div>
@@ -419,44 +419,29 @@ export default function AddProductDialog() {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <label
-                    htmlFor="productAltText"
-                    className="text-sm font-medium"
-                  >
-                    Văn bản thay thế cho hình ảnh
-                  </label>
-                  <Input
-                    type="text"
-                    id="productAltText"
-                    placeholder="Nhập văn bản thay thế"
-                    className="mt-1"
-                    {...register("altText", {
-                      required: "Văn bản thay thế không được để trống",
-                      minLength: {
-                        value: 3,
-                        message: "Văn bản thay thế phải có ít nhất 3 ký tự",
-                      },
-                    })}
-                  />
-                  {errors.altText && (
-                    <span className="text-red-500 text-xs">
-                      {errors.altText.message}
-                    </span>
-                  )}
-                </div>
-              </div>
             </div>
             <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Hủy</Button>
-              </DialogClose>
+              {!isLoading && (
+                <DialogClose asChild>
+                  <Button variant="outline">Hủy</Button>
+                </DialogClose>
+              )}
               <Button
                 type="submit"
                 className="bg-[#3770EC] text-white cursor-pointer"
+                disabled={isLoading}
               >
-                Thêm sản phẩm
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    Đang thêm...
+                  </>
+                ) : (
+                  <>
+                    <Plus />
+                    Thêm sản phẩm
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </form>
