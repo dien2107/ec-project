@@ -13,7 +13,7 @@ import ProductVariant from "./components/product-variant";
 import AddProductDialog from "./components/add-product-dialog";
 import EditProductDialog from "./components/edit-product-dialog";
 import DeleteProductDialog from "./components/delete-product-dialog";
-import ReviewDialog from "./components/review-dialog";
+import ReviewDialog from "../reviews";
 import ProductFilter from "./components/product-filter";
 import SkeletonFilter from "../components/skeleton-filter";
 import SkeletonTable from "../components/skeleton-table";
@@ -111,6 +111,21 @@ export default function Products() {
     [handleEdit, handleDelete, handleReview]
   );
 
+  const handleReloadProductList = useCallback(() => {
+    dispatch(
+      fetchProductListData({
+        PageNumber: currentPage,
+        PageSize: pageSize,
+        MaterialId: filters.materialId,
+        ColorId: filters.colorId,
+        CategoryId: filters.categoryId,
+        ProductGroupId: filters.productGroupId,
+        Search: filters.search,
+        StatusName: filters.statusName,
+      })
+    );
+  }, [dispatch, currentPage, pageSize, filters]);
+
   return (
     <>
       <div className="container">
@@ -120,7 +135,7 @@ export default function Products() {
         ) : (
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-2xl font-bold">Quản lý sản phẩm</h3>
-            <AddProductDialog />
+            <AddProductDialog onAdded={handleReloadProductList} />
           </div>
         )}
 
@@ -156,20 +171,7 @@ export default function Products() {
           open={isEditOpen}
           setIsOpen={setIsEditOpen}
           selectedProduct={selectedProduct}
-          onUpdated={() => {
-            dispatch(
-              fetchProductListData({
-                PageNumber: currentPage,
-                PageSize: pageSize,
-                MaterialId: filters.materialId,
-                ColorId: filters.colorId,
-                CategoryId: filters.categoryId,
-                ProductGroupId: filters.productGroupId,
-                Search: filters.search,
-                StatusName: filters.statusName,
-              })
-            );
-          }}
+          onUpdated={handleReloadProductList}
         />
       )}
 
@@ -179,20 +181,7 @@ export default function Products() {
           open={isDeleteOpen}
           setIsOpen={setIsDeleteOpen}
           selectedProduct={selectedProduct}
-          onDeleted={() => {
-            dispatch(
-              fetchProductListData({
-                PageNumber: currentPage,
-                PageSize: pageSize,
-                MaterialId: filters.materialId,
-                ColorId: filters.colorId,
-                CategoryId: filters.categoryId,
-                ProductGroupId: filters.productGroupId,
-                Search: filters.search,
-                StatusName: filters.statusName,
-              })
-            );
-          }}
+          onDeleted={handleReloadProductList}
         />
       )}
 
@@ -201,7 +190,7 @@ export default function Products() {
         <ReviewDialog
           open={isReviewOpen}
           setIsOpen={setIsReviewOpen}
-          product={selectedProduct}
+          selectedProduct={selectedProduct}
         />
       )}
     </>

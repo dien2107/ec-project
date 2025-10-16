@@ -21,7 +21,7 @@ import { createProduct } from "~/services/products";
 import { Plus, Loader2 } from "lucide-react";
 import type { Category, Material, Color, ProductGroup } from "../types/product";
 
-export default function AddProductDialog() {
+export default function AddProductDialog({ onAdded }: { onAdded: () => void }) {
   const [open, setOpen] = useState(false);
   const [imageError, setImageError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -113,11 +113,10 @@ export default function AddProductDialog() {
       );
       formData.append("FileImage", selectedFile);
 
-      const response = await createProduct(formData);
-      if (response) {
-        toast.success("Thêm sản phẩm thành công!");
-        setOpen(false);
-      }
+      await createProduct(formData);
+      toast.success("Thêm sản phẩm thành công!");
+      onAdded();
+      setOpen(false);
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
