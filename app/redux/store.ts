@@ -3,11 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import type { TypedUseSelectorHook } from "react-redux";
 import productFormMetaReducer from "./slices/product-form-meta";
 import productListDataReducer from "./slices/products";
+import reviewListDataReducer from "./slices/reviews";
+import statusesReducer from "./slices/statuses";
 
 export const store = configureStore({
   reducer: {
     productMeta: productFormMetaReducer,
     productList: productListDataReducer,
+    reviewList: reviewListDataReducer,
+    statuses: statusesReducer,
   },
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware()

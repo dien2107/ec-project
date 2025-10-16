@@ -1,9 +1,10 @@
+import type { Status } from "~/types/status";
+
 import type {
   Material,
   Color,
   Category,
   ProductGroup,
-  Status,
 } from "./product";
 
 export type ProductFormMeta = {

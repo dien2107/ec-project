@@ -37,7 +37,11 @@ export const getColumns = (
       );
     },
     cell: ({ row }) => {
-      return <div>REV-{row.original.review_id}</div>;
+      return (
+        <div className="font-mono font-bold">
+          REV{String(row.original.reviewId).padStart(3, "0")}
+        </div>
+      );
     },
   },
   {
@@ -50,17 +54,6 @@ export const getColumns = (
           className="justify-start"
         />
       );
-    },
-    meta: {
-      filterConfig: {
-        type: "text",
-        placeholder: "Tìm ID hoặc username...",
-      },
-    },
-    filterFn: (row, id, value) => {
-      const combined =
-        `REV-${row.original.review_id} ${row.original.username}`.toLowerCase();
-      return combined.includes((value as string).toLowerCase());
     },
   },
   {
@@ -94,10 +87,9 @@ export const getColumns = (
       );
     },
     cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
       return (
-        <div className=" text-gray-400">
-          {row.original.created_at.toLocaleDateString("en-GB")}
-        </div>
+        <div className="text-gray-400">{date.toLocaleDateString("en-GB")}</div>
       );
     },
   },
@@ -124,21 +116,10 @@ export const getColumns = (
         />
       );
     },
-    meta: {
-      filterConfig: {
-        type: "select",
-        placeholder: "Trạng thái",
-        options: [
-          { value: "all", label: "Tất cả" },
-          { value: "visible", label: "Hiển thị" },
-          { value: "hidden", label: "Ẩn" },
-        ],
-      },
-    },
     cell: ({ row }) => {
       return (
         <div className="inline-block w-[80px] text-left">
-          {row.original.status === "visible" ? (
+          {row.original.status.name === "Approved" ? (
             <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
               Hiển thị
             </div>
@@ -150,11 +131,6 @@ export const getColumns = (
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      const status = row.original.status;
-      if (value === "all") return true;
-      return status === value;
-    },
   },
   {
     id: "actions",
@@ -162,7 +138,7 @@ export const getColumns = (
       <div className="flex justify-end px-4">Thao tác</div>
     ),
     cell: ({ row }) => {
-      const isSelected = selectedReview?.review_id === row.original.review_id;
+      const isSelected = selectedReview?.reviewId === row.original.reviewId;
 
       return (
         <div className="flex justify-end">

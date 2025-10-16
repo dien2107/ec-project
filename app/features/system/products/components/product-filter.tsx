@@ -1,8 +1,9 @@
-import React from "react";
 import Select from "react-select";
-import type { ProductFilterProps } from "../types";
+import { useState, useEffect } from "react";
+import type { ProductFilterProps } from "../types/product-filter-props";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { Input } from "~/components/ui/input";
+import { useDebounce } from "~/hooks/use-debounce";
 
 export default function ProductFilter({
   filters,
@@ -30,17 +31,22 @@ export default function ProductFilter({
     label: s.displayName,
   }));
 
+  const [searchInput, setSearchInput] = useState(filters.search ?? "");
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      search: debouncedSearch,
+    }));
+  }, [debouncedSearch, setFilters]);
+
   return (
     <div className="flex items-center gap-4 mb-4">
       <Input
         type="text"
-        value={filters.search}
-        onChange={(e) =>
-          setFilters((prev) => ({
-            ...prev,
-            search: e.target.value,
-          }))
-        }
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
         placeholder="Tìm sản phẩm..."
         className="bg-white flex-2"
       />

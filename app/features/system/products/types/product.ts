@@ -1,3 +1,5 @@
+import type { Status } from "~/types/status";
+
 export type Material = {
   materialId: number;
   name: string;
@@ -16,13 +18,6 @@ export type Color = {
 export type ProductGroup = {
   productGroupId: number;
   name: string;
-};
-
-export type Status = {
-  statusId: number;
-  name: string;
-  displayName: string;
-  entityType: string;
 };
 
 export type PrimaryImage = {
