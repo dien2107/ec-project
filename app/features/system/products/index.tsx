@@ -15,9 +15,9 @@ import EditProductDialog from "./components/edit-product-dialog";
 import DeleteProductDialog from "./components/delete-product-dialog";
 import ReviewDialog from "../reviews";
 import ProductFilter from "./components/product-filter";
-import SkeletonFilter from "../components/skeleton-filter";
-import SkeletonTable from "../components/skeleton-table";
-import SkeletonHeader from "../components/skeleton-header";
+import SkeletonFilter from "../../../components/ui/skeleton-filter";
+import SkeletonTable from "../../../components/ui/skeleton-table";
+import SkeletonHeader from "../../../components/ui/skeleton-header";
 
 export default function Products() {
   const dispatch = useAppDispatch();
