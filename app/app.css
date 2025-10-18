@@ -208,34 +208,40 @@ body {
 
 /* Custom scrollbar */
 .scrollbar-custom,
-.scrollbar-custom > div {
+.scrollbar-custom > div,
+.react-select__menu-list {
   scrollbar-width: thin;
   scrollbar-color: var(--primary) var(--muted);
 }
 .scrollbar-custom::-webkit-scrollbar,
-.scrollbar-custom > div::-webkit-scrollbar {
+.scrollbar-custom > div::-webkit-scrollbar,
+.react-select__menu-list::-webkit-scrollbar {
   width: 2px;
   height: 2px;
   background: var(--muted);
 }
 .scrollbar-custom::-webkit-scrollbar-thumb,
-.scrollbar-custom > div::-webkit-scrollbar-thumb {
+.scrollbar-custom > div::-webkit-scrollbar-thumb,
+.react-select__menu-list::-webkit-scrollbar-thumb {
   background: var(--primary);
   border-radius: 4px;
 }
 .scrollbar-custom::-webkit-scrollbar-thumb:hover,
-.scrollbar-custom > div::-webkit-scrollbar-thumb:hover {
+.scrollbar-custom > div::-webkit-scrollbar-thumb:hover,
+.react-select__menu-list::-webkit-scrollbar-thumb:hover {
   background: var(--primary-foreground);
 }
 .scrollbar-custom::-webkit-scrollbar-button,
-.scrollbar-custom > div::-webkit-scrollbar-button {
+.scrollbar-custom > div::-webkit-scrollbar-button,
+.react-select__menu-list::-webkit-scrollbar-button {
   width: 0;
   height: 0;
   display: none;
   background: transparent;
 }
 .scrollbar-custom::-webkit-scrollbar-button:single-button,
-.scrollbar-custom > div::-webkit-scrollbar-button:single-button {
+.scrollbar-custom > div::-webkit-scrollbar-button:single-button,
+.react-select__menu-list::-webkit-scrollbar-button:single-button {
   display: none;
   background: transparent;
 }

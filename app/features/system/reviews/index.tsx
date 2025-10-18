@@ -16,7 +16,7 @@ import ReviewDetail from "./components/review-detail";
 import ReviewFilter from "./components/review-filter";
 import type { Status } from "~/types/status";
 import { ENTITY_TYPE } from "~/constants/entity-types";
-import SkeletonTable from "../components/skeleton-table";
+import SkeletonTable from "../../../components/ui/skeleton-table";
 
 export default function ReviewDialog({
   open,
