@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 import { deleteProduct } from "~/services/products";
-import type { Product } from "../types/product";
+import type { Product } from "../../../../types/product";
 
 export default function DeleteProductDialog({
   open,

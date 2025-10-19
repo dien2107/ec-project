@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
-import type { Product } from "~/features/system/products/types/product";
+import type { Product } from "~/types/product";
 import type { ApiPagedResponse } from "~/types/api-response";
 
 interface ProductListDataState {

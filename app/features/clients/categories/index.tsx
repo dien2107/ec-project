@@ -7,26 +7,34 @@ import { useParams } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { getProductByCategorySlug } from "~/services/products";
-import { fakeProducts } from "~/features/clients/categories/data/products";
 import ProductFilterBar from "./components/product-filter-bar";
+import { useDebounce } from "~/hooks/use-debounce";
+import ProductGrid from "./components/product-grid";
+import type { Product } from "~/types/product";
 
 export default function Categories() {
   const { slug } = useParams<{ slug: string }>();
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const [products, setProducts] = useState([]);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 0,
+    totalCount: 0,
+    pageSize: 12,
+  });
   const [filters, setFilters] = useState<FilterState>({
     colorIds: [],
     materialIds: [],
     productGroupIds: [],
-    orderBy: "",
+    orderBy: "az",
     minPrice: undefined,
     maxPrice: undefined,
     outOfStock: undefined,
     inStock: undefined,
   });
+  const debouncedFilters = useDebounce(filters, 800);
+
+  console.log(filters);
 
   useEffect(() => {
     if (!slug) return;
@@ -40,10 +48,17 @@ export default function Categories() {
           orderBy: filters.orderBy,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
-          pageNumber: currentPage,
-          pageSize: pageSize,
+          pageNumber: pagination.currentPage,
+          pageSize: pagination.pageSize,
         });
-
+        console.log(response);
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: response.data.totalPages ?? 0,
+          totalCount: response.data.totalCount ?? 0,
+          currentPage: response.data.pageNumber ?? prev.currentPage,
+          pageSize: response.data.pageSize ?? prev.pageSize,
+        }));
         setProducts(response.data.items);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -51,7 +66,14 @@ export default function Categories() {
     };
 
     fetchProducts();
-  }, [slug, filters]);
+  }, [slug, debouncedFilters, pagination.currentPage]);
+
+  useEffect(() => {
+    if (!slug) return;
+    setPagination((prev) =>
+      prev.currentPage === 1 ? prev : { ...prev, currentPage: 1 }
+    );
+  }, [slug, filters, debouncedFilters]);
 
   return (
     <div className="max-w-[1280px] mx-auto p-4 md:p-6">
@@ -63,15 +85,21 @@ export default function Categories() {
 
       <div className="flex flex-col md:flex-row mt-4 min-h-[calc(100vh-180px)]">
         <main className={`w-full py-4`}>
-          {/* <ProductGrid products={displayedProducts} />
+          <ProductGrid products={products} />
 
           <div className="mt-8 pb-8 flex justify-center">
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handleChangePage}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={(newPage: number) => {
+                setPagination((prev) =>
+                  prev.currentPage === newPage
+                    ? prev
+                    : { ...prev, currentPage: newPage }
+                );
+              }}
             />
-          </div> */}
+          </div>
         </main>
       </div>
     </div>

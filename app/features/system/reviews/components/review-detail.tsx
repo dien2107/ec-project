@@ -8,7 +8,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { Product } from "~/features/system/products/types/product";
+import type { Product } from "~/types/product";
 import { hideReviewById } from "~/services/reviews";
 import type { Review } from "../types/review";
 import {

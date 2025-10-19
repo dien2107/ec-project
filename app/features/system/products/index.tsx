@@ -3,7 +3,7 @@ import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { Package, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import DataTable from "../components/data-table";
-import type { Product } from "./types/product";
+import type { Product } from "../../../types/product";
 import { getColumns } from "./columns/product";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchProductListData } from "~/redux/slices/products";
