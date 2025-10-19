@@ -125,7 +125,6 @@ export default function Products() {
       })
     );
   }, [dispatch, currentPage, pageSize, filters]);
-
   return (
     <>
       <div className="container">
