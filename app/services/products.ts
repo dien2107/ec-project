@@ -1,3 +1,4 @@
+import type { FilterState } from "~/features/clients/categories/types/product-category-slug-filter-props";
 import instance from "./customize-axios";
 import type { UpdateProduct } from "~/features/system/products/types/update-product";
 
@@ -41,6 +42,21 @@ export const getProductFormMeta = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching product form meta:", error);
+    throw error;
+  }
+};
+
+export const getProductByCategorySlug = async (
+  categorySlug: string,
+  filters: FilterState
+) => {
+  try {
+    const response = await instance.get(`/products/category/${categorySlug}`, {
+      params: filters,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product by category slug:", error);
     throw error;
   }
 };

@@ -1,6 +1,14 @@
 import { NavLink } from "react-router";
 import { useMemo } from "react";
-import type { ProductCard as ProductCardType } from "../types";
+
+type ProductCard = {
+  id: number;
+  title: string;
+  image: string;
+  price: number;
+  oldPrice: number;
+  discount: number;
+};
 
 const formatVND = (amount: number) =>
   Intl.NumberFormat("vi-VN", {
@@ -15,7 +23,7 @@ export default function ProductCard({
   oldPrice,
   discount,
   image,
-}: ProductCardType) {
+}: ProductCard) {
   const formattedPrice = useMemo(() => formatVND(price), [price]);
   const formattedOldPrice = useMemo(() => formatVND(oldPrice), [oldPrice]);
 

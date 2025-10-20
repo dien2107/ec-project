@@ -6,10 +6,12 @@ import productListDataReducer from "./slices/products";
 import reviewListDataReducer from "./slices/reviews";
 import statusesReducer from "./slices/statuses";
 import suppliersListDataReducer from "./slices/suppliers";
+import productFilterOptionsReducer from "./slices/product-filter-options";
 export const store = configureStore({
   reducer: {
     productMeta: productFormMetaReducer,
     productList: productListDataReducer,
+    productFilterOptions: productFilterOptionsReducer,
     reviewList: reviewListDataReducer,
     statuses: statusesReducer,
     SupplierList: suppliersListDataReducer,

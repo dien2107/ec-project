@@ -1,4 +1,4 @@
-import ProductCard from "../../categories/components/product-card";
+import ProductCard from "~/components/ui/product-card";
 
 export default function ProductRelated() {
   return (
