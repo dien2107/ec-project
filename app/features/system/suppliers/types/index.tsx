@@ -4,16 +4,6 @@ import { Button } from "~/components/ui/button";
 import { ArrowUpDown, SquarePen, Trash } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 
-export type Supplier = {
-  id: string;
-  name: string;
-  contact: string;
-  info: string;
-  productCount: number;
-  status: "active" | "inactive";
-  createdAt: string;
-};
-
 export interface SupplierFormData {
   name: string;
   contact: string;
@@ -37,163 +27,135 @@ export interface DeleteSupplierDialogProps {
   setIsOpen: (open: boolean) => void;
   onDelete: () => void;
   supplierName?: string;
+  supplierId?: number;
 }
+
+
+export type Supplier = {
+  supplierId: number;
+  name: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  address: string;
+  statusId: number;
+  statusName: string;
+  status: {
+    statusId: number;
+    name: string;
+    displayName: string;
+    entityType: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
 
 export const getSupplierColumns = (
   handleEdit: (supplier: Supplier) => void,
   handleDelete: (supplier: Supplier) => void
 ): ColumnDef<Supplier>[] => [
   {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Mã NCC"
-          className="justify-start"
-        />
-      );
-    },
+    accessorKey: "supplierId",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mã NCC" className="justify-start" />
+    ),
   },
   {
     accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Nhà cung cấp"
-          className="justify-start"
-        />
-      );
-    },
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Tên nhà cung cấp" className="justify-start" />
+    ),
+    cell: ({ getValue }) => (
+      <span className="font-medium text-gray-800">{getValue() as string}</span>
+    ),
   },
   {
-    accessorKey: "contact",
-    header: "Liên hệ",
-    cell: ({ getValue }) => {
-      const contact = getValue() as string;
-      const lines = contact.split('\n');
-      return (
-        <div className="space-y-1">
-          {lines.map((line, index) => (
-            <div key={index} className="text-sm">
-              {line}
-            </div>
-          ))}
-        </div>
-      );
-    },
+    accessorKey: "contactName",
+    header: "Người liên hệ",
+    cell: ({ getValue }) => getValue() || "--",
   },
   {
-    accessorKey: "info",
-    header: "Thông tin",
-    cell: ({ getValue }) => {
-      const info = getValue() as string;
-      return (
-        <div className="max-w-[200px] truncate" title={info}>
-          {info}
-        </div>
-      );
-    },
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ getValue }) => (
+      <span className="truncate max-w-[200px]" title={getValue() as string}>
+        {getValue() || "--"}
+      </span>
+    ),
   },
   {
-    accessorKey: "productCount",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Số sản phẩm"
-          className="justify-center"
-        />
-      );
-    },
-    cell: ({ getValue }) => {
-      const count = getValue() as number;
-      return <div className="text-center">{count}</div>;
-    },
+    accessorKey: "phone",
+    header: "Số điện thoại",
+    cell: ({ getValue }) => getValue() || "--",
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Trạng thái"
-          className="justify-start"
-        />
-      );
-    },
-    meta: {
-      filterConfig: {
-        type: "select",
-        placeholder: "Trạng thái",
-        options: [
-          { value: "all", label: "Tất cả" },
-          { value: "active", label: "Hoạt động" },
-          { value: "inactive", label: "Không hoạt động" },
-        ],
-      },
-    },
-    cell: ({ getValue }) => {
-      const status = getValue() as Supplier["status"];
+    accessorKey: "address",
+    header: "Địa chỉ",
+    cell: ({ getValue }) => (
+      <span className="truncate max-w-[250px]" title={getValue() as string}>
+        {getValue () || "--"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "statusId", // Thay vì "statusName" để xử lý logic
+    header: "Trạng thái",
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const statusId = row.original.statusId;
+      let colorClass = "";
+      switch (statusId) {
+        case 73: // Đang hợp tác
+          colorClass = "bg-green-100 text-green-700";
+          break;
+        case 74: // Ngưng hợp tác
+          colorClass = "bg-gray-100 text-gray-600";
+          break;
+        case 75: // Đình chỉ hợp tác
+          colorClass = "bg-red-100 text-red-600";
+          break;
+        default: // Trạng thái mặc định nếu không khớp
+          colorClass = "bg-yellow-100 text-yellow-700";
+          break;
+      }
+
       return (
         <span
-          className={
-            "inline-flex px-3 py-1 rounded-full text-sm font-medium " +
-            (status === "active"
-              ? "bg-green-100 text-green-600"
-              : "bg-gray-100 text-gray-400")
-          }
+          className={`px-3 py-1 text-sm rounded-full font-medium ${colorClass}`}
         >
-          {status === "active" ? "Hoạt động" : "Không hoạt động"}
+          {status.displayName}
         </span>
       );
-    },
-    filterFn: (row, id, value) => {
-      if (!value || value === "all") return true;
-      return row.getValue(id) === value;
     },
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Ngày tạo"
-          className="justify-start"
-        />
-      );
-    },
-    cell: ({ getValue }) => {
-      const date = getValue() as string;
-      return new Date(date).toLocaleDateString('vi-VN');
-    },
+    header: "Ngày tạo",
+    cell: ({ getValue }) =>
+      new Date(getValue() as string).toLocaleDateString("vi-VN"),
   },
   {
     id: "actions",
     header: "Thao tác",
-    cell: ({ row }) => {
-      return (
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleEdit(row.original)}
-          >
-            <SquarePen className="w-4 h-4 mr-1" />
-            Sửa
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => handleDelete(row.original)}
-          >
-            <Trash className="w-4 h-4 mr-1" />
-            Xóa
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleEdit(row.original)}
+        >
+          <SquarePen className="w-4 h-4 mr-1" />
+          Sửa
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => handleDelete(row.original)}
+        >
+          <Trash className="w-4 h-4 mr-1" />
+          Xóa
+        </Button>
+      </div>
+    ),
   },
 ];

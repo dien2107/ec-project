@@ -5,8 +5,9 @@ import productFormMetaReducer from "./slices/product-form-meta";
 import productListDataReducer from "./slices/products";
 import reviewListDataReducer from "./slices/reviews";
 import statusesReducer from "./slices/statuses";
+import suppliersListDataReducer from "./slices/suppliers";
 import productFilterOptionsReducer from "./slices/product-filter-options";
-
+import purchaseOrderListDataReducer from "./slices/purchase-orders";
 export const store = configureStore({
   reducer: {
     productMeta: productFormMetaReducer,
@@ -14,6 +15,8 @@ export const store = configureStore({
     productFilterOptions: productFilterOptionsReducer,
     reviewList: reviewListDataReducer,
     statuses: statusesReducer,
+    SupplierList: suppliersListDataReducer,
+    purchaseOrderList: purchaseOrderListDataReducer,
   },
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware()
