@@ -58,7 +58,6 @@ export default function Products() {
   useEffect(() => {
     dispatch(fetchProductFormMeta());
   }, [dispatch]);
-
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);

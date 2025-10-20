@@ -8,7 +8,7 @@ import { getSupplierColumns, type Supplier } from "./types";
 import DataTable from "../components/data-table";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchSupplierListData } from "~/redux/slices/suppliers";
-import SkeletonTable from "../components/skeleton-table";
+import SkeletonTable from "~/components/ui/skeleton-table";
 import SupplierFilters from "./components/supplier-filters";
 
 export default function Suppliers() {
