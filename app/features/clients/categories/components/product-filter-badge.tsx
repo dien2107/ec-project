@@ -106,11 +106,11 @@ export default function ProductFilterBadge({
             key="price"
             onClick={() => handleClearFilter(0, "price")}
           >
-            Giá: {filters.minPrice != null ? formatVND(filters.minPrice) : "-"}{" "}
-            -{" "}
-            {filters.maxPrice != null && filters.maxPrice > 0
-              ? formatVND(filters.maxPrice)
-              : "-"}{" "}
+            Giá:{" "}
+            {filters.minPrice != null && "từ " + formatVND(filters.minPrice)}
+            {filters.maxPrice != null &&
+              filters.maxPrice > 0 &&
+              " đến " + formatVND(filters.maxPrice)}
             <X size={14} />
           </Badge>
         )}

@@ -61,8 +61,8 @@ export const getProductByCategorySlug = async (
       MaxPrice: filters.maxPrice,
       OutOfStock: filters.outOfStock,
       InStock: filters.inStock,
-      PageNumber: 1,
-      PageSize: 12,
+      PageNumber: filters.pageNumber,
+      PageSize: filters.pageSize,
     };
 
     const response = await instance.get(`/products/category/${categorySlug}`, {

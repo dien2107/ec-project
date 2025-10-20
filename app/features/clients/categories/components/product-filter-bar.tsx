@@ -44,9 +44,11 @@ const selectInnerStyles = {
 export default function ProductFilterBar({
   filters,
   setFilters,
+  totalCount,
 }: {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  totalCount: number;
 }) {
   const { slug } = useParams<{ slug: string }>();
   const dispatch = useAppDispatch();
@@ -377,6 +379,9 @@ export default function ProductFilterBar({
             classNamePrefix="react-select"
             styles={reactSelectStyles}
           />
+          <span className="text-sm text-gray-400">
+            Có {totalCount} sản phẩm
+          </span>
         </div>
       </div>
 

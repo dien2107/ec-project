@@ -6,8 +6,6 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     return <div className={`text-center py-8 `}>Chưa có sản phẩm</div>;
   }
 
-  console.log(products);
-
   return (
     <div className={`grid gap-4  grid-cols-2 md:grid-cols-4`}>
       {products.map((p) => (

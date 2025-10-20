@@ -1,20 +1,19 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { Funnel } from "lucide-react";
-import ProductCard from "~/components/ui/product-card";
-import Pagination from "~/components/common/pagination";
-import type { FilterState } from "./types/product-category-slug-filter-props";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { getProductByCategorySlug } from "~/services/products";
-import ProductFilterBar from "./components/product-filter-bar";
+import Pagination from "~/components/common/pagination";
 import { useDebounce } from "~/hooks/use-debounce";
-import ProductGrid from "./components/product-grid";
+import { getProductByCategorySlug } from "~/services/products";
 import type { Product } from "~/types/product";
+import ProductFilterBar from "./components/product-filter-bar";
+import ProductGrid from "./components/product-grid";
+import type { FilterState } from "./types/product-category-slug-filter-props";
+import ProductCardSkeleton from "~/components/ui/product-card-skeleton";
 
 export default function Categories() {
   const { slug } = useParams<{ slug: string }>();
+  const mainRef = useRef<HTMLDivElement | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -29,18 +28,17 @@ export default function Categories() {
     orderBy: "az",
     minPrice: undefined,
     maxPrice: undefined,
-    outOfStock: undefined,
-    inStock: undefined,
+    outOfStock: false,
+    inStock: false,
   });
   const debouncedFilters = useDebounce(filters, 800);
-
-  console.log(filters);
 
   useEffect(() => {
     if (!slug) return;
 
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
         const response = await getProductByCategorySlug(slug, {
           colorIds: filters.colorIds,
           materialIds: filters.materialIds,
@@ -48,6 +46,8 @@ export default function Categories() {
           orderBy: filters.orderBy,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
+          outOfStock: filters.outOfStock,
+          inStock: filters.inStock,
           pageNumber: pagination.currentPage,
           pageSize: pagination.pageSize,
         });
@@ -62,6 +62,8 @@ export default function Categories() {
         setProducts(response.data.items);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -76,30 +78,54 @@ export default function Categories() {
   }, [slug, filters, debouncedFilters]);
 
   return (
-    <div className="max-w-[1280px] mx-auto p-4 md:p-6">
+    <div ref={mainRef} className="max-w-[1280px] mx-auto p-4 md:p-6">
       <div className="flex items-center justify-between pb-4 border-b border-gray-200">
         <h1 className="font-bold text-xl md:text-2xl">Áo</h1>
       </div>
 
-      <ProductFilterBar filters={filters} setFilters={setFilters} />
+      <ProductFilterBar
+        filters={filters}
+        setFilters={setFilters}
+        totalCount={pagination.totalCount}
+      />
 
       <div className="flex flex-col md:flex-row mt-4 min-h-[calc(100vh-180px)]">
         <main className={`w-full py-4`}>
-          <ProductGrid products={products} />
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <ProductCardSkeleton key={idx} />
+              ))}
+            </div>
+          ) : (
+            <>
+              <ProductGrid products={products} />
+              {products.length > 0 && (
+                <div className="mt-8 pb-8 flex justify-center">
+                  <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={(newPage: number) => {
+                      setPagination((prev) =>
+                        prev.currentPage === newPage
+                          ? prev
+                          : { ...prev, currentPage: newPage }
+                      );
 
-          <div className="mt-8 pb-8 flex justify-center">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={(newPage: number) => {
-                setPagination((prev) =>
-                  prev.currentPage === newPage
-                    ? prev
-                    : { ...prev, currentPage: newPage }
-                );
-              }}
-            />
-          </div>
+                      // Scroll to top
+                      const headerOffset = 64;
+                      const el = mainRef.current!;
+                      const top =
+                        el.getBoundingClientRect().top +
+                        window.scrollY -
+                        headerOffset;
+                      window.scrollTo({ top, behavior: "smooth" });
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
         </main>
       </div>
     </div>
