@@ -10,7 +10,8 @@ import productFilterOptionsReducer from "./slices/product-filter-options";
 import productVariantsReducer from "./slices/product-variants";
 import sizeOptionsReducer from "./slices/sizes-options";
 import purchaseOrderListDataReducer from "./slices/purchase-orders";
-
+import permissionListDataReducer from "./slices/permissions";
+import roleListDataReducer from "./slices/roles";
 export const store = configureStore({
   reducer: {
     productMeta: productFormMetaReducer,
@@ -22,6 +23,8 @@ export const store = configureStore({
     sizeOptions: sizeOptionsReducer,
     SupplierList: suppliersListDataReducer,
     purchaseOrderList: purchaseOrderListDataReducer,
+    permissionList: permissionListDataReducer,
+    roleList: roleListDataReducer,
   },
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware()
