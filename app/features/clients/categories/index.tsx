@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 import Pagination from "~/components/common/pagination";
 import { useDebounce } from "~/hooks/use-debounce";
 import { getProductByCategorySlug } from "~/services/products";
-import type { Product } from "~/types/product";
+import type { Product } from "~/types/product/product";
 import ProductFilterBar from "./components/product-filter-bar";
 import ProductGrid from "./components/product-grid";
 import type { FilterState } from "./types/product-category-slug-filter-props";

@@ -24,7 +24,7 @@ import type {
   Material,
   Color,
   ProductGroup,
-} from "../../../../types/product";
+} from "../../../../types/product/product";
 
 export default function AddProductDialog({ onAdded }: { onAdded: () => void }) {
   const [open, setOpen] = useState(false);

@@ -1,5 +1,5 @@
 import ProductCard from "~/components/ui/product-card";
-import type { Product } from "~/types/product";
+import type { Product } from "~/types/product/product";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   if (!products || products.length === 0) {
