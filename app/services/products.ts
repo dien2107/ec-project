@@ -1,6 +1,7 @@
 import type { FilterState } from "~/features/clients/categories/types/product-category-slug-filter-props";
 import instance from "./customize-axios";
 import type { UpdateProduct } from "~/features/system/products/types/update-product";
+import qs from "qs";
 
 export const createProduct = async (formData: FormData) => {
   try {
@@ -51,9 +52,25 @@ export const getProductByCategorySlug = async (
   filters: FilterState
 ) => {
   try {
+    const params = {
+      ColorIds: filters.colorIds,
+      MaterialIds: filters.materialIds,
+      ProductGroupIds: filters.productGroupIds,
+      OrderBy: filters.orderBy,
+      MinPrice: filters.minPrice,
+      MaxPrice: filters.maxPrice,
+      OutOfStock: filters.outOfStock,
+      InStock: filters.inStock,
+      PageNumber: filters.pageNumber,
+      PageSize: filters.pageSize,
+    };
+
     const response = await instance.get(`/products/category/${categorySlug}`, {
-      params: filters,
+      params,
+      paramsSerializer: (params) =>
+        qs.stringify(params, { arrayFormat: "repeat" }),
     });
+
     return response.data;
   } catch (error) {
     console.error("Error fetching product by category slug:", error);

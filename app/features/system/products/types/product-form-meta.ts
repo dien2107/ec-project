@@ -5,7 +5,7 @@ import type {
   Color,
   Category,
   ProductGroup,
-} from "./product";
+} from "../../../../types/product/product";
 
 export type ProductFormMeta = {
   materials: Material[];

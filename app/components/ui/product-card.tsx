@@ -4,6 +4,7 @@ import { useMemo } from "react";
 type ProductCard = {
   id: number;
   title: string;
+  slug: string;
   image: string;
   price: number;
   oldPrice: number;
@@ -19,6 +20,7 @@ const formatVND = (amount: number) =>
 export default function ProductCard({
   id,
   title,
+  slug,
   price,
   oldPrice,
   discount,
@@ -29,7 +31,7 @@ export default function ProductCard({
 
   return (
     <NavLink
-      to={`/chi-tiet-san-pham/${id}`}
+      to={`/products/${slug}`}
       className="block relative overflow-hidden rounded-md group"
     >
       <div className="aspect-[3/4] relative overflow-hidden">
@@ -39,9 +41,11 @@ export default function ProductCard({
           className="object-cover w-full h-full transition-transform duration-300 ease-in-out group-hover:scale-110"
           loading="lazy"
         />
-        <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-[#d93333] rounded-md text-white font-semibold text-xs hover:bg-black transition-colors duration-200">
-          -{discount}%
-        </div>
+        {discount && (
+          <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-[#d93333] rounded-md text-white font-semibold text-xs hover:bg-black transition-colors duration-200">
+            -{discount}%
+          </div>
+        )}
       </div>
 
       <div className="pt-3">
@@ -49,10 +53,12 @@ export default function ProductCard({
           {title}
         </h3>
         <div className="flex items-center gap-2">
+          {discount && (
+            <span className="line-through text-xs text-gray-500">
+              {formattedOldPrice}
+            </span>
+          )}
           <span className="text-sm font-semibold">{formattedPrice}</span>
-          <span className="line-through text-xs text-gray-500">
-            {formattedOldPrice}
-          </span>
         </div>
       </div>
     </NavLink>

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { ChevronDown } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { ChevronDown, X } from "lucide-react";
 import Select from "react-select";
 import {
   Popover,
@@ -8,7 +8,6 @@ import {
 } from "~/components/ui/popover";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
 import type { FilterState } from "../types/product-category-slug-filter-props";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { useDebounce } from "~/hooks/use-debounce";
@@ -16,6 +15,7 @@ import { useParams } from "react-router";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchProductFilterOptionsByCategorySlug } from "~/redux/slices/product-filter-options";
 import SkeletonFilter from "~/components/ui/skeleton-filter";
+import ProductFilterBadge from "./product-filter-badge";
 
 const filterOptions = [
   { label: "Màu", type: "multi", options: "colors" },
@@ -44,9 +44,11 @@ const selectInnerStyles = {
 export default function ProductFilterBar({
   filters,
   setFilters,
+  totalCount,
 }: {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  totalCount: number;
 }) {
   const { slug } = useParams<{ slug: string }>();
   const dispatch = useAppDispatch();
@@ -54,9 +56,6 @@ export default function ProductFilterBar({
     (state) => state.productFilterOptions
   );
 
-  console.log(productFilterOptions);
-
-  const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
   const [minPrice, setMinPrice] = useState(String(filters.minPrice ?? ""));
   const [maxPrice, setMaxPrice] = useState(String(filters.maxPrice ?? ""));
 
@@ -65,22 +64,25 @@ export default function ProductFilterBar({
 
   useEffect(() => {
     if (!slug) return;
-
     dispatch(fetchProductFilterOptionsByCategorySlug(slug));
   }, [dispatch, slug]);
 
   useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      minPrice: Number(minPriceDebounced),
-    }));
+    const next =
+      minPriceDebounced === "" ? undefined : Number(minPriceDebounced);
+    setFilters((prev) => {
+      if (prev.minPrice === next) return prev;
+      return { ...prev, minPrice: next };
+    });
   }, [minPriceDebounced, setFilters]);
 
   useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      maxPrice: Number(maxPriceDebounced),
-    }));
+    const next =
+      maxPriceDebounced === "" ? undefined : Number(maxPriceDebounced);
+    setFilters((prev) => {
+      if (prev.maxPrice === next) return prev;
+      return { ...prev, maxPrice: next };
+    });
   }, [maxPriceDebounced, setFilters]);
 
   const colorOptions = useMemo(
@@ -119,7 +121,81 @@ export default function ProductFilterBar({
     [productFilterOptions?.data?.stockStatusOptions]
   );
 
-  console.log(filters);
+  const selectedColors = useMemo(() => {
+    return colorOptions.filter((o) =>
+      (filters.colorIds ?? []).includes(o.value)
+    );
+  }, [colorOptions, filters.colorIds]);
+
+  const selectedMaterials = useMemo(() => {
+    return materialOptions.filter((o) =>
+      (filters.materialIds ?? []).includes(o.value)
+    );
+  }, [materialOptions, filters.materialIds]);
+
+  const selectedProductGroups = useMemo(() => {
+    return groupOptions.filter((o) =>
+      (filters.productGroupIds ?? []).includes(o.value)
+    );
+  }, [groupOptions, filters.productGroupIds]);
+
+  const selectedStockStatuses = useMemo(() => {
+    return stockStatusOptions.filter((o) => {
+      if (o.value === true && filters.inStock) return true;
+      if (o.value === false && filters.outOfStock) return true;
+      return false;
+    });
+  }, [stockStatusOptions, filters.inStock, filters.outOfStock]);
+
+  const handleClearFilter = useCallback(
+    (id: number | boolean, option: string) => {
+      if (option === "color") {
+        if (typeof id !== "number") return;
+        setFilters((prev) => {
+          const newColorIds =
+            prev.colorIds?.filter((colorId) => colorId !== id) ?? [];
+          return { ...prev, colorIds: newColorIds };
+        });
+        return;
+      } else if (option === "material") {
+        if (typeof id !== "number") return;
+        setFilters((prev) => {
+          const newMaterialIds =
+            prev.materialIds?.filter((materialId) => materialId !== id) ?? [];
+          return { ...prev, materialIds: newMaterialIds };
+        });
+        return;
+      } else if (option === "productGroup") {
+        if (typeof id !== "number") return;
+        setFilters((prev) => {
+          const newProductGroupIds =
+            prev.productGroupIds?.filter(
+              (productGroupId) => productGroupId !== id
+            ) ?? [];
+          return { ...prev, productGroupIds: newProductGroupIds };
+        });
+        return;
+      } else if (option === "price") {
+        setFilters((prev) => ({
+          ...prev,
+          minPrice: undefined,
+          maxPrice: undefined,
+        }));
+        setMinPrice("");
+        setMaxPrice("");
+        return;
+      } else if (option === "stock") {
+        if (id === true) {
+          setFilters((prev) => ({ ...prev, inStock: undefined }));
+        } else {
+          setFilters((prev) => ({ ...prev, outOfStock: undefined }));
+        }
+        return;
+      }
+    },
+    [setFilters]
+  );
+
   if (isLoading) return <SkeletonFilter />;
 
   return (
@@ -145,7 +221,12 @@ export default function ProductFilterBar({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span>Chọn khoảng giá</span>
-                      <button className="cursor-pointer text-gray-500 hover:text-gray-800 hover:underline">
+                      <button
+                        className="cursor-pointer text-gray-500 hover:text-gray-800 hover:underline"
+                        onClick={() => {
+                          handleClearFilter(0, "price");
+                        }}
+                      >
                         Đặt lại
                       </button>
                     </div>
@@ -200,6 +281,15 @@ export default function ProductFilterBar({
                               ? groupOptions
                               : []
                       }
+                      value={
+                        f.options === "colors"
+                          ? selectedColors
+                          : f.options === "materials"
+                            ? selectedMaterials
+                            : f.options === "productGroups"
+                              ? selectedProductGroups
+                              : []
+                      }
                       menuIsOpen={true}
                       placeholder={`Tìm ${f.label.toLowerCase()}...`}
                       classNamePrefix="react-select"
@@ -210,6 +300,24 @@ export default function ProductFilterBar({
                           : undefined
                       }
                       menuPosition="fixed"
+                      onChange={(selected) => {
+                        const selectedArray = Array.isArray(selected)
+                          ? selected
+                          : selected
+                            ? [selected]
+                            : [];
+                        const values = selectedArray.map((x) => x.value);
+                        setFilters((prev) => {
+                          if (f.options === "colors") {
+                            return { ...prev, colorIds: values };
+                          } else if (f.options === "materials") {
+                            return { ...prev, materialIds: values };
+                          } else if (f.options === "productGroups") {
+                            return { ...prev, productGroupIds: values };
+                          }
+                          return prev;
+                        });
+                      }}
                     />
                   </div>
                 )}
@@ -234,6 +342,7 @@ export default function ProductFilterBar({
                 <Select<{ label: string; value: boolean }, true>
                   isMulti={true}
                   menuIsOpen={true}
+                  value={selectedStockStatuses}
                   options={stockStatusOptions}
                   placeholder="Chọn trạng thái..."
                   classNamePrefix="react-select"
@@ -246,8 +355,8 @@ export default function ProductFilterBar({
                     const values = selected?.map((x) => x.value) ?? [];
                     setFilters((prev) => ({
                       ...prev,
-                      inStock: values.includes(true) || undefined,
-                      outOfStock: values.includes(false) || undefined,
+                      inStock: values.includes(true),
+                      outOfStock: values.includes(false),
                     }));
                   }}
                 />
@@ -261,29 +370,31 @@ export default function ProductFilterBar({
           <span className="text-sm text-gray-400">Sắp xếp theo:</span>
           <Select
             options={sortOptions}
-            value={selectedSort}
-            onChange={(v: any) => setSelectedSort(v)}
+            value={sortOptions.find((o) => o.value === filters.orderBy) ?? null}
+            onChange={(option: any) =>
+              setFilters((prev) => ({ ...prev, orderBy: option?.value ?? "" }))
+            }
             isSearchable={false}
             className="min-w-[240px]"
             classNamePrefix="react-select"
             styles={reactSelectStyles}
           />
-          <span className="text-gray-500 text-sm">230 sản phẩm</span>
+          <span className="text-sm text-gray-400">
+            Có {totalCount} sản phẩm
+          </span>
         </div>
       </div>
 
-      {/* Tag hiển thị filter */}
-      <div className="flex flex-wrap gap-2 mt-1.5">
-        <Badge variant="secondary" className="cursor-pointer">
-          Màu: Đen ✕
-        </Badge>
-        <Badge variant="secondary" className="cursor-pointer">
-          Giá: 100.000 - 200.000 ✕
-        </Badge>
-        <Badge variant="secondary" className="cursor-pointer">
-          Còn hàng ✕
-        </Badge>
-      </div>
+      {/* Filter badges */}
+      <ProductFilterBadge
+        filters={filters}
+        setFilters={setFilters}
+        selectedColors={selectedColors}
+        selectedMaterials={selectedMaterials}
+        selectedProductGroups={selectedProductGroups}
+        selectedStockStatuses={selectedStockStatuses}
+        handleClearFilter={handleClearFilter}
+      />
     </div>
   );
 }

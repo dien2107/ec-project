@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import DataTable from "../components/data-table";
-import type { Product } from "../products/types/product";
+import type { Product } from "../../../types/product/product";
 import { getColumns } from "./columns/review";
 import type { Review } from "./types/review";
 import { fetchReviewListData } from "~/redux/slices/reviews";

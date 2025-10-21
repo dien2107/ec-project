@@ -11,18 +11,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { deleteProduct } from "~/services/products";
-import type { Product } from "../../../../types/product/product";
+import { deleteProductVariant } from "~/services/product-variants";
+import type { ProductVariant } from "~/types/product/product-variant";
 
-export default function DeleteProductDialog({
+export default function DeleteProductVariantDialog({
   open,
-  setIsOpen,
-  selectedProduct,
+  onClose,
+  productId,
+  variant,
   onDeleted,
 }: {
   open: boolean;
-  setIsOpen: (open: boolean) => void;
-  selectedProduct: Product;
+  onClose: () => void;
+  productId: number;
+  variant: ProductVariant;
   onDeleted: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,15 +32,15 @@ export default function DeleteProductDialog({
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteProduct(selectedProduct.productId);
-      toast.success("Xóa sản phẩm thành công!");
+      await deleteProductVariant(productId, variant.productVariantId);
+      toast.success("Xóa biến thể thành công!");
       onDeleted();
-      setIsOpen(false);
+      onClose();
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Có lỗi xảy ra khi xóa sản phẩm!");
+        toast.error("Có lỗi xảy ra khi xóa biến thể sản phẩm!");
       }
     } finally {
       setIsLoading(false);
@@ -46,17 +48,17 @@ export default function DeleteProductDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setIsOpen}>
+    <AlertDialog open={open} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xác nhận xóa sản phẩm</AlertDialogTitle>
+          <AlertDialogTitle>Xác nhận xóa biến thể sản phẩm</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa sản phẩm có ID{" "}
+            Bạn có chắc chắn muốn xóa biến thể có ID{" "}
             <span className="font-mono font-bold">
-              PRO
-              {String(selectedProduct.productId).padStart(3, "0")}
+              {String(variant.productVariantId).padStart(3, "0")}
             </span>{" "}
-            này? Hành động này không thể hoàn tác.
+            (Size: <span className="font-bold">{variant.size.name}</span>) này?
+            Hành động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

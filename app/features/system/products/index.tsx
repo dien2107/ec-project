@@ -1,23 +1,27 @@
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 
-import { Package, Plus } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import DataTable from "../components/data-table";
-import type { Product } from "./types/product";
-import { getColumns } from "./columns/product";
-import { useAppDispatch, useAppSelector } from "~/redux/store";
-import { fetchProductListData } from "~/redux/slices/products";
 import { fetchProductFormMeta } from "~/redux/slices/product-form-meta";
+import { fetchProductListData } from "~/redux/slices/products";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import type { Product } from "../../../types/product/product";
+import DataTable from "../components/data-table";
+import { getColumns } from "./columns/product";
 
-import ProductVariant from "./components/product-variant";
-import AddProductDialog from "./components/add-product-dialog";
-import EditProductDialog from "./components/edit-product-dialog";
-import DeleteProductDialog from "./components/delete-product-dialog";
-import ReviewDialog from "../reviews";
-import ProductFilter from "./components/product-filter";
 import SkeletonFilter from "../../../components/ui/skeleton-filter";
-import SkeletonTable from "../../../components/ui/skeleton-table";
 import SkeletonHeader from "../../../components/ui/skeleton-header";
+import SkeletonTable from "../../../components/ui/skeleton-table";
+import ReviewDialog from "../reviews";
+import AddProductDialog from "./components/add-product-dialog";
+import DeleteProductDialog from "./components/delete-product-dialog";
+import EditProductDialog from "./components/edit-product-dialog";
+import ProductFilter from "./components/product-filter";
+import ProductVariantRow from "~/features/system/product-variants";
 
 export default function Products() {
   const dispatch = useAppDispatch();
@@ -78,33 +82,6 @@ export default function Products() {
     setIsReviewOpen(true);
   }, []);
 
-  const handleRenderExpandedRowContent = (
-    product: Product
-  ): React.ReactNode => {
-    return (
-      <div className="flex flex-col p-2">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-medium flex items-center gap-2">
-            <Package />
-            Biến thể sản phẩm (3)
-          </h4>
-          <Button className="bg-[#3770EC] text-white">
-            <Plus />
-            Thêm biến thể
-          </Button>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {/* {product.product_variant.map((variant) => (
-            <ProductVariant
-              key={variant.product_variant_id}
-              variant={variant}
-            />
-          ))} */}
-        </div>
-      </div>
-    );
-  };
-
   const columns = useMemo(
     () => getColumns(handleEdit, handleDelete, handleReview),
     [handleEdit, handleDelete, handleReview]
@@ -158,7 +135,9 @@ export default function Products() {
             currentPage={currentPage}
             totalPages={productList?.data?.totalPages ?? 1}
             onPageChange={setCurrentPage}
-            expandedRowContent={handleRenderExpandedRowContent}
+            expandedRowContent={(product: Product) => (
+              <ProductVariantRow productId={product.productId} />
+            )}
           />
         )}
       </div>

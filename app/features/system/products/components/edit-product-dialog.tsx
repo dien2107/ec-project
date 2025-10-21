@@ -20,7 +20,7 @@ import { getAllImagesByProductId } from "~/services/product-images";
 import toast from "react-hot-toast";
 import { updateProduct } from "~/services/products";
 import type { UpdateProduct } from "../types/update-product";
-import type { Product } from "../types/product";
+import type { Product } from "../../../../types/product/product";
 import type { ProductImage } from "../types/product-image";
 
 export default function EditProductDialog({

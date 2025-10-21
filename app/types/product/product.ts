@@ -1,24 +1,8 @@
 import type { Status } from "~/types/status";
-
-export type Material = {
-  materialId: number;
-  name: string;
-};
-
-export type Category = {
-  categoryId: number;
-  name: string;
-};
-
-export type Color = {
-  colorId: number;
-  name: string;
-};
-
-export type ProductGroup = {
-  productGroupId: number;
-  name: string;
-};
+import type { Material } from "./material";
+import type { Category } from "./category";
+import type { Color } from "./color";
+import type { ProductGroup } from "./product-group";
 
 export type PrimaryImage = {
   productImageId: number;
