@@ -1,3 +1,5 @@
+import type { ProductVariant } from "~/types/product/product-variant";
+
 export type ProductImageGalleryProps = {
   product_image_id: number;
   product_id: number;
@@ -8,8 +10,7 @@ export type ProductImageGalleryProps = {
 };
 
 export type SelectedProductProps = {
-  sizeId: number | null;
-  colorId: number | null;
+  productVariant: ProductVariant | null;
   quantity: number;
 };
 

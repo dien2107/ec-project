@@ -1,8 +1,8 @@
-
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
 import { Edit, Trash2 } from "lucide-react";
+import { formatVND } from "~/libs";
 
 export type ImportOrder = {
   id: string;
@@ -49,12 +49,6 @@ const statusMap: Record<string, { label: string; className: string }> = {
   received: { label: "Đã nhận", className: "bg-green-100 text-green-800" },
 };
 
-const formatVND = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
   handleDelete: (order: ImportOrder) => void
@@ -96,7 +90,9 @@ export const getImportOrderColumns = (
     },
     cell: ({ getValue }) => {
       const quantity = getValue() as number;
-      return <div className="text-center">{quantity.toLocaleString('vi-VN')}</div>;
+      return (
+        <div className="text-center">{quantity.toLocaleString("vi-VN")}</div>
+      );
     },
   },
   {
@@ -140,9 +136,14 @@ export const getImportOrderColumns = (
     },
     cell: ({ getValue }) => {
       const status = getValue() as keyof typeof statusMap;
-      const statusInfo = statusMap[status] || { label: status, className: "bg-gray-100 text-gray-800" };
+      const statusInfo = statusMap[status] || {
+        label: status,
+        className: "bg-gray-100 text-gray-800",
+      };
       return (
-        <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusInfo.className}`}>
+        <span
+          className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusInfo.className}`}
+        >
           {statusInfo.label}
         </span>
       );
@@ -165,7 +166,7 @@ export const getImportOrderColumns = (
     },
     cell: ({ getValue }) => {
       const date = getValue() as string;
-      return new Date(date).toLocaleDateString('vi-VN');
+      return new Date(date).toLocaleDateString("vi-VN");
     },
   },
   {
@@ -181,13 +182,13 @@ export const getImportOrderColumns = (
     },
     cell: ({ getValue }) => {
       const date = getValue() as string;
-      return new Date(date).toLocaleDateString('vi-VN');
+      return new Date(date).toLocaleDateString("vi-VN");
     },
   },
   {
     id: "actions",
     header: "Thao tác",
-        cell: ({ row }) => (
+    cell: ({ row }) => (
       <div className="flex gap-2">
         <Button
           variant="ghost"

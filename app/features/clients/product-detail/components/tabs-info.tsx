@@ -2,24 +2,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import StarRatingRow from "./star-rating-row";
 import TabsReview from "./tabs-review";
 import { Star, StarHalf } from "lucide-react";
+import type { ProductDetail } from "~/types/product/product";
 
-export default function TabsInfo() {
-  const renderStars = (rating: number) => {
-    const stars = [];
+const renderStars = (rating: number) => {
+  const stars = [];
 
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) {
-        stars.push(<Star key={i} fill="gold" stroke="gold" />);
-      } else if (rating + 0.5 >= i) {
-        stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
-      } else {
-        stars.push(<Star key={i} stroke="gold" />);
-      }
+  for (let i = 1; i <= 5; i++) {
+    if (rating >= i) {
+      stars.push(<Star key={i} fill="gold" stroke="gold" />);
+    } else if (rating + 0.5 >= i) {
+      stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
+    } else {
+      stars.push(<Star key={i} stroke="gold" />);
     }
+  }
 
-    return stars;
-  };
+  return stars;
+};
 
+export default function TabsInfo({ product }: { product: ProductDetail }) {
   return (
     <div>
       <Tabs defaultValue="product" className="w-full">
@@ -40,7 +41,7 @@ export default function TabsInfo() {
             value="rating"
             className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:border-b-black data-[state=active]:shadow-none rounded-none cursor-pointer py-3 h-10 text-gray-500 transition-colors duration-200"
           >
-            Đánh giá (156)
+            Đánh giá ({product.reviewCount || 0})
           </TabsTrigger>
         </TabsList>
         <span className="border-b border-gray-200"></span>
@@ -49,16 +50,24 @@ export default function TabsInfo() {
             <h1 className="font-medium mb-2">Thông tin sản phẩm</h1>
             <ul className="list-disc ml-5">
               <li className="mb-1 text-md">
-                Tên sản phẩm: <span className="text-gray-700">Áo thun nam</span>
+                Tên sản phẩm:{" "}
+                <span className="text-gray-700">{product.name}</span>
               </li>
               <li className="mb-1 text-md">
-                Chất liệu: <span className="text-gray-700">100% cotton</span>
+                Chất liệu:{" "}
+                <span className="text-gray-700">{product.material.name}</span>
               </li>
               <li className="mb-1 text-md">
-                Màu sắc: <span className="text-gray-700">Đen, Trắng, Xanh</span>
+                Màu sắc:{" "}
+                <span className="text-gray-700">{product.color.name}</span>
               </li>
               <li className="mb-1 text-md">
-                Kích thước: <span className="text-gray-700">S, M, L, XL</span>
+                Kích thước:{" "}
+                <span className="text-gray-700">
+                  {product.productVariants
+                    .map((productVariant) => productVariant.size.name)
+                    .join(", ")}
+                </span>
               </li>
               <li className="mb-1 text-md">
                 Xuất xứ: <span className="text-gray-700">Việt Nam</span>

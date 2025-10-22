@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/card";
 
 import { fakeWeeklyRevenueData } from "../data/fakeVisualReports";
+import { formatVND } from "~/libs";
 
 const weekMap: Record<string, string> = {
   CN: "Chủ nhật",
@@ -26,12 +27,6 @@ const weekMap: Record<string, string> = {
   T6: "Thứ 6",
   T7: "Thứ 7",
 };
-
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
 
 export default function WeeklyRevenueChart() {
   return (

@@ -27,6 +27,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fakeRevenueData } from "../data/fakeVisualReports";
+import { formatVND } from "~/libs";
 
 const monthMap: Record<string, string> = {
   T1: "Tháng 1",
@@ -42,12 +43,6 @@ const monthMap: Record<string, string> = {
   T11: "Tháng 11",
   T12: "Tháng 12",
 };
-
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
 
 export default function RevenueChart() {
   return (

@@ -3,6 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
+import { formatVND } from "~/libs";
 
 export type address = {
   id: number;
@@ -63,11 +64,6 @@ export type Order = {
   items: order_item[];
 };
 
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
 
 export const getColumns = (
   handleView: (order: Order) => void

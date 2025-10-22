@@ -16,12 +16,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { fakeTopSellingProductsData } from "../data/fakeVisualReports";
-
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+import { formatVND } from "~/libs";
 
 export default function TopSellingProducts() {
   return (

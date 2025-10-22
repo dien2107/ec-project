@@ -3,13 +3,7 @@ import { ChevronUp, SquarePen, Trash, MessageSquare } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
 import type { Product } from "../../../../types/product/product";
-
-function formatVND(amount: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-}
+import { formatVND } from "~/libs";
 
 export const getColumns = (
   handleEdit: (product: Product) => void,

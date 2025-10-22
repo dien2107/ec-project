@@ -8,6 +8,7 @@ import {
   Banknote,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { formatVND } from "~/libs";
 
 export type Promotion = {
   discount_id: number;
@@ -25,13 +26,6 @@ export type Promotion = {
   created_at: Date;
   updated_at: Date;
 };
-
-function formatVND(amount: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-}
 
 export const getColumns = (
   handleEdit: (promotion: Promotion) => void,

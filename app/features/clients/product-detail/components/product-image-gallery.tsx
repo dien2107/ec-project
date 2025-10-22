@@ -1,11 +1,11 @@
 import { useRef } from "react";
 
-import type { ProductImageGalleryProps } from "../types";
+import type { ProductImage } from "~/types/product/product-image";
 
 export default function ProductImageGallery({
   images,
 }: {
-  images: ProductImageGalleryProps[];
+  images: ProductImage[];
 }) {
   const mainImageContainerRef = useRef<HTMLDivElement | null>(null);
   const imageRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -28,12 +28,12 @@ export default function ProductImageGallery({
         {images.map((image, index) => (
           <div
             className="w-full h-20 cursor-pointer"
-            key={image.product_image_id}
-            onClick={() => scrollToImage(image.product_image_id)}
+            key={image.productImageId}
+            onClick={() => scrollToImage(image.productImageId)}
           >
             <img
-              src={image.image_url}
-              alt={image.alt_text}
+              src={image.imageUrl}
+              alt={image.altText}
               className="object-cover w-full h-full"
             />
           </div>
@@ -49,14 +49,14 @@ export default function ProductImageGallery({
           return (
             <div
               ref={(el) => {
-                imageRefs.current[image.product_image_id] = el;
+                imageRefs.current[image.productImageId] = el;
               }}
               className="h-full overflow-hidden"
-              key={image.product_image_id}
+              key={image.productImageId}
             >
               <img
-                src={image.image_url}
-                alt={image.alt_text}
+                src={image.imageUrl}
+                alt={image.altText}
                 className="h-full object-cover"
               />
             </div>

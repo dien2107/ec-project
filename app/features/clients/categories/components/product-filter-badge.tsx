@@ -2,12 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import type { FilterState } from "../types/product-category-slug-filter-props";
 import { Badge } from "~/components/ui/badge";
-
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+import { formatVND } from "~/libs";
 
 export default function ProductFilterBadge({
   filters,
