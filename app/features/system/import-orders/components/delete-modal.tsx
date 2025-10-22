@@ -26,7 +26,7 @@ export function DeleteImportOrderModal({ open, order, onClose, onDelete }: Delet
           <AlertDialogTitle>Xác nhận xóa đơn nhập hàng</AlertDialogTitle>
           <AlertDialogDescription>
             Bạn có chắc chắn muốn xóa đơn nhập hàng{" "}
-            <span className="font-semibold text-destructive">"{order?.id}"</span> không?
+            <span className="font-semibold text-destructive"></span> không?
             <br />
             <br />
             Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến đơn hàng này sẽ bị xóa vĩnh viễn.

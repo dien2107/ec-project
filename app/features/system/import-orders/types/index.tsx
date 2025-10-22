@@ -4,15 +4,27 @@ import { SortableHeader } from "../../components/data-table";
 import { Edit, Trash2 } from "lucide-react";
 import { formatVND } from "~/libs";
 
-export type ImportOrder = {
-  id: string;
-  supplier: string;
-  quantity: number;
-  total: number;
-  status: "pending" | "approved" | "received";
+export interface ImportOrder {
+  purchaseOrderId: number;
+  supplierId: number;
+  supplierName: string;
   orderDate: string;
-  expectedDate: string;
-};
+  statusId: number;
+  statusName: string;
+  totalAmount: number;
+  items: ImportOrderItem[];
+}
+
+export interface ImportOrderItem {
+  purchaseOrderItemId: number;
+  productVariantId: number;
+  sku: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  profitPercentage: number;
+  isPushed: boolean;
+}
 
 export interface ImportOrderFormData {
   supplier: string;
@@ -43,101 +55,97 @@ export interface DeleteImportOrderDialogProps {
   onDelete: (order: ImportOrder) => void;
 }
 
-const statusMap: Record<string, { label: string; className: string }> = {
-  pending: { label: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
-  approved: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
-  received: { label: "Đã nhận", className: "bg-green-100 text-green-800" },
+export interface Supplier {
+  id: number;
+  name: string;
+  phone: string;
+}
+
+export interface Product {
+  id: number;
+  code: string;
+  name: string;
+  category: string;
+  currentStock: number;
+  price: number;
+  image: string;
+}
+
+export interface SelectedProduct extends Product {
+  importQuantity: number;
+  importPrice: number;
+  profitMargin: number;
+  suggestedPrice: number;
+  totalPrice: number;
+}
+
+export interface ImportOrderAdd {
+  id?: string;
+  supplier: string;
+  products: SelectedProduct[];
+  totalQuantity: number;
+  totalAmount: number;
+  orderDate: string;
+  expectedDate: string;
+  note: string;
+  status: string;
+}
+
+export interface AddImportOrderModalProps {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (order: ImportOrderAdd) => void;
+}
+export const statusMap: Record<string, { label: string; className: string }> = {
+  Pending: { label: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
+  Approved: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
 };
+
+const formatVND = (amount: number) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
 
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
   handleDelete: (order: ImportOrder) => void
 ): ColumnDef<ImportOrder>[] => [
   {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Mã đơn hàng"
-          className="justify-start"
-        />
-      );
-    },
+    accessorKey: "purchaseOrderId",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mã đơn hàng" className="justify-start" />
+    ),
   },
   {
-    accessorKey: "supplier",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Nhà cung cấp"
-          className="justify-start"
-        />
-      );
-    },
+    accessorKey: "supplierName",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Nhà cung cấp" className="justify-start" />
+    ),
   },
   {
-    accessorKey: "quantity",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Số lượng"
-          className="justify-center"
-        />
-      );
-    },
-    cell: ({ getValue }) => {
-      const quantity = getValue() as number;
-      return (
-        <div className="text-center">{quantity.toLocaleString("vi-VN")}</div>
-      );
-    },
-  },
-  {
-    accessorKey: "total",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Tổng tiền"
-          className="justify-end"
-        />
-      );
-    },
+    accessorKey: "totalAmount",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Tổng tiền" className="justify-end" />
+    ),
     cell: ({ getValue }) => {
       const total = getValue() as number;
-      return <div className="text-right font-medium">{formatVND(total)}</div>;
+      return (
+        <div className="text-right font-medium">
+          {total.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+        </div>
+      );
     },
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Trạng thái"
-          className="justify-start"
-        />
-      );
-    },
-    meta: {
-      filterConfig: {
-        type: "select",
-        placeholder: "Tất cả trạng thái",
-        options: [
-          { value: "all", label: "Tất cả trạng thái" },
-          { value: "pending", label: "Chờ duyệt" },
-          { value: "approved", label: "Đã duyệt" },
-          { value: "received", label: "Đã nhận" },
-        ],
-      },
-    },
-    cell: ({ getValue }) => {
-      const status = getValue() as keyof typeof statusMap;
+    accessorKey: "statusName",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Trạng thái" className="justify-start" />
+    ),
+    cell: ({ row }) => {
+      const status = row.original.status.name;
       const statusInfo = statusMap[status] || {
-        label: status,
+        label: row.original.statusName,
         className: "bg-gray-100 text-gray-800",
       };
       return (
@@ -148,38 +156,12 @@ export const getImportOrderColumns = (
         </span>
       );
     },
-    filterFn: (row, id, value) => {
-      if (!value || value === "all") return true;
-      return row.getValue(id) === value;
-    },
   },
   {
     accessorKey: "orderDate",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Ngày đặt"
-          className="justify-start"
-        />
-      );
-    },
-    cell: ({ getValue }) => {
-      const date = getValue() as string;
-      return new Date(date).toLocaleDateString("vi-VN");
-    },
-  },
-  {
-    accessorKey: "expectedDate",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Ngày dự kiến"
-          className="justify-start"
-        />
-      );
-    },
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Ngày đặt" className="justify-start" />
+    ),
     cell: ({ getValue }) => {
       const date = getValue() as string;
       return new Date(date).toLocaleDateString("vi-VN");
