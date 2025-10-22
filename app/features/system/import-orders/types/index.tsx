@@ -101,12 +101,6 @@ export const statusMap: Record<string, { label: string; className: string }> = {
   Approved: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
 };
 
-const formatVND = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
   handleDelete: (order: ImportOrder) => void
@@ -114,25 +108,40 @@ export const getImportOrderColumns = (
   {
     accessorKey: "purchaseOrderId",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Mã đơn hàng" className="justify-start" />
+      <SortableHeader
+        column={column}
+        title="Mã đơn hàng"
+        className="justify-start"
+      />
     ),
   },
   {
     accessorKey: "supplierName",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Nhà cung cấp" className="justify-start" />
+      <SortableHeader
+        column={column}
+        title="Nhà cung cấp"
+        className="justify-start"
+      />
     ),
   },
   {
     accessorKey: "totalAmount",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Tổng tiền" className="justify-end" />
+      <SortableHeader
+        column={column}
+        title="Tổng tiền"
+        className="justify-end"
+      />
     ),
     cell: ({ getValue }) => {
       const total = getValue() as number;
       return (
         <div className="text-right font-medium">
-          {total.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+          {total.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}
         </div>
       );
     },
@@ -140,7 +149,11 @@ export const getImportOrderColumns = (
   {
     accessorKey: "statusName",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Trạng thái" className="justify-start" />
+      <SortableHeader
+        column={column}
+        title="Trạng thái"
+        className="justify-start"
+      />
     ),
     cell: ({ row }) => {
       const status = row.original.status.name;
@@ -160,7 +173,11 @@ export const getImportOrderColumns = (
   {
     accessorKey: "orderDate",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Ngày đặt" className="justify-start" />
+      <SortableHeader
+        column={column}
+        title="Ngày đặt"
+        className="justify-start"
+      />
     ),
     cell: ({ getValue }) => {
       const date = getValue() as string;

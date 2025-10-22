@@ -10,9 +10,9 @@ const Header = () => {
       <div className="main-container flex h-full items-center justify-between gap-8 px-6">
         <Link className="flex items-center" to="/">
           <img
-            src="/logo-test.png"
+            src="/logo.png"
             alt="Logo"
-            className="h-8 w-auto hover:opacity-80 transition-opacity"
+            className="h-10 rounded-sm w-auto hover:opacity-80 transition-opacity"
           />
         </Link>
 
