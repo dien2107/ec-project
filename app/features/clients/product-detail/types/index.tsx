@@ -17,5 +17,5 @@ export type SelectedProductProps = {
 export type StarRatingRowProps = {
   stars: number;
   value: number;
-  count: string;
+  count: number;
 };

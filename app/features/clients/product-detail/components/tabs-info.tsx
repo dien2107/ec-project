@@ -1,24 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import StarRatingRow from "./star-rating-row";
 import TabsReview from "./tabs-review";
-import { Star, StarHalf } from "lucide-react";
 import type { ProductDetail } from "~/types/product/product";
-
-const renderStars = (rating: number) => {
-  const stars = [];
-
-  for (let i = 1; i <= 5; i++) {
-    if (rating >= i) {
-      stars.push(<Star key={i} fill="gold" stroke="gold" />);
-    } else if (rating + 0.5 >= i) {
-      stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
-    } else {
-      stars.push(<Star key={i} stroke="gold" />);
-    }
-  }
-
-  return stars;
-};
+import { renderStars } from "~/libs/renderStars";
 
 export default function TabsInfo({ product }: { product: ProductDetail }) {
   return (
@@ -94,33 +78,49 @@ export default function TabsInfo({ product }: { product: ProductDetail }) {
           </div>
         </TabsContent>
         <TabsContent value="rating">
-          <div className="grid grid-cols-2 p-6 border border-gray-200 rounded-lg mt-6 shadow-sm">
-            {/* Left content */}
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-3 mb-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-3xl font-bold text-black">4.8</span>
-                  <div className="flex">{renderStars(4.8)}</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 ">
+            {/* Left: overview */}
+            <div className="md:col-span-1 self-start">
+              <div className="sticky top-24 p-6 border border-gray-200 rounded-lg shadow-sm">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-3xl font-bold text-black">
+                    {product.rating?.toFixed?.(1) ?? "0.0"}
+                  </span>
+                  <div className="flex">{renderStars(product.rating ?? 0)}</div>
+                </div>
+                <div className="mb-4">
+                  <span className="text-sm text-gray-500">
+                    {product.reviewCount ?? 0} đánh giá •{" "}
+                    {product.soldQuantity ?? 0} đã bán
+                  </span>
+                </div>
+
+                <div className="w-full space-y-2">
+                  {([5, 4, 3, 2, 1] as const).map((star) => {
+                    const details = product.reviewDetails ?? {};
+                    const count = Number(details[star] ?? 0);
+                    const value =
+                      product.reviewCount > 0
+                        ? Math.round((count / product.reviewCount) * 100)
+                        : 0;
+                    return (
+                      <StarRatingRow
+                        key={star}
+                        stars={star}
+                        value={value}
+                        count={count}
+                      />
+                    );
+                  })}
                 </div>
               </div>
-              <div>
-                <span className="text-sm text-gray-500">
-                  156 đánh giá • 943 đã bán
-                </span>
-              </div>
             </div>
 
-            {/* Right content */}
-            <div>
-              <StarRatingRow stars={5} value={100} count={"156"} />
-              <StarRatingRow stars={4} value={10} count={"2"} />
-              <StarRatingRow stars={3} value={0} count={"0"} />
-              <StarRatingRow stars={2} value={0} count={"0"} />
-              <StarRatingRow stars={1} value={0} count={"0"} />
+            {/* Right: reviews list (takes 2 columns on md+) */}
+            <div className="md:col-span-2 ml-2">
+              <TabsReview product={product} />
             </div>
           </div>
-
-          <TabsReview />
         </TabsContent>
       </Tabs>
     </div>

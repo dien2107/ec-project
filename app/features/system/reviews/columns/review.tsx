@@ -5,21 +5,7 @@ import { SortableHeader } from "../../components/data-table";
 
 import type { Review } from "../types/review";
 
-const renderStars = (rating: number) => {
-  const stars = [];
-
-  for (let i = 1; i <= 5; i++) {
-    if (rating >= i) {
-      stars.push(<Star size={16} key={i} fill="gold" stroke="gold" />);
-    } else if (rating + 0.5 >= i) {
-      stars.push(<StarHalf size={16} key={i} fill="gold" stroke="gold" />);
-    } else {
-      stars.push(<Star size={16} key={i} stroke="gold" />);
-    }
-  }
-
-  return stars;
-};
+import { renderStars } from "~/libs/renderStars";
 
 export const getColumns = (
   selectedReview: Review | null,
