@@ -17,14 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-
+import { formatVND } from "~/libs";
 import { fakeRecentOrdersData } from "../data/fakeVisualReports";
-
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
 
 const statusColorMap: Record<string, string> = {
   delivering: "blue-500",

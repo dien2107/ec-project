@@ -10,6 +10,9 @@ import { Provider } from "react-redux";
 import { store } from "~/redux/store";
 import { Toaster } from "react-hot-toast";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -44,11 +47,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+const queryClient = new QueryClient();
+
 export default function App() {
   return (
     <Provider store={store}>
-      <Outlet />
-      <Toaster />
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+        <Toaster />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </Provider>
   );
 }

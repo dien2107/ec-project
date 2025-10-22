@@ -5,7 +5,7 @@ export default [
     index("features/clients/home/index.tsx"),
     route("/categories/:slug", "features/clients/categories/index.tsx"),
     route("/payments", "features/clients/payment/index.tsx"),
-    route("/products/:id", "features/clients/product-detail/index.tsx"),
+    route("/products/:slug", "features/clients/product-detail/index.tsx"),
     route("/profile", "features/clients/user-profile/index.tsx"),
     route("/cart", "features/clients/cart/index.tsx"),
     route("/address", "features/clients/address/index.tsx"),

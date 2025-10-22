@@ -1,5 +1,6 @@
 import { NavLink } from "react-router";
 import { useMemo } from "react";
+import { formatVND } from "~/libs";
 
 type ProductCard = {
   id: number;
@@ -10,12 +11,6 @@ type ProductCard = {
   oldPrice: number;
   discount: number;
 };
-
-const formatVND = (amount: number) =>
-  Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
 
 export default function ProductCard({
   id,

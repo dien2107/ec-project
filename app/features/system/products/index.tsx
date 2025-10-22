@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchProductFormMeta } from "~/redux/slices/product-form-meta";
 import { fetchProductListData } from "~/redux/slices/products";
@@ -13,6 +7,7 @@ import type { Product } from "../../../types/product/product";
 import DataTable from "../components/data-table";
 import { getColumns } from "./columns/product";
 
+import ProductVariantRow from "~/features/system/product-variants";
 import SkeletonFilter from "../../../components/ui/skeleton-filter";
 import SkeletonHeader from "../../../components/ui/skeleton-header";
 import SkeletonTable from "../../../components/ui/skeleton-table";
@@ -21,7 +16,6 @@ import AddProductDialog from "./components/add-product-dialog";
 import DeleteProductDialog from "./components/delete-product-dialog";
 import EditProductDialog from "./components/edit-product-dialog";
 import ProductFilter from "./components/product-filter";
-import ProductVariantRow from "~/features/system/product-variants";
 
 export default function Products() {
   const dispatch = useAppDispatch();

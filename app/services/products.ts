@@ -77,3 +77,13 @@ export const getProductByCategorySlug = async (
     throw error;
   }
 };
+
+export const getProductDetailBySlug = async (slug: string) => {
+  try {
+    const response = await instance.get(`/products/${slug}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product detail by slug:", error);
+    throw error;
+  }
+};
