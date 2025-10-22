@@ -17,23 +17,15 @@ export default function AdminCompany() {
 
   if (!mounted) {
     return (
-      <div className="w-full">
-        <img
-          src="https://res.yame.vn/Content/images/yame-f-logo-white.png"
-          alt="Logo"
-          className="object-fit"
-        />
+      <div className="w-full px-2 rounded-sm">
+        <img src="/logo.png" alt="Logo" className="object-fit" />
       </div>
     );
   }
 
   return (
-    <div className="w-full">
-      <img
-        src="https://res.yame.vn/Content/images/yame-f-logo-white.png"
-        alt="Logo"
-        className="object-fit"
-      />
+    <div className="w-full px-2 rounded-sm">
+      <img src="/logo.png" alt="Logo" className="object-fit" />
     </div>
   );
 }

@@ -6,10 +6,10 @@ export const useSocket = (): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const s = io(import.meta.env.VITE_API_BASE_URL);
+    const s = io(import.meta.env.VITE_API_CHATBOX_URL);
     socketRef.current = s;
     setSocket(s);
-    console.log("Connecting to socket:", import.meta.env.VITE_API_BASE_URL);
+    console.log("Connecting to socket:", import.meta.env.VITE_API_CHATBOX_URL);
 
     return () => {
       if (socketRef.current) {

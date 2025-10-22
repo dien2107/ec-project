@@ -33,9 +33,38 @@ import {
 
 // Mock order data for lookup
 const mockOrders = [
-  { orderId: "ORD1001", customer: { name: "Nguyễn Văn A", phone: "0901234567" }, product: { name: "Áo sơ mi nam", sku: "SM001", price: 350000, image: "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg" } },
-  { orderId: "ORD1002", customer: { name: "Trần Thị B", phone: "0907654321" }, product: { name: "Giày sneaker", sku: "SN002", price: 1200000, image: "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg" } },
-  { orderId: "ORD1003", customer: { name: "Lê Văn C", phone: "0912345678" }, product: { name: "Quần jeans", sku: "JN003", price: 800000, image: "https://example.com/jeans.jpg" } },
+  {
+    orderId: "ORD1001",
+    customer: { name: "Nguyễn Văn A", phone: "0901234567" },
+    product: {
+      name: "Áo sơ mi nam",
+      sku: "SM001",
+      price: 350000,
+      image:
+        "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+    },
+  },
+  {
+    orderId: "ORD1002",
+    customer: { name: "Trần Thị B", phone: "0907654321" },
+    product: {
+      name: "Giày sneaker",
+      sku: "SN002",
+      price: 1200000,
+      image:
+        "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
+    },
+  },
+  {
+    orderId: "ORD1003",
+    customer: { name: "Lê Văn C", phone: "0912345678" },
+    product: {
+      name: "Quần jeans",
+      sku: "JN003",
+      price: 800000,
+      image: "https://example.com/jeans.jpg",
+    },
+  },
 ];
 
 type Return = {
@@ -118,7 +147,9 @@ const returnColumns = (
     cell: ({ row }) => (
       <div className="flex flex-col">
         <div className="font-semibold text-slate-800">{row.original.id}</div>
-        <div className="text-xs text-slate-500">Đơn gốc: {row.original.orderId}</div>
+        <div className="text-xs text-slate-500">
+          Đơn gốc: {row.original.orderId}
+        </div>
       </div>
     ),
   },
@@ -158,8 +189,12 @@ const returnColumns = (
           <User className="w-4 h-4 text-white" />
         </div>
         <div>
-          <div className="font-medium text-slate-800 text-sm">{row.original.customer.name}</div>
-          <div className="text-xs text-slate-500">{row.original.customer.phone}</div>
+          <div className="font-medium text-slate-800 text-sm">
+            {row.original.customer.name}
+          </div>
+          <div className="text-xs text-slate-500">
+            {row.original.customer.phone}
+          </div>
         </div>
       </div>
     ),
@@ -178,7 +213,9 @@ const returnColumns = (
         />
         <div>
           <div className="font-medium text-sm">{row.original.product.name}</div>
-          <div className="text-xs text-slate-500">{row.original.product.sku}</div>
+          <div className="text-xs text-slate-500">
+            {row.original.product.sku}
+          </div>
           <div className="text-xs font-medium text-green-600">
             {formatCurrency(row.original.product.price)}
           </div>
@@ -247,11 +284,7 @@ const returnColumns = (
 
       return (
         <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleView(ret)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => handleView(ret)}>
             <Eye className="h-4 w-4" />
           </Button>
           <Button
@@ -295,7 +328,9 @@ export default function OrderReturn() {
   const [phoneSearch, setPhoneSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [orderSuggestions, setOrderSuggestions] = useState<typeof mockOrders>([]);
+  const [orderSuggestions, setOrderSuggestions] = useState<typeof mockOrders>(
+    []
+  );
   const itemsPerPage = 10; // Số lượng mục trên mỗi trang
 
   // 📊 Stats
@@ -324,8 +359,13 @@ export default function OrderReturn() {
   const filteredReturns = useMemo(() => {
     return returns.filter((r) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
-      if (dateFilter.from && new Date(r.requestDate) < new Date(dateFilter.from)) return false;
-      if (dateFilter.to && new Date(r.requestDate) > new Date(dateFilter.to)) return false;
+      if (
+        dateFilter.from &&
+        new Date(r.requestDate) < new Date(dateFilter.from)
+      )
+        return false;
+      if (dateFilter.to && new Date(r.requestDate) > new Date(dateFilter.to))
+        return false;
 
       if (productSearch) {
         const keyword = productSearch.toLowerCase().trim();
@@ -386,7 +426,7 @@ export default function OrderReturn() {
   };
 
   // Handle selecting an order from suggestions
-  const handleSelectOrder = (order: typeof mockOrders[0]) => {
+  const handleSelectOrder = (order: (typeof mockOrders)[0]) => {
     setNewReturn({
       ...newReturn,
       orderId: order.orderId,
@@ -468,7 +508,9 @@ export default function OrderReturn() {
               <stat.icon className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-800">{stat.value}</div>
+              <div className="text-2xl font-bold text-slate-800">
+                {stat.value}
+              </div>
               <div className="text-slate-500">{stat.label}</div>
             </div>
           </div>
@@ -479,23 +521,25 @@ export default function OrderReturn() {
       <div className="flex flex-wrap items-center gap-4">
         {/* Status buttons */}
         <div className="flex gap-2 flex-wrap">
-          {["all", "pending", "processing", "approved", "rejected"].map((status) => (
-            <Button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                statusFilter === status
-                  ? "bg-blue-600 text-white shadow"
-                  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              {status === "all" && "Tất cả"}
-              {status === "pending" && "Chờ xử lý"}
-              {status === "processing" && "Đang xử lý"}
-              {status === "approved" && "Đã duyệt"}
-              {status === "rejected" && "Từ chối"}
-            </Button>
-          ))}
+          {["all", "pending", "processing", "approved", "rejected"].map(
+            (status) => (
+              <Button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  statusFilter === status
+                    ? "bg-blue-600 text-white shadow"
+                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {status === "all" && "Tất cả"}
+                {status === "pending" && "Chờ xử lý"}
+                {status === "processing" && "Đang xử lý"}
+                {status === "approved" && "Đã duyệt"}
+                {status === "rejected" && "Từ chối"}
+              </Button>
+            )
+          )}
         </div>
 
         {/* Date filter */}
@@ -504,14 +548,18 @@ export default function OrderReturn() {
           <Input
             type="date"
             value={dateFilter.from}
-            onChange={(e) => setDateFilter({ ...dateFilter, from: e.target.value })}
+            onChange={(e) =>
+              setDateFilter({ ...dateFilter, from: e.target.value })
+            }
             className="w-40"
           />
           <span className="text-sm text-slate-600">Đến ngày</span>
           <Input
             type="date"
             value={dateFilter.to}
-            onChange={(e) => setDateFilter({ ...dateFilter, to: e.target.value })}
+            onChange={(e) =>
+              setDateFilter({ ...dateFilter, to: e.target.value })
+            }
             className="w-40"
           />
         </div>
@@ -551,20 +599,29 @@ export default function OrderReturn() {
       {paginatedReturns.length > 0 ? (
         <DataTable
           columns={returnColumns(
-            (ret) => { /* handle view logic here */ },
-            (ret) => { /* handle approve logic here */ },
-            (ret) => { /* handle reject logic here */ },
-            (ret) => { /* handle print logic here */ }
+            (ret) => {
+              /* handle view logic here */
+            },
+            (ret) => {
+              /* handle approve logic here */
+            },
+            (ret) => {
+              /* handle reject logic here */
+            },
+            (ret) => {
+              /* handle print logic here */
+            }
           )}
           data={paginatedReturns}
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={(page: number) => setCurrentPage(page)}
-          title="Danh sách đổi / trả hàng"
         />
       ) : (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
-          <p className="text-slate-500">Không tìm thấy phiếu đổi/trả hàng nào phù hợp.</p>
+          <p className="text-slate-500">
+            Không tìm thấy phiếu đổi/trả hàng nào phù hợp.
+          </p>
         </div>
       )}
 
@@ -576,7 +633,9 @@ export default function OrderReturn() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="relative">
-              <label className="block text-sm font-medium text-slate-700">Mã đơn gốc</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Mã đơn gốc
+              </label>
               <Input
                 value={newReturn.orderId || ""}
                 onChange={(e) => handleOrderIdChange(e.target.value)}
@@ -592,18 +651,25 @@ export default function OrderReturn() {
                       onClick={() => handleSelectOrder(order)}
                     >
                       <div className="font-medium">{order.orderId}</div>
-                      <div className="text-sm text-slate-500">{order.customer.name} - {order.product.name}</div>
+                      <div className="text-sm text-slate-500">
+                        {order.customer.name} - {order.product.name}
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Loại</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Loại
+              </label>
               <Select
                 value={newReturn.type || "return"}
                 onValueChange={(value) =>
-                  setNewReturn({ ...newReturn, type: value as "exchange" | "return" })
+                  setNewReturn({
+                    ...newReturn,
+                    type: value as "exchange" | "return",
+                  })
                 }
               >
                 <SelectTrigger className="w-full">
@@ -616,7 +682,9 @@ export default function OrderReturn() {
               </Select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Mã SKU</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Mã SKU
+              </label>
               <Input
                 value={newReturn.product?.sku || ""}
                 onChange={(e) =>
@@ -635,32 +703,45 @@ export default function OrderReturn() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Lý do</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Lý do
+              </label>
               <Input
                 value={newReturn.reason || ""}
-                onChange={(e) => setNewReturn({ ...newReturn, reason: e.target.value })}
+                onChange={(e) =>
+                  setNewReturn({ ...newReturn, reason: e.target.value })
+                }
                 placeholder="Nhập lý do đổi/trả"
                 className="w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Số lượng</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Số lượng
+              </label>
               <Input
                 type="number"
                 value={newReturn.quantity || 1}
                 onChange={(e) =>
-                  setNewReturn({ ...newReturn, quantity: Number(e.target.value) })
+                  setNewReturn({
+                    ...newReturn,
+                    quantity: Number(e.target.value),
+                  })
                 }
                 placeholder="Nhập số lượng"
                 className="w-full"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Ngày yêu cầu</label>
+              <label className="block text-sm font-medium text-slate-700">
+                Ngày yêu cầu
+              </label>
               <Input
                 type="date"
                 value={newReturn.requestDate || ""}
-                onChange={(e) => setNewReturn({ ...newReturn, requestDate: e.target.value })}
+                onChange={(e) =>
+                  setNewReturn({ ...newReturn, requestDate: e.target.value })
+                }
                 className="w-full"
               />
             </div>

@@ -21,7 +21,7 @@ const Chatbox = () => {
       localStorage.setItem("chat_session_id", sessionId);
     }
 
-    socketRef.current = io(import.meta.env.VITE_API_BASE_URL, {
+    socketRef.current = io(import.meta.env.VITE_API_CHATBOX_URL, {
       auth: { sessionId },
     });
 
