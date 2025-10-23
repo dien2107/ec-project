@@ -155,29 +155,31 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Glassmorphism Card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
+    <div className="w-full  min-h-[70vh] ">
+      <div className="w-full ">
+        {/* Simple Card */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-black mb-2">Đổi mật khẩu</h1>
-            <p className="text-gray-800 text-sm">
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold tracking-tight text-black mb-1">
+              Đổi mật khẩu
+            </h1>
+            <p className="text-gray-500 text-sm">
               Cập nhật mật khẩu để bảo vệ tài khoản
             </p>
           </div>
 
-          <div onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Current Password */}
             <div className="space-y-2">
               <label
                 htmlFor="oldPassword"
-                className="block text-sm font-medium text-gray-900"
+                className="block text-sm font-medium text-gray-700"
               >
                 Mật khẩu hiện tại
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-800" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type={showPassword.old ? "text" : "password"}
                   id="oldPassword"
@@ -186,14 +188,14 @@ const ChangePassword = () => {
                   onChange={handleInputChange}
                   placeholder="Nhập mật khẩu hiện tại"
                   required
-                  className="w-full pl-11 pr-11 py-6 bg-white/5 border border-white/20 rounded-xl text-black placeholder-gray-400 "
+                  className="w-full pl-10 pr-10 py-2 border rounded-md text-gray-900 placeholder-gray-400"
                 />
                 <Button
                   type="button"
                   onClick={() => togglePasswordVisibility("old")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-800 hover:text-gray-900 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showPassword.old ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword.old ? <EyeOff size={18} /> : <Eye size={18} />}
                 </Button>
               </div>
             </div>
@@ -202,12 +204,12 @@ const ChangePassword = () => {
             <div className="space-y-2">
               <label
                 htmlFor="newPassword"
-                className="block text-sm font-medium text-gray-900"
+                className="block text-sm font-medium text-gray-700"
               >
                 Mật khẩu mới
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-800" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type={showPassword.new ? "text" : "password"}
                   id="newPassword"
@@ -216,31 +218,30 @@ const ChangePassword = () => {
                   onChange={handleInputChange}
                   placeholder="Nhập mật khẩu mới"
                   required
-                  className="w-full pl-11 pr-11 py-6 bg-white/5 border border-white/20 rounded-xl text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-10 py-2 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all duration-200"
                 />
                 <Button
                   type="button"
                   onClick={() => togglePasswordVisibility("new")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-800 hover:text-gray-900 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showPassword.new ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
                 </Button>
               </div>
 
-              {/* Password Strength Indicator */}
               {showValidation && form.newPassword && (
-                <div className="space-y-2 mt-3">
+                <div className="space-y-2 mt-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-800">
+                    <span className="text-xs text-gray-600">
                       Độ mạnh mật khẩu:
                     </span>
                     <span
                       className={`text-xs font-medium ${
                         passwordValidation.strength === "strong"
-                          ? "text-green-400"
+                          ? "text-green-600"
                           : passwordValidation.strength === "medium"
-                            ? "text-yellow-400"
-                            : "text-red-400"
+                            ? "text-yellow-600"
+                            : "text-red-600"
                       }`}
                     >
                       {passwordValidation.strength === "strong"
@@ -250,7 +251,7 @@ const ChangePassword = () => {
                           : "Yếu"}
                     </span>
                   </div>
-                  <div className="w-full bg-white/10 rounded-full h-2">
+                  <div className="w-full bg-gray-100 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor(passwordValidation.strength)} ${getStrengthWidth(passwordValidation.strength)}`}
                     ></div>
@@ -262,7 +263,7 @@ const ChangePassword = () => {
                       {passwordValidation.errors.map((error, index) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 text-xs text-red-400"
+                          className="flex items-center gap-2 text-xs text-red-600"
                         >
                           <AlertCircle className="w-3 h-3" />
                           {error}
@@ -283,7 +284,7 @@ const ChangePassword = () => {
                 Xác nhận mật khẩu mới
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-800" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type={showPassword.confirm ? "text" : "password"}
                   id="confirmPassword"
@@ -292,28 +293,27 @@ const ChangePassword = () => {
                   onChange={handleInputChange}
                   placeholder="Xác nhận mật khẩu mới"
                   required
-                  className={`w-full pl-11 pr-11 py-6 bg-white/5 border rounded-xl text-black placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  className={`w-full pl-10 pr-10 py-2 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
                     form.confirmPassword &&
                     form.newPassword !== form.confirmPassword
                       ? "border-red-500 focus:ring-red-500"
                       : form.confirmPassword &&
                           form.newPassword === form.confirmPassword
                         ? "border-green-500 focus:ring-green-500"
-                        : "border-white/20 focus:border-transparent"
+                        : "border-gray-200 focus:border-black/10"
                   }`}
                 />
                 <Button
                   type="button"
                   onClick={() => togglePasswordVisibility("confirm")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-800 hover:text-gray-900 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
                   {showPassword.confirm ? (
-                    <EyeOff size={20} />
+                    <EyeOff size={18} />
                   ) : (
-                    <Eye size={20} />
+                    <Eye size={18} />
                   )}
                 </Button>
-
               </div>
 
               {form.confirmPassword &&
@@ -339,22 +339,22 @@ const ChangePassword = () => {
               type="submit"
               disabled={!isFormValid || isSubmitting}
               onClick={handleSubmit}
-              className={`w-full p-6 rounded-xl font-semibold text-black transition-all duration-200 ${
+              className={`w-full mt-4 py-2 rounded-md font-semibold text-black transition-all duration-200 ${
                 isFormValid && !isSubmitting
-                  ? "bg-black text-white transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
-                  : "bg-gray-600 cursor-not-allowed opacity-50"
+                  ? "bg-black text-white hover:shadow-md"
+                  : "bg-gray-200 cursor-not-allowed text-gray-400"
               }`}
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   Đang cập nhật...
                 </div>
               ) : (
                 "Cập nhật mật khẩu"
               )}
             </Button>
-          </div>
+          </form>
 
           {/* Security Tips */}
           <div className="mt-8 border-t border-white/10 pt-6">

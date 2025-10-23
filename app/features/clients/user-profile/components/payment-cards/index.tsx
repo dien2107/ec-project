@@ -4,6 +4,9 @@ import { mockPaymentCards } from "./data/mockPaymentCards";
 import AddCardModal from "./components/add-card-modal";
 import EditCardModal from "./components/edit-card-modal";
 import DeleteCardModal from "./components/delete-card-modal";
+import { Button } from "~/components/ui/button";
+import { Edit, Trash, Plus, Check } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
 
 export default function PaymentCards() {
   const [cards, setCards] = useState<PaymentCard[]>(mockPaymentCards);
@@ -13,7 +16,7 @@ export default function PaymentCards() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleAdd = (card: PaymentCard) => {
-    setCards(prev => [
+    setCards((prev) => [
       { ...card, id: `CARD-${Date.now().toString().slice(-3)}` },
       ...prev,
     ]);
@@ -26,7 +29,7 @@ export default function PaymentCards() {
   };
 
   const handleEditSave = (card: PaymentCard) => {
-    setCards(prev => prev.map(c => c.id === card.id ? card : c));
+    setCards((prev) => prev.map((c) => (c.id === card.id ? card : c)));
     setIsEditOpen(false);
     setSelectedCard(null);
   };
@@ -38,51 +41,92 @@ export default function PaymentCards() {
 
   const handleDeleteConfirm = () => {
     if (selectedCard) {
-      setCards(prev => prev.filter(c => c.id !== selectedCard.id));
+      setCards((prev) => prev.filter((c) => c.id !== selectedCard.id));
       setIsDeleteOpen(false);
       setSelectedCard(null);
     }
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow">
+    <div className="bg-white min-h-[70vh] rounded-xl p-6 shadow">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-bold">Thẻ ngân hàng của bạn</h3>
-        <button 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Thẻ ngân hàng của bạn
+        </h1>
+        <Button
           onClick={() => setIsAddOpen(true)}
+          className="bg-blue-600 text-white flex items-center gap-2"
         >
-          <span className="text-lg">+</span>
+          <Plus />
           Thêm thẻ mới
-        </button>
+        </Button>
       </div>
       <div className="space-y-4">
-        {cards.map(card => (
-          <div key={card.id} className={`flex items-center justify-between border rounded-lg px-4 py-3 ${card.isDefault ? 'border-blue-600' : 'border-gray-200'}`}>
+        {cards.map((card) => (
+          <div
+            key={card.id}
+            className={`flex items-center justify-between p-3 border-b-1`}
+          >
             <div className="flex items-center gap-4">
               <div className="flex flex-col">
-                <span className="font-semibold text-lg">{card.brand}</span>
-                <span className="font-mono text-base tracking-widest">{card.cardNumber}</span>
+                <span className="font-semibold text-lg flex items-center gap-2">
+                  {card.brand}
+                  {card.isDefault && (
+                    <Badge
+                      variant="default"
+                      className="text-white ml-2 text-xs"
+                    >
+                      <Check size={12} />
+                      Mặc định
+                    </Badge>
+                  )}
+                </span>
+                <span className="font-mono text-base tracking-widest">
+                  {card.cardNumber}
+                </span>
                 <span className="text-gray-500 text-sm">{card.cardHolder}</span>
-                <span className="text-gray-500 text-sm">Hết hạn: {card.expiry}</span>
-                {card.isDefault && <span className="text-blue-600 text-xs font-medium mt-1">Mặc định</span>}
+                <span className="text-gray-500 text-sm">
+                  Hết hạn: {card.expiry}
+                </span>
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200" onClick={() => handleEdit(card)}>
-                Sửa
-              </button>
-              <button className="px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200" onClick={() => handleDelete(card)}>
-                Xóa
-              </button>
+              <Button
+                variant="ghost"
+                className="p-2"
+                onClick={() => handleEdit(card)}
+              >
+                <Edit className="w-4 h-4 text-gray-600" />
+              </Button>
+              <Button
+                variant="ghost"
+                className="p-2 text-red-600"
+                onClick={() => handleDelete(card)}
+              >
+                <Trash className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         ))}
       </div>
-      
-      <AddCardModal open={isAddOpen} setIsOpen={setIsAddOpen} onAdd={handleAdd} />
-      <EditCardModal open={isEditOpen} setIsOpen={setIsEditOpen} card={selectedCard} onSave={handleEditSave} />
-      <DeleteCardModal open={isDeleteOpen} setIsOpen={setIsDeleteOpen} onDelete={handleDeleteConfirm} cardNumber={selectedCard?.cardNumber} />
+
+      <AddCardModal
+        open={isAddOpen}
+        setIsOpen={setIsAddOpen}
+        onAdd={handleAdd}
+      />
+      <EditCardModal
+        open={isEditOpen}
+        setIsOpen={setIsEditOpen}
+        card={selectedCard}
+        onSave={handleEditSave}
+      />
+      <DeleteCardModal
+        open={isDeleteOpen}
+        setIsOpen={setIsDeleteOpen}
+        onDelete={handleDeleteConfirm}
+        cardNumber={selectedCard?.cardNumber}
+      />
     </div>
   );
 }

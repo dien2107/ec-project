@@ -44,7 +44,7 @@ const AddressManagement = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAdd = () => {
@@ -84,8 +84,8 @@ const AddressManagement = () => {
 
     if (selectedAddress) {
       // Update existing address
-      setAddresses(prev =>
-        prev.map(addr =>
+      setAddresses((prev) =>
+        prev.map((addr) =>
           addr.id === selectedAddress.id ? { ...addr, ...formData } : addr
         )
       );
@@ -98,7 +98,7 @@ const AddressManagement = () => {
         isDefault: addresses.length === 0,
         createdDate: new Date().toLocaleDateString("vi-VN"),
       };
-      setAddresses(prev => [...prev, newAddress]);
+      setAddresses((prev) => [...prev, newAddress]);
       setIsAddOpen(false);
     }
 
@@ -117,8 +117,8 @@ const AddressManagement = () => {
   };
 
   const setAsDefault = (id: string) => {
-    setAddresses(prev =>
-      prev.map(addr => ({
+    setAddresses((prev) =>
+      prev.map((addr) => ({
         ...addr,
         isDefault: addr.id === id,
       }))
@@ -135,9 +135,9 @@ const AddressManagement = () => {
         return;
       }
 
-      setAddresses(prev => {
+      setAddresses((prev) => {
         const remainingAddresses = prev.filter(
-          addr => addr.id !== selectedAddress.id
+          (addr) => addr.id !== selectedAddress.id
         );
 
         // Nếu địa chỉ bị xóa là mặc định và còn lại addresses khác
@@ -160,18 +160,23 @@ const AddressManagement = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 min-h-[70vh]  bg-white rounded-lg shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Quản lý địa chỉ</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Quản lý địa chỉ
+          </h1>
           <p className="text-gray-500">Quản lý địa chỉ giao hàng của bạn</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleAdd} className="gap-2">
-              <Plus size={16} />
-              Thêm địa chỉ mới
+            <Button
+              onClick={handleAdd}
+              className="ml-auto bg-[#3770EC] text-white cursor-pointer"
+            >
+              <Plus />
+              Thêm sản phẩm
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
@@ -188,9 +193,9 @@ const AddressManagement = () => {
         </Dialog>
       </div>
 
-      {/* Address List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {paginatedAddresses.map(address => (
+      {/* Address List (stacked single-line items) */}
+      <div className="flex flex-col gap-4">
+        {paginatedAddresses.map((address) => (
           <AddressCard
             key={address.id}
             address={address}

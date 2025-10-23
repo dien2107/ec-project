@@ -11,7 +11,7 @@ interface ProductFilterOptionsState {
 
 const initialState: ProductFilterOptionsState = {
   productFilterOptions: null,
-  isLoading: false,
+  isLoading: true,
   isError: false,
 };
 

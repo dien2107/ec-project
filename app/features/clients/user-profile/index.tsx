@@ -27,17 +27,18 @@ export default function UserProfilePage() {
   const filteredOrders = useMemo(() => {
     return statusFilter === "Tất cả"
       ? mockOrders
-      : mockOrders.filter(o => o.status === statusFilter);
+      : mockOrders.filter((o) => o.status === statusFilter);
   }, [statusFilter]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Tài khoản của tôi</h1>
-          <div className="text-sm text-gray-600">
-            Xin chào,{" "}
-            <span className="font-medium">{mockUserData.fullName}</span>
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-semibold">Hồ Sơ Của Tôi</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Quản lý thông tin hồ sơ để bảo mật tài khoản
+            </p>
           </div>
         </div>
 
@@ -54,10 +55,9 @@ export default function UserProfilePage() {
             {activeTab === "don-hang" && (
               <div className="bg-white rounded-lg shadow-sm">
                 <div className="p-6 border-b">
-                  <h2 className="text-2xl font-semibold flex items-center">
-                    <Package className="h-6 w-6 mr-2 text-blue-600" />
+                  <h1 className="text-2xl font-semibold tracking-tight flex items-center">
                     Đơn hàng của tôi
-                  </h2>
+                  </h1>
                 </div>
 
                 <div className="p-6">
@@ -72,7 +72,7 @@ export default function UserProfilePage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredOrders.map(order => (
+                      {filteredOrders.map((order) => (
                         <OrderCard
                           key={order.id}
                           order={order}

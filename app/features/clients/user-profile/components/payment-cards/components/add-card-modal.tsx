@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
 import type { PaymentCard } from "../types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 
 interface AddCardModalProps {
   open: boolean;
@@ -15,8 +26,13 @@ const initialForm: Omit<PaymentCard, "id" | "isDefault"> = {
   cvv: "",
 };
 
-export default function AddCardModal({ open, setIsOpen, onAdd }: AddCardModalProps) {
-  const [form, setForm] = useState<Omit<PaymentCard, "id" | "isDefault">>(initialForm);
+export default function AddCardModal({
+  open,
+  setIsOpen,
+  onAdd,
+}: AddCardModalProps) {
+  const [form, setForm] =
+    useState<Omit<PaymentCard, "id" | "isDefault">>(initialForm);
 
   useEffect(() => {
     if (open) setForm(initialForm);
@@ -31,65 +47,79 @@ export default function AddCardModal({ open, setIsOpen, onAdd }: AddCardModalPro
         isDefault: false,
       });
       setForm(initialForm);
+      setIsOpen(false);
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-2">Thêm phương thức thanh toán</h4>
-        <p className="text-gray-500 mb-4">Vui lòng nhập thông tin thẻ của bạn</p>
+    <Dialog open={open} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Thêm phương thức thanh toán</DialogTitle>
+          <DialogDescription>
+            Vui lòng nhập thông tin thẻ của bạn
+          </DialogDescription>
+        </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Số thẻ</label>
-            <input
-              className="w-full border px-3 py-2 rounded-md"
+          <div className="space-y-2">
+            <Label htmlFor="cardNumber">Số thẻ</Label>
+            <Input
+              id="cardNumber"
               value={form.cardNumber}
-              onChange={e => setForm({ ...form, cardNumber: e.target.value })}
+              onChange={(e) => setForm({ ...form, cardNumber: e.target.value })}
               placeholder="1234 5678 9012 3456"
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Tên chủ thẻ</label>
-            <input
-              className="w-full border px-3 py-2 rounded-md"
+
+          <div className="space-y-2">
+            <Label htmlFor="cardHolder">Tên chủ thẻ</Label>
+            <Input
+              id="cardHolder"
               value={form.cardHolder}
-              onChange={e => setForm({ ...form, cardHolder: e.target.value })}
+              onChange={(e) => setForm({ ...form, cardHolder: e.target.value })}
               placeholder="NGUYEN VAN A"
               required
             />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Ngày hết hạn</label>
-              <input
-                className="w-full border px-3 py-2 rounded-md"
+            <div className="space-y-2">
+              <Label htmlFor="expiry">Ngày hết hạn</Label>
+              <Input
+                id="expiry"
                 value={form.expiry}
-                onChange={e => setForm({ ...form, expiry: e.target.value })}
+                onChange={(e) => setForm({ ...form, expiry: e.target.value })}
                 placeholder="MM/YY"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">CVV</label>
-              <input
-                className="w-full border px-3 py-2 rounded-md"
+
+            <div className="space-y-2">
+              <Label htmlFor="cvv">CVV</Label>
+              <Input
+                id="cvv"
                 value={form.cvv}
-                onChange={e => setForm({ ...form, cvv: e.target.value })}
+                onChange={(e) => setForm({ ...form, cvv: e.target.value })}
                 placeholder="123"
                 required
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-6">
-            <button type="button" className="px-4 py-2 rounded bg-gray-200" onClick={() => setIsOpen(false)}>Hủy</button>
-            <button type="submit" className="px-4 py-2 rounded bg-orange-500 text-white">Lưu thẻ</button>
-          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button type="submit">Lưu thẻ</Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
