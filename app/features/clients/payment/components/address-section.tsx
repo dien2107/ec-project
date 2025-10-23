@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import NewAddressSheet from "~/features/clients/payment/components/new-address";
 import type { Address } from "~/features/clients/payment/types/payment";
-
+import { Badge } from "~/components/ui/badge";
+import { Check , Plus} from "lucide-react";
 export default function AddressSection({
   addresses,
   selectedAddressId,
@@ -25,7 +26,8 @@ export default function AddressSection({
           size="sm"
           onClick={() => setIsAddressSheetOpen(true)}
         >
-          + Thêm địa chỉ mới
+          <Plus />
+          Thêm địa chỉ mới
         </Button>
       </div>
       <div className="space-y-3">
@@ -34,7 +36,7 @@ export default function AddressSection({
             key={a.id}
             className={`border rounded-lg p-4 cursor-pointer ${
               selectedAddressId === a.id
-                ? "border-primary bg-primary/5"
+                ? "border-black bg-black/5"
                 : "border-gray-200"
             }`}
             onClick={() => onSelectAddress(a.id)}
@@ -47,9 +49,10 @@ export default function AddressSection({
               />
               <span className="font-medium">{a.fullName}</span>
               {a.isDefault && (
-                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                <Badge variant="default" className="text-black ml-2 text-xs">
+                  <Check size={12} />
                   Mặc định
-                </span>
+                </Badge>
               )}
             </div>
             <div className="pl-6 text-sm text-gray-600 mt-2">
