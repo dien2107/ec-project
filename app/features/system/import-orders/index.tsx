@@ -10,7 +10,6 @@ import { getImportOrderColumns } from "./types";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchPurchaseOrderListData } from "~/redux/slices/purchase-orders";
 import type { ImportOrder } from "./types";
-import Orders from "../orders";
 
 export default function ImportOrders() {
   const dispatch = useAppDispatch();
@@ -31,7 +30,6 @@ export default function ImportOrders() {
     dispatch(fetchPurchaseOrderListData());
   }, [dispatch]);
 
-  // Khi dữ liệu redux thay đổi → set lại orders chỉ lấy Pending & Approved
   useEffect(() => {
     const filtered = purchaseOrders.filter(
       (o) =>

@@ -101,11 +101,7 @@ export const statusMap: Record<string, { label: string; className: string }> = {
   Approved: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
 };
 
-const formatVND = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+
 
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
