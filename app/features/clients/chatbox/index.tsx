@@ -6,7 +6,7 @@ import { ChatInput } from "./components/chat-input";
 import { Button } from "~/components/ui/button";
 import io, { type Socket } from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
-
+import { safeLocalStorage } from "~/helper/safeLocalStorage";
 const Chatbox = () => {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -15,10 +15,10 @@ const Chatbox = () => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    let sessionId = localStorage.getItem("chat_session_id");
+    let sessionId = safeLocalStorage.getItem("chat_session_id");
     if (!sessionId) {
       sessionId = uuidv4();
-      localStorage.setItem("chat_session_id", sessionId);
+      safeLocalStorage.setItem("chat_session_id", sessionId);
     }
 
     socketRef.current = io(import.meta.env.VITE_API_CHATBOX_URL, {

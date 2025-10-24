@@ -36,5 +36,11 @@ export default [
     route("/system/colors", "features/system/colors/index.tsx"),
     route("/system/sizes", "features/system/sizes/index.tsx"),
   ]),
-  route("login", "features/clients/auth/index.tsx"),
+
+  // separate auth pages (each page has its own url)
+  route("login", "features/clients/auth/login.tsx"),
+  route("register", "features/clients/auth/register.tsx"),
+  route("forgot-password", "features/clients/auth/forgot.tsx"),
+  route("reset-password", "features/clients/auth/reset.tsx"),
+  route("verify-successful", "features/clients/auth/verifySuccessful.tsx"),
 ] satisfies RouteConfig;

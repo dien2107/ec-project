@@ -10,6 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { register } from "~/services/auth";
+// dùng react-hot-toast nếu project có, nếu không thay bằng toast của project
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router"; // ← added
 
 interface RegisterFormData {
   username: string;
@@ -18,11 +22,13 @@ interface RegisterFormData {
   confirmPassword: string;
   fullName: string;
   phone: string;
+  imageUrl: string;
 }
 interface RegisterPageProps {
   onNavigateToLogin?: () => void;
 }
 export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<RegisterFormData>({
     username: "",
     email: "",
@@ -30,6 +36,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     confirmPassword: "",
     fullName: "",
     phone: "",
+    imageUrl: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -37,13 +44,13 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
   const [errors, setErrors] = useState<Partial<RegisterFormData>>({});
 
   const handleInputChange = (field: keyof RegisterFormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [field]: undefined,
       }));
@@ -81,15 +88,15 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
       newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
     }
 
-    // Full name validation
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Họ và tên không được để trống";
-    }
+    // // Full name validation
+    // if (!formData.fullName.trim()) {
+    //   newErrors.fullName = "Họ và tên không được để trống";
+    // }
 
-    // Phone validation (optional but if provided, should be valid)
-    if (formData.phone && !/^[0-9]{10,11}$/.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
-    }
+    // // Phone validation (optional but if provided, should be valid)
+    // if (formData.phone && !/^[0-9]{10,11}$/.test(formData.phone)) {
+    //   newErrors.phone = "Số điện thoại không hợp lệ";
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -98,23 +105,49 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      console.log("Form validation failed:", errors);
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log("Registering user with data:", formData);
+      const payload = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.fullName,
+        image_url: formData.imageUrl,
+        phone: formData.phone,
+      };
 
-      // Handle successful registration here
-      console.log("Registration successful:", formData);
-    } catch (error) {
-      console.error("Registration failed:", error);
+      const resp = await register(payload);
+
+      toast.success(
+        "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.",
+        { duration: 5000 }
+      );
+
+      setTimeout(() => {
+        if (typeof onNavigateToLogin === "function") {
+          onNavigateToLogin();
+        } else {
+          window.location.href = "/login";
+        }
+      }, 2000);
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        (typeof err === "string" ? err : "Đăng ký thất bại");
+      toast.error(message);
+      console.error("Register failed:", err);
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
@@ -142,7 +175,9 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   id="username"
                   type="text"
                   value={formData.username}
-                  onChange={e => handleInputChange("username", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("username", e.target.value)
+                  }
                   placeholder="nhập tên đăng nhập"
                   className={`pl-10 ${errors.username ? "border-red-500" : ""}`}
                 />
@@ -162,7 +197,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={e => handleInputChange("email", e.target.value)}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="your@email.com"
                   className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
                 />
@@ -182,7 +217,9 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={e => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="••••••••"
                   className={`pl-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
                 />
@@ -213,7 +250,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
-                  onChange={e =>
+                  onChange={(e) =>
                     handleInputChange("confirmPassword", e.target.value)
                   }
                   placeholder="••••••••"
@@ -238,7 +275,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               )}
             </div>
 
-            <div>
+            {/* <div>
               <Label htmlFor="fullName">Họ và tên</Label>
               <div className="relative mt-1">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -246,7 +283,9 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   id="fullName"
                   type="text"
                   value={formData.fullName}
-                  onChange={e => handleInputChange("fullName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("fullName", e.target.value)
+                  }
                   placeholder="Nguyễn Văn A"
                   className={`pl-10 ${errors.fullName ? "border-red-500" : ""}`}
                 />
@@ -264,7 +303,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   id="phone"
                   type="tel"
                   value={formData.phone}
-                  onChange={e => handleInputChange("phone", e.target.value)}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
                   placeholder="0123456789"
                   className={`pl-10 ${errors.phone ? "border-red-500" : ""}`}
                 />
@@ -272,9 +311,14 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               {errors.phone && (
                 <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
               )}
-            </div>
+            </div> */}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+              onClick={handleSubmit}
+            >
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
