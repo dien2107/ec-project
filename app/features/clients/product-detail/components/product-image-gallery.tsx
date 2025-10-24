@@ -22,7 +22,7 @@ export default function ProductImageGallery({
     }
   };
   return (
-    <div className="flex justify-between items-start gap-4">
+    <div className="flex justify-around items-start">
       {/* List images */}
       <div className="flex flex-col gap-y-2 pb-2 max-h-[500px] min-w-[58px] overflow-y-auto scrollbar-custom">
         {images.map((image, index) => (
@@ -43,7 +43,7 @@ export default function ProductImageGallery({
       {/* Main image */}
       <div
         ref={mainImageContainerRef}
-        className="max-h-[650px] relative overflow-y-auto rounded-lg shadow-md scrollbar-custom"
+        className="max-h-[580px] relative overflow-y-auto rounded-lg shadow-md scrollbar-custom"
       >
         {images.map((image, index) => {
           return (

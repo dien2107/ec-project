@@ -1,4 +1,13 @@
 import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 
 interface DeleteCardModalProps {
   open: boolean;
@@ -7,21 +16,44 @@ interface DeleteCardModalProps {
   cardNumber?: string;
 }
 
-export default function DeleteCardModal({ open, setIsOpen, onDelete, cardNumber }: DeleteCardModalProps) {
-  if (!open) return null;
-
+export default function DeleteCardModal({
+  open,
+  setIsOpen,
+  onDelete,
+  cardNumber,
+}: DeleteCardModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
-        <h4 className="font-bold text-lg mb-4">Xác nhận xóa thẻ</h4>
-        <p className="text-gray-600 mb-6">
-          Bạn có chắc chắn muốn xóa thẻ <strong>•••• {cardNumber?.slice(-4)}</strong>? Hành động này không thể hoàn tác.
-        </p>
-        <div className="flex justify-end gap-2">
-          <button className="px-4 py-2 rounded bg-gray-200" onClick={() => setIsOpen(false)}>Hủy</button>
-          <button className="px-4 py-2 rounded bg-red-500 text-white" onClick={onDelete}>Xóa</button>
-        </div>
-      </div>
-    </div>
+    <Dialog open={open} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>Xác nhận xóa thẻ</DialogTitle>
+          <DialogDescription>
+            Bạn có chắc chắn muốn xóa thẻ{" "}
+            <strong>•••• {cardNumber?.slice(-4)}</strong>? Hành động này không
+            thể hoàn tác.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+          >
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            className="bg-red-600 hover:bg-red-700"
+            onClick={() => {
+              onDelete();
+              setIsOpen(false);
+            }}
+          >
+            Xóa
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

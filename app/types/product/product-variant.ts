@@ -13,3 +13,8 @@ export type ProductVariant = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type ProductVariantForReview = Omit<
+  ProductVariant,
+  "stockQuantity" | "createdAt" | "updatedAt" | "status"
+>;

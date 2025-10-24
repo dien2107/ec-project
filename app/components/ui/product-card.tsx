@@ -36,7 +36,7 @@ export default function ProductCard({
           className="object-cover w-full h-full transition-transform duration-300 ease-in-out group-hover:scale-110"
           loading="lazy"
         />
-        {discount && (
+        {discount > 0 && (
           <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-[#d93333] rounded-md text-white font-semibold text-xs hover:bg-black transition-colors duration-200">
             -{discount}%
           </div>
@@ -44,16 +44,25 @@ export default function ProductCard({
       </div>
 
       <div className="pt-3">
-        <h3 className="text-[16px] font-medium leading-tight line-clamp-2 mb-1">
+        {/* Tiêu đề sản phẩm */}
+        <h3 className="text-sm font-light leading-tight line-clamp-2 mb-1 text-gray-800 group-hover:text-black transition-colors">
           {title}
         </h3>
+
+        {/* Giá */}
         <div className="flex items-center gap-2">
-          {discount && (
-            <span className="line-through text-xs text-gray-500">
+          {discount > 0 && (
+            <span className="line-through text-xs text-gray-400">
               {formattedOldPrice}
             </span>
           )}
-          <span className="text-sm font-semibold">{formattedPrice}</span>
+          <span
+            className={`text-sm font-medium ${
+              discount > 0 ? "text-[#d93333]" : "text-gray-900"
+            }`}
+          >
+            {formattedPrice}
+          </span>
         </div>
       </div>
     </NavLink>

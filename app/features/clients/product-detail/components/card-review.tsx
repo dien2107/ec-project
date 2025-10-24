@@ -1,30 +1,34 @@
-import { useState, useRef } from "react";
+import { EllipsisVertical, ThumbsUp } from "lucide-react";
+import { useRef, useState } from "react";
+import { Swiper as SwiperClass } from "swiper";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
+import { DialogOverlay } from "~/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Star, ThumbsUp, EllipsisVertical, StarHalf } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Swiper as SwiperClass } from "swiper";
-import { Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
+import { renderStars } from "~/libs/renderStars";
+import type { Review } from "~/types/review";
+import { formatDate } from "~/libs";
 
 const IMAGES = [
   "https://down-vn.img.susercontent.com/file/vn-11134103-7ras8-mc6cvummrbsaa1.webp",
   "https://down-vn.img.susercontent.com/file/vn-11134103-7ras8-mclrdyvpibot8d.webp",
 ];
 
-export default function CardReview() {
+export default function CardReview({ review }: { review: Review }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const swiperRef = useRef<SwiperClass | null>(null);
@@ -38,61 +42,45 @@ export default function CardReview() {
     swiperRef.current?.slideTo(idx);
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) {
-        stars.push(<Star key={i} fill="gold" stroke="gold" />);
-      } else if (rating + 0.5 >= i) {
-        stars.push(<StarHalf key={i} fill="gold" stroke="gold" />);
-      } else {
-        stars.push(<Star key={i} stroke="gold" />);
-      }
-    }
-
-    return stars;
-  };
-
   return (
-    <Card>
+    <div className="border-b-2 border-gray-200 pb-4 mb-4">
       <div className="px-6 flex items-start justify-start">
-        <div className="w-10">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
+        <div className="w-12">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src="/logo-icon.png" alt="Avatar" />
           </Avatar>
         </div>
         <div className="w-full">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
-                <h3 className="text-sm font-medium">Hương Ly</h3>
-                <span className="text-xs text-gray-400">2025-01-16</span>
+                <h3 className="text-sm font-medium">{review.username}</h3>
+                <span className="text-xs text-gray-400">
+                  {review.isEdited
+                    ? formatDate(review.updatedAt) + " (Đã chỉnh sửa)"
+                    : formatDate(review.createdAt)}
+                </span>
               </div>
               <div className="flex items-center gap-3 mb-1">
-                  <span className="text-3xl font-bold text-black">4.8</span>
-                  <div className="flex">{renderStars(4.8)}</div>
-                </div>
+                <span className="text-lg font-bold text-black">4.8</span>
+                <div className="flex">{renderStars(4.8, 5, 16)}</div>
+              </div>
             </div>
             <span className="text-xs text-gray-400 mb-2">
-              Phân loại: Trắng - M
+              Phân loại: {review.orderItem.productVariant.color.name} -{" "}
+              {review.orderItem.productVariant.size.name}
             </span>
           </CardHeader>
           <CardContent>
-            <p className="text-sm mb-3">
-              Áo đẹp quá! Form dáng rất đẹp, chất liệu cotton mềm mịn. Mặc rất
-              thoải mái và thoáng mát. Màu trắng rất dễ phối đồ. Sẽ ủng hộ shop
-              tiếp!
-            </p>
+            <p className="text-sm mb-3">{review.comment}</p>
             <div className="flex gap-2">
-              {IMAGES.map((image, idx) => (
+              {review.reviewImages.map((image, idx) => (
                 <div
                   className={`w-16 h-16 overflow-hidden ${activeIndex === idx ? "border-3 border-black" : ""}`}
                 >
                   <img
-                    key={idx}
-                    src={image}
+                    key={image.reviewImageId}
+                    src={image.imageUrl}
                     alt="Review Image"
                     onClick={() => handleThumbnailClick(idx)}
                     className={`w-full h-full object-cover bg-gray-200 transition-all duration-400 ${activeIndex === idx ? "scale-120 cursor-zoom-out" : "cursor-zoom-in"}`}
@@ -111,9 +99,9 @@ export default function CardReview() {
                   modules={[Pagination]}
                   className="mySwiper"
                 >
-                  {IMAGES.map((img, idx) => (
+                  {review.reviewImages.map((img, idx) => (
                     <SwiperSlide key={idx}>
-                      <img src={img} className="w-full h-full object-fit " />
+                      <img src={img.imageUrl} className="w-full h-full object-fit " />
                     </SwiperSlide>
                   ))}
                 </Swiper>
@@ -146,6 +134,6 @@ export default function CardReview() {
           </CardFooter>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

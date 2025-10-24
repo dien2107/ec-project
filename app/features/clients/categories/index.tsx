@@ -13,7 +13,7 @@ export default function Categories() {
   const { slug } = useParams<{ slug: string }>();
   const mainRef = useRef<HTMLDivElement | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -101,7 +101,7 @@ export default function Categories() {
             <>
               <ProductGrid products={products} />
               {products.length > 0 && (
-                <div className="mt-8 pb-8 flex justify-center">
+                <div className="mt-20 pb-8 flex justify-center">
                   <Pagination
                     currentPage={pagination.currentPage}
                     totalPages={pagination.totalPages}

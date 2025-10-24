@@ -31,7 +31,6 @@ export default function Product() {
       </div>
     );
   if (error || !product) return <div>Lỗi hoặc không tìm thấy</div>;
-  console.log(product);
 
   return (
     <div className="main-container">

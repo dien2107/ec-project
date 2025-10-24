@@ -22,16 +22,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "~/components/ui/alert-dialog";
-
-function formatDate(date: string | Date | undefined) {
-  if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
+import { renderStars, formatDate } from "~/libs";
 
 export default function ReviewDetail({
   selectedProduct,
@@ -46,20 +37,6 @@ export default function ReviewDetail({
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
-
-  const renderStars = useCallback((rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) {
-        stars.push(<Star size={16} key={i} fill="gold" stroke="gold" />);
-      } else if (rating + 0.5 >= i) {
-        stars.push(<StarHalf size={16} key={i} fill="gold" stroke="gold" />);
-      } else {
-        stars.push(<Star size={16} key={i} stroke="gold" />);
-      }
-    }
-    return stars;
-  }, []);
 
   const handleThumbnailClick = (idx: number) => {
     setPhotoIndex(idx);

@@ -112,12 +112,12 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       {/* Color */}
       <div>
         <h1 className="font-medium mb-2">Chọn màu khác</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {product.relatedProducts.map((p) => (
             <NavLink
               key={p.productId}
               to={`/products/${p.slug}`}
-              className={`relative w-20 h-20 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden shadow-sm cursor-pointer hover:scale-105 hover:shadow-md hover:border-black`}
+              className={`relative w-16 h-16 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden shadow-sm cursor-pointer hover:scale-105 hover:shadow-md hover:border-black`}
             >
               <img
                 src={p.primaryImage.imageUrl}
@@ -173,7 +173,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       </div>
       <div>
         <Button
-          className="h-[44px] !px-8 cursor-pointer"
+          className="h-[44px] !px-8 cursor-pointer bg-black text-white"
           disabled={noStock || !selected.productVariant}
         >
           <ShoppingCart />

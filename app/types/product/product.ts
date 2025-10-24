@@ -33,6 +33,8 @@ export type ProductDetail = {
   rating: number;
   reviewCount: number;
   soldQuantity: number;
+  reviewDetails: Record<number, number>;
+  hasImageCount: number;
   createdAt: Date;
   updatedAt: Date;
   material: Material;
