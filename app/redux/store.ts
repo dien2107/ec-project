@@ -10,6 +10,9 @@ import productFilterOptionsReducer from "./slices/product-filter-options";
 import productVariantsReducer from "./slices/product-variants";
 import sizeOptionsReducer from "./slices/sizes-options";
 import purchaseOrderListDataReducer from "./slices/purchase-orders";
+import addressesReducer from "./slices/addresses";
+import provincesReducer from "./slices/provinces";
+
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
@@ -26,6 +29,8 @@ export const store = configureStore({
     sizeOptions: sizeOptionsReducer,
     SupplierList: suppliersListDataReducer,
     purchaseOrderList: purchaseOrderListDataReducer,
+    addresses: addressesReducer,
+    provinces: provincesReducer,
     permissionList: permissionListDataReducer,
     roleList: roleListDataReducer,
     customerList: customerListDataReducer,

@@ -20,6 +20,10 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
         icon: "bg-transparent p-1 text-accent shadow-xs hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        add: "bg-blue-600 text-white shadow-xs hover:bg-blue-700 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-400",
+        edit: "bg-amber-500 text-white shadow-xs hover:bg-amber-600 focus-visible:ring-amber-300 dark:focus-visible:ring-amber-400",
+        delete:
+          "bg-red-600 text-white shadow-xs hover:bg-red-700 focus-visible:ring-red-300 dark:focus-visible:ring-red-400",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

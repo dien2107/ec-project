@@ -271,3 +271,14 @@ div[bis_skin_checked],
   left: 0;
   box-shadow: 2px 0 2px -2px #e5e7eb;
 }
+
+/* Đổi màu option được chọn (mặc định là xanh dương #2684FF) */
+.react-select__option--is-selected {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+/* Giữ hover/focus khác biệt để người dùng vẫn biết đang rê chuột */
+.react-select__option--is-focused {
+  background-color: #e5e7eb !important;
+}
