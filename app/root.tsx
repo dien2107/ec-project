@@ -7,12 +7,13 @@ import {
   ScrollRestoration,
 } from "react-router";
 import { Provider } from "react-redux";
-import { store } from "~/redux/store";
+import { store, useAppDispatch } from "~/redux/store";
 import { Toaster } from "react-hot-toast";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
+import { useEffect } from "react";
+import { safeLocalStorage } from "./helper/safeLocalStorage";
+import { fetchCurrentUser } from "./redux/slices/auth";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -48,11 +49,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 const queryClient = new QueryClient();
+function AuthInitializer() {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    const accessToken = safeLocalStorage.getItem("accessToken");
+    if (accessToken) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [dispatch]);
+
+  return null; 
+}
 
 export default function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
+        <AuthInitializer />
         <Outlet />
         <Toaster />
         <ReactQueryDevtools initialIsOpen={false} />

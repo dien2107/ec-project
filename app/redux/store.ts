@@ -13,6 +13,11 @@ import purchaseOrderListDataReducer from "./slices/purchase-orders";
 import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 
+import permissionListDataReducer from "./slices/permissions";
+import roleListDataReducer from "./slices/roles";
+import customerListDataReducer from "./slices/customers";
+import authReducer from "./slices/auth";
+import authLogoutListener from "~/middlewares/authLogoutListener";
 export const store = configureStore({
   reducer: {
     productMeta: productFormMetaReducer,
@@ -26,11 +31,14 @@ export const store = configureStore({
     purchaseOrderList: purchaseOrderListDataReducer,
     addresses: addressesReducer,
     provinces: provincesReducer,
+    permissionList: permissionListDataReducer,
+    roleList: roleListDataReducer,
+    customerList: customerListDataReducer,
+    auth: authReducer,
   },
-  // middleware: (getDefaultMiddleware) =>
-  //   getDefaultMiddleware()
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(authLogoutListener.middleware),
   //     .prepend(authStorageListener.middleware)
-  //     .prepend(authLogoutListener.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

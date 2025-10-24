@@ -18,12 +18,17 @@ const initialState: StatusesState = {
 export const fetchStatuses = createAsyncThunk(
   "statuses/fetchStatuses",
   async (params?: { entityType?: string }) => {
-    const response = await instance.get<ApiResponse<Status[]>>("/statuses", {
-      params,
-    });
+    if (!params) {
+      console.warn("[fetchStatuses] Called without params — skipped request");
+      return [];
+    }
+
+    console.log("Fetching statuses with params:", params);
+    const response = await instance.get<ApiResponse<Status[]>>("/statuses", { params });
     return response.data.data;
   }
 );
+
 
 const statusesSlice = createSlice({
   name: "statuses",

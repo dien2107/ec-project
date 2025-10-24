@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router"; // ← added
 import { Eye, EyeOff, User, Lock, LogIn } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -10,19 +11,21 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { loginThunk } from "~/redux/slices/auth";
+import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 
 interface LoginFormData {
-  email: string;
+  username: string;
   password: string;
   rememberMe: boolean;
 }
-interface LoginPageProps {
-  onNavigateToRegister?: () => void;
-}
-
-export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
+// removed props; this page is standalone route now
+export default function LoginPage() {
+  const navigate = useNavigate(); // ← use navigate
+  const dispatch = useDispatch<any>();
   const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
@@ -34,13 +37,13 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
     field: keyof LoginFormData,
     value: string | boolean
   ) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [field]: undefined,
       }));
@@ -50,10 +53,8 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
   const validateForm = (): boolean => {
     const newErrors: Partial<LoginFormData> = {};
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email không được để trống";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
+    if (!formData.username.trim()) {
+      newErrors.username = "Tên đăng nhập không được để trống";
     }
 
     if (!formData.password) {
@@ -72,13 +73,25 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // dispatch loginThunk; gửi username thay vì email
+      const result = await dispatch(
+        loginThunk({
+          username: formData.username,
+          password: formData.password,
+          rememberMe: formData.rememberMe,
+        })
+      ).unwrap();
 
-      // Handle successful login here
-      console.log("Login successful:", formData);
-    } catch (error) {
-      console.error("Login failed:", error);
+      // nếu unwrap thành công => login ok
+      toast.success("Đăng nhập thành công");
+      // chuyển về trang chính
+      window.location.href = "/";
+    } catch (err: any) {
+      // giữ ở trang đăng nhập và show toast lỗi
+      const message =
+        err?.message || (typeof err === "string" ? err : "Đăng nhập thất bại");
+      toast.error(message);
+      console.error("Login failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +99,16 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
 
   const handleSocialLogin = (provider: string) => {
     console.log(`Login with ${provider}`);
+  };
+
+  const handleForgot = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    navigate("/forgot-password");
+  };
+
+  const handleGoRegister = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    navigate("/register");
   };
 
   return (
@@ -106,20 +129,22 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">Tên đăng nhập hoặc Email</Label>
+              <Label htmlFor="username">Tên đăng nhập</Label>
               <div className="relative mt-1">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={e => handleInputChange("email", e.target.value)}
-                  placeholder="nhập tên đăng nhập hoặc email"
-                  className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
+                  id="username"
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) =>
+                    handleInputChange("username", e.target.value)
+                  }
+                  placeholder="nhập tên đăng nhập"
+                  className={`pl-10 ${errors.username ? "border-red-500" : ""}`}
                 />
               </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              {errors.username && (
+                <p className="text-red-500 text-sm mt-1">{errors.username}</p>
               )}
             </div>
 
@@ -131,7 +156,9 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={e => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="••••••••••"
                   className={`pl-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
                 />
@@ -158,7 +185,7 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
                   id="remember-me"
                   type="checkbox"
                   checked={formData.rememberMe}
-                  onChange={e =>
+                  onChange={(e) =>
                     handleInputChange("rememberMe", e.target.checked)
                   }
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -172,7 +199,8 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
               </div>
               <a
                 href="#"
-                className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                onClick={handleForgot}
+                className="text-sm text-blue-600 hover:text-blue-500 font-medium cursor-pointer"
               >
                 Quên mật khẩu?
               </a>
@@ -192,11 +220,11 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
               )}
             </Button>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <span className="text-sm text-gray-500">HOẶC</span>
-            </div>
+            </div> */}
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Button
                 type="button"
                 variant="outline"
@@ -239,14 +267,14 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
                 </svg>
                 Tiếp tục với Facebook
               </Button>
-            </div>
+            </div> */}
 
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Chưa có tài khoản?{" "}
                 <button
                   type="button"
-                  onClick={onNavigateToRegister}
+                  onClick={handleGoRegister}
                   className="text-blue-600 hover:text-blue-500 font-medium underline-offset-4 hover:underline"
                 >
                   Đăng ký miễn phí →
