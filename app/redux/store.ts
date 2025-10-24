@@ -10,6 +10,8 @@ import productFilterOptionsReducer from "./slices/product-filter-options";
 import productVariantsReducer from "./slices/product-variants";
 import sizeOptionsReducer from "./slices/sizes-options";
 import purchaseOrderListDataReducer from "./slices/purchase-orders";
+import addressesReducer from "./slices/addresses";
+import provincesReducer from "./slices/provinces";
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +24,8 @@ export const store = configureStore({
     sizeOptions: sizeOptionsReducer,
     SupplierList: suppliersListDataReducer,
     purchaseOrderList: purchaseOrderListDataReducer,
+    addresses: addressesReducer,
+    provinces: provincesReducer,
   },
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware()

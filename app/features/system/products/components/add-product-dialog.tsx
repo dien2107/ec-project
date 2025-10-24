@@ -19,12 +19,10 @@ import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { useAppSelector } from "~/redux/store";
 import { createProduct } from "~/services/products";
 import { Plus, Loader2 } from "lucide-react";
-import type {
-  Category,
-  Material,
-  Color,
-  ProductGroup,
-} from "../../../../types/product/product";
+import type { Category } from "~/types/product/category";
+import type { Material } from "~/types/product/material";
+import type { Color } from "~/types/product/color";
+import type { ProductGroup } from "~/types/product/product-group";
 
 export default function AddProductDialog({ onAdded }: { onAdded: () => void }) {
   const [open, setOpen] = useState(false);

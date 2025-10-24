@@ -1,67 +1,35 @@
-import React, { useState } from "react";
-import { Plus } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import type { Address } from "./types/address";
-import { mockData } from "./data";
-import AddressForm from "./components/address-form";
+import { useEffect, useState } from "react";
+
+import { fetchAddressesByUserId } from "~/redux/slices/addresses";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { setDefaultAddress } from "~/services/addresses";
+import type { Address } from "~/types/address/address";
+import AddAddressForm from "./components/add-address-form";
 import AddressCard from "./components/address-card";
-import Pagination from "./components/pagination";
-import DeleteAddressDialog from "./components/delete-category";
+import DeleteAddressDialog from "./components/delete-address-form";
+import EditAddressForm from "./components/edit-address-form";
+import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const AddressManagement = () => {
-  const [addresses, setAddresses] = useState<Address[]>(mockData);
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const { addresses = [], isLoading } = useAppSelector(
+    (state) => state.addresses
+  );
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
 
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    district: "",
-    city: "",
-  });
-
-  const totalPages = Math.ceil(addresses.length / pageSize);
-  const paginatedAddresses = addresses.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const resetForm = () => {
-    setFormData({ name: "", phone: "", address: "", district: "", city: "" });
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAdd = () => {
-    setSelectedAddress(null);
-    resetForm();
-    setIsAddOpen(true);
-  };
+  useEffect(() => {
+    // Giả sử userId là 1, thay đổi theo logic thực tế của bạn
+    if ((addresses?.length ?? 0) === 0) {
+      dispatch(fetchAddressesByUserId(1));
+    }
+    // we include addresses.length so if addresses change from undefined->[] we still fetch once
+  }, [dispatch, addresses.length]);
 
   const handleEdit = (address: Address) => {
     setSelectedAddress(address);
-    setFormData({
-      name: address.name,
-      phone: address.phone,
-      address: address.address,
-      district: address.district,
-      city: address.city,
-    });
     setIsEditOpen(true);
   };
 
@@ -70,92 +38,17 @@ const AddressManagement = () => {
     setIsDeleteOpen(true);
   };
 
-  const handleSubmit = () => {
-    if (
-      !formData.name ||
-      !formData.phone ||
-      !formData.address ||
-      !formData.district ||
-      !formData.city
-    ) {
-      alert("Vui lòng điền đầy đủ thông tin");
-      return;
-    }
-
-    if (selectedAddress) {
-      // Update existing address
-      setAddresses((prev) =>
-        prev.map((addr) =>
-          addr.id === selectedAddress.id ? { ...addr, ...formData } : addr
-        )
-      );
-      setIsEditOpen(false);
-    } else {
-      // Add new address
-      const newAddress: Address = {
-        id: Date.now().toString(),
-        ...formData,
-        isDefault: addresses.length === 0,
-        createdDate: new Date().toLocaleDateString("vi-VN"),
-      };
-      setAddresses((prev) => [...prev, newAddress]);
-      setIsAddOpen(false);
-    }
-
-    resetForm();
-    setSelectedAddress(null);
-  };
-
-  const handleCancel = () => {
-    if (selectedAddress) {
-      setIsEditOpen(false);
-    } else {
-      setIsAddOpen(false);
-    }
-    resetForm();
-    setSelectedAddress(null);
-  };
-
-  const setAsDefault = (id: string) => {
-    setAddresses((prev) =>
-      prev.map((addr) => ({
-        ...addr,
-        isDefault: addr.id === id,
-      }))
-    );
-  };
-
-  const confirmDelete = () => {
-    if (selectedAddress) {
-      // Không cho phép xóa nếu chỉ còn 1 địa chỉ
-      if (addresses.length <= 1) {
-        alert("Không thể xóa địa chỉ cuối cùng!");
-        setIsDeleteOpen(false);
-        setSelectedAddress(null);
-        return;
+  const handleSetAsDefault = async (address: Address) => {
+    try {
+      await setDefaultAddress(1, address.addressId);
+      dispatch(fetchAddressesByUserId(1));
+      toast.success("Đã đặt địa chỉ mặc định thành công!");
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định!");
       }
-
-      setAddresses((prev) => {
-        const remainingAddresses = prev.filter(
-          (addr) => addr.id !== selectedAddress.id
-        );
-
-        // Nếu địa chỉ bị xóa là mặc định và còn lại addresses khác
-        // thì tự động đặt address đầu tiên làm mặc định
-        if (selectedAddress.isDefault && remainingAddresses.length > 0) {
-          remainingAddresses[0].isDefault = true;
-        }
-
-        // Nếu chỉ còn 1 địa chỉ thì tự động đặt làm mặc định
-        if (remainingAddresses.length === 1) {
-          remainingAddresses[0].isDefault = true;
-        }
-
-        return remainingAddresses;
-      });
-
-      setIsDeleteOpen(false);
-      setSelectedAddress(null);
     }
   };
 
@@ -169,78 +62,55 @@ const AddressManagement = () => {
           </h1>
           <p className="text-gray-500">Quản lý địa chỉ giao hàng của bạn</p>
         </div>
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={handleAdd}
-              className="ml-auto bg-[#3770EC] text-white cursor-pointer"
-            >
-              <Plus />
-              Thêm sản phẩm
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Thêm địa chỉ mới</DialogTitle>
-            </DialogHeader>
-            <AddressForm
-              formData={formData}
-              onInputChange={handleInputChange}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-            />
-          </DialogContent>
-        </Dialog>
+        <AddAddressForm
+          onAdded={() => {
+            dispatch(fetchAddressesByUserId(1));
+          }}
+        />
       </div>
 
       {/* Address List (stacked single-line items) */}
       <div className="flex flex-col gap-4">
-        {paginatedAddresses.map((address) => (
-          <AddressCard
-            key={address.id}
-            address={address}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSetDefault={setAsDefault}
-            canDelete={addresses.length > 1}
-          />
-        ))}
+        {addresses.length === 0 ? (
+          <div className="flex items-center justify-center py-4">
+            <span className="text-gray-500">Không có địa chỉ nào</span>
+          </div>
+        ) : (
+          addresses.map((address) => (
+            <AddressCard
+              key={address.addressId}
+              address={address}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onSetDefault={handleSetAsDefault}
+            />
+          ))
+        )}
       </div>
 
-      {/* Pagination */}
-      {addresses.length > pageSize && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={addresses.length}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
+      {/* Edit Dialog */}
+      {selectedAddress && (
+        <EditAddressForm
+          open={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          selectedAddress={selectedAddress}
+          onUpdated={() => {
+            dispatch(fetchAddressesByUserId(1));
+          }}
         />
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Chỉnh sửa địa chỉ</DialogTitle>
-          </DialogHeader>
-          <AddressForm
-            formData={formData}
-            onInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            isEdit
-          />
-        </DialogContent>
-      </Dialog>
-
       {/* Delete Dialog */}
-      <DeleteAddressDialog
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        address={selectedAddress}
-        onConfirm={confirmDelete}
-      />
+      {selectedAddress && (
+        <DeleteAddressDialog
+          open={isDeleteOpen}
+          setIsOpen={setIsDeleteOpen}
+          selectedAddress={selectedAddress}
+          onDeleted={() => {
+            dispatch(fetchAddressesByUserId(1));
+          }}
+        />
+      )}
     </div>
   );
 };
