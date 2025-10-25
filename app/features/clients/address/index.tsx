@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { toast } from "react-hot-toast";
 import { fetchAddressesByUserId } from "~/redux/slices/addresses";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { setDefaultAddress } from "~/services/addresses";
@@ -8,8 +9,6 @@ import AddAddressForm from "./components/add-address-form";
 import AddressCard from "./components/address-card";
 import DeleteAddressDialog from "./components/delete-address-form";
 import EditAddressForm from "./components/edit-address-form";
-import { toast } from "react-hot-toast";
-import { Loader2 } from "lucide-react";
 
 const AddressManagement = () => {
   const dispatch = useAppDispatch();

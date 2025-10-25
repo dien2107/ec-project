@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
 import type { Address } from "~/types/address/address";
 import { toast } from "react-hot-toast";
 import { deleteAddress } from "~/services/addresses";
@@ -19,11 +20,14 @@ const DeleteAddressDialog = ({
   setIsOpen,
   selectedAddress,
   onDeleted,
+  // optional callback when user cancels the delete dialog (e.g., reopen view-addresses dialog)
+  onCancel,
 }: {
   open: boolean;
   setIsOpen: (open: boolean) => void;
   selectedAddress: Address;
   onDeleted: () => void;
+  onCancel?: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const handleDelete = async () => {
@@ -56,7 +60,21 @@ const DeleteAddressDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              // if an onCancel handler is provided (opened from view), call it so parent can reopen the view dialog
+              if (onCancel) {
+                onCancel();
+              } else {
+                setIsOpen(false);
+              }
+            }}
+          >
+            {onCancel ? "Trở về" : "Hủy"}
+          </Button>
           <AlertDialogAction
             className="bg-[#EF4444] text-white flex items-center gap-2"
             onClick={handleDelete}
