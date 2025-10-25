@@ -3,7 +3,6 @@ import type { FormEvent, ChangeEvent } from "react";
 import { forgotPassword } from "~/services/auth";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
-import { getCurrentUser } from "~/services/auth";
 import { resetPassword } from "~/services/auth";
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();

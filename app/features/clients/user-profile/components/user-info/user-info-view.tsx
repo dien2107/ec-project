@@ -1,7 +1,8 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import type { UserInfoViewProps } from "../../types/user-profile.types";
+import type { RootState } from "~/redux/store";
 
 // Helper function để get badge styles dựa trên trạng thái
 const getStatusBadgeStyle = (isActive: boolean) => ({
@@ -18,18 +19,18 @@ const getVerifyBadgeStyle = (isVerified: boolean) => ({
     : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200",
 });
 
-export default function UserInfoView({
-  username,
-  full_name,
-  email,
-  phone,
-  is_active,
-  is_verify,
-  created_at,
-  onEdit,
-}: UserInfoViewProps) {
-  const statusStyle = getStatusBadgeStyle(is_active || false);
-  const verifyStyle = getVerifyBadgeStyle(is_verify || false);
+export default function UserInfoView({ onEdit }: { onEdit: () => void }) {
+  const user = useSelector((state: RootState) => state.auth.user);
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <p className="text-gray-500">Đang tải thông tin người dùng...</p>
+      </div>
+    );
+  }
+
+  const statusStyle = getStatusBadgeStyle(user.is_active || false);
+  const verifyStyle = getVerifyBadgeStyle(user.is_verify || false);
 
   return (
     <div className="flex-1">
@@ -39,7 +40,7 @@ export default function UserInfoView({
             Thông tin cá nhân
           </h2>
           <div className="text-sm text-gray-500">
-            Tên đăng nhập: <span className="font-medium">{username}</span>
+            Tên đăng nhập: <span className="font-medium">{user.username}</span>
           </div>
         </div>
 
@@ -49,17 +50,17 @@ export default function UserInfoView({
             <div className="space-y-4">
               <div className="flex items-center">
                 <div className="w-40 text-gray-500 text-sm">Họ và tên</div>
-                <div className="flex-1 font-medium">{full_name}</div>
+                <div className="flex-1 font-medium">{user.full_name}</div>
               </div>
 
               <div className="flex items-center">
                 <div className="w-40 text-gray-500 text-sm">Email</div>
-                <div className="flex-1 font-medium">{email}</div>
+                <div className="flex-1 font-medium">{user.email}</div>
               </div>
 
               <div className="flex items-center">
                 <div className="w-40 text-gray-500 text-sm">Số điện thoại</div>
-                <div className="flex-1 font-medium">{phone}</div>
+                <div className="flex-1 font-medium">{user.phone}</div>
               </div>
 
               <div className="flex items-center">
@@ -69,13 +70,13 @@ export default function UserInfoView({
                     variant={statusStyle.variant}
                     className={statusStyle.className}
                   >
-                    {is_active ? "Hoạt động" : "Bị khóa"}
+                    {user.is_active ? "Hoạt động" : "Bị khóa"}
                   </Badge>
                   <Badge
                     variant={verifyStyle.variant}
                     className={verifyStyle.className}
                   >
-                    {is_verify ? "Đã xác minh" : "Chưa xác minh"}
+                    {user.is_verify ? "Đã xác minh" : "Chưa xác minh"}
                   </Badge>
                 </div>
               </div>
@@ -85,14 +86,14 @@ export default function UserInfoView({
                   Ngày tạo tài khoản
                 </div>
                 <div className="flex-1 font-medium">
-                  {created_at
-                    ? new Date(created_at).toLocaleDateString("vi-VN")
+                  {user.created_at
+                    ? new Date(user.created_at).toLocaleDateString("vi-VN")
                     : "Không có thông tin"}
                 </div>
               </div>
 
               <div className="pt-4">
-                <Button onClick={onEdit} className="bg-blue-600  text-white">
+                <Button onClick={onEdit} className="bg-blue-600 text-white">
                   Chỉnh sửa thông tin
                 </Button>
               </div>

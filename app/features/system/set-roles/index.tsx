@@ -1,135 +1,108 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Pencil } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import DataTable from "~/features/system/components/data-table";
-import { UserModal } from "~/features/system/set-roles/components/user-modal";
-
-// Kiểu dữ liệu User
-export interface User {
-  id?: number;
-  name: string;
-  email: string;
-  roles: string[];
-  status: "active" | "inactive" | "banned"; // ✅ thêm trạng thái
-}
-
-// Dữ liệu mẫu ban đầu
-const initialUsers: User[] = [
-  {
-    id: 1,
-    name: "Nguyễn Văn A",
-    email: "a@example.com",
-    roles: ["Admin", "Manager"],
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Trần Thị B",
-    email: "b@example.com",
-    roles: ["Staff", "Editor"],
-    status: "inactive",
-  },
-  {
-    id: 3,
-    name: "Lê Văn C",
-    email: "c@example.com",
-    roles: ["Viewer", "Editor"],
-    status: "banned",
-  },
-];
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchCustomerListData } from "~/redux/slices/customers";
+import { fetchStatuses } from "~/redux/slices/statuses";
+import { ENTITY_TYPE } from "~/constants/entity-types";
+import CustomerFilter from "~/features/system/customers/components/customer-filter";
+import SkeletonFilter from "~/components/ui/skeleton-filter";
+import SkeletonHeader from "~/components/ui/skeleton-header";
+import SkeletonTable from "~/components/ui/skeleton-table";
+import { UserModal } from "./components/user-modal";
+import type { Customer, EntityStatus } from "~/features/system/customers/types";
 
 export default function UserPermissionSystem() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const dispatch = useAppDispatch();
+  const PAGE_SIZE = 5;
 
-  // Giả lập fetch dữ liệu từ API
+  const { customerList, isLoading: isCustomerLoading } = useAppSelector(
+    (state: any) =>
+      state.customerList ?? { customerList: null, isLoading: false }
+  );
+  const { statuses, isLoading: isStatusesLoading } = useAppSelector(
+    (state: any) => state.statuses ?? { statuses: null, isLoading: false }
+  );
+
+  const userStatuses = useMemo(() => {
+    if (Array.isArray(statuses)) return statuses;
+    if (Array.isArray(statuses?.data)) return statuses.data;
+    return [];
+  }, [statuses]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState<{
+    Search?: string;
+    Phone?: string;
+    StatusName?: string | undefined;
+  }>({});
+  const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // memoized reload so effect / modal can call without duplicate dispatches
+  const reloadList = useCallback(
+    (override?: { PageNumber?: number }) => {
+      dispatch(
+        fetchCustomerListData({
+          PageNumber: override?.PageNumber ?? currentPage,
+          PageSize: PAGE_SIZE,
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
+          ...(filters.Search ? { Search: filters.Search } : {}),
+          ...(filters.Phone ? { Phone: filters.Phone } : {}),
+          HasRole: true,
+        })
+      );
+    },
+    [dispatch, currentPage, filters]
+  );
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const response = await new Promise<User[]>((resolve) =>
-          setTimeout(() => resolve(initialUsers), 1000)
-        );
-        setUsers(response);
-      } catch (error) {
-        alert("Lỗi khi tải dữ liệu người dùng.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUsers();
+    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.USER }));
+  }, [dispatch]);
+
+  // load list whenever page or filters change
+  useEffect(() => {
+    reloadList();
+  }, [reloadList]);
+
+  const handleFilterChange = useCallback((next: typeof filters) => {
+    setFilters(next);
+    setCurrentPage(1);
   }, []);
 
-  // Mở modal
-  const handleOpenModal = (user: User | null) => {
+  const handleOpenModal = (user: Customer | null) => {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
 
-  // Lưu user sau khi thêm / sửa
-  const handleSaveUser = (user: User) => {
-    // Ensure status is always a valid value
-    const validStatus: User["status"][] = ["active", "inactive", "banned"];
-    const safeUser: User = {
-      ...user,
-      status: validStatus.includes(user.status as User["status"])
-        ? (user.status as User["status"])
-        : "active",
-    };
-
-    if (safeUser.id) {
-      // Cập nhật user
-      setUsers((prev) =>
-        prev.map((u) => (u.id === safeUser.id ? safeUser : u))
-      );
-      alert(`Đã cập nhật nhân viên ${safeUser.name}.`);
-    } else {
-      // Thêm user mới
-      const newUser = {
-        ...safeUser,
-        id: users.length > 0 ? Math.max(...users.map((u) => u.id!)) + 1 : 1,
-      };
-      setUsers((prev) => [...prev, newUser]);
-      alert(`Đã thêm nhân viên ${safeUser.name}.`);
-    }
+  const handleCloseModal = () => {
     setIsModalOpen(false);
+    setSelectedUser(null);
   };
 
-  // Cột bảng
-  const columns: ColumnDef<User>[] = [
-    {
-      accessorKey: "name",
-      header: () => <div className="text-center">Tên nhân viên</div>,
-      size: 150,
-      cell: ({ row }) => <div className="text-center">{row.original.name}</div>,
-    },
-    {
-      accessorKey: "email",
-      header: () => <div className="text-center">Email</div>,
-      size: 200,
-      cell: ({ row }) => (
-        <div className="text-center">{row.original.email}</div>
-      ),
-    },
+  const data: Customer[] =
+    customerList?.data?.items ?? customerList?.data ?? [];
+
+  const columns: ColumnDef<Customer>[] = [
+    { accessorKey: "userId", header: "ID", size: 60 },
+    { accessorKey: "fullName", header: "Họ tên" },
+    { accessorKey: "email", header: "Email" },
+    { accessorKey: "phone", header: "SĐT" },
     {
       accessorKey: "roles",
-      header: () => <div className="text-center">Quyền</div>,
-      size: 200,
+      header: "Quyền",
       cell: ({ row }) => (
-        <div className="flex flex-wrap gap-1 justify-center">
-          {row.original.roles.map((role, index) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.original.roles ?? []).map((r) => (
             <span
-              key={index}
-              className="px-2 py-1 bg-gray-100 text-sm rounded-full text-gray-700"
+              key={r.roleId}
+              className="px-2 py-1 bg-gray-100 rounded-full text-sm"
             >
-              {role}
+              {r.name}
             </span>
           ))}
         </div>
@@ -137,32 +110,29 @@ export default function UserPermissionSystem() {
     },
     {
       accessorKey: "status",
-      header: () => <div className="text-center">Trạng thái</div>,
-      size: 120,
-      cell: ({ row }) => {
-        const status = row.original.status;
-        const statusConfig = {
-          active: { label: "Hoạt động", color: "bg-green-100 text-green-700" },
-          inactive: { label: "Ngưng", color: "bg-yellow-100 text-yellow-700" },
-          banned: { label: "Cấm", color: "bg-red-100 text-red-700" },
-        } as const;
+      header: "Trạng thái",
+      cell: ({ getValue }) => {
+        const status = getValue() as EntityStatus;
+        const color =
+          status?.name?.toLowerCase() === "active"
+            ? "bg-green-100 text-green-700"
+            : status?.name?.toLowerCase() === "inactive"
+              ? "bg-red-100 text-red-700"
+              : "bg-gray-200 text-gray-700";
         return (
-          <div className="flex justify-center">
-            <span
-              className={`px-3 py-1 text-sm font-medium rounded-full ${statusConfig[status].color}`}
-            >
-              {statusConfig[status].label}
-            </span>
-          </div>
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-medium ${color}`}
+          >
+            {status?.displayName ?? status?.name ?? "-"}
+          </span>
         );
       },
     },
     {
       id: "actions",
-      header: () => <div className="text-center">Hành động</div>,
-      size: 80,
+      header: "Hành động",
       cell: ({ row }) => (
-        <div className="flex justify-center gap-2">
+        <div className="flex gap-2">
           <Button
             size="icon"
             variant="outline"
@@ -178,47 +148,62 @@ export default function UserPermissionSystem() {
     },
   ];
 
-  // Phân trang
-  const totalPages = Math.ceil(users.length / itemsPerPage);
-  const paginatedUsers = users.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Quản lý người dùng & phân quyền</h2>
-        <Button onClick={() => handleOpenModal(null)}>+ Thêm nhân viên</Button>
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-slate-500">Đang tải dữ liệu...</p>
-        </div>
-      ) : paginatedUsers.length > 0 ? (
-        <DataTable<User, unknown>
-          columns={columns}
-          data={paginatedUsers}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page: number) => setCurrentPage(page)}
-          title="Danh sách người dùng"
-        />
+      {/* Header + filter: show skeletons while statuses load */}
+      {isStatusesLoading ? (
+        <>
+          <SkeletonHeader />
+          <SkeletonFilter />
+        </>
       ) : (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
-          <p className="text-slate-500">
-            Không có người dùng nào trong danh sách.
-          </p>
-        </div>
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold">
+              Quản lý người dùng & phân quyền
+            </h3>
+            <Button onClick={() => handleOpenModal(null)}>
+              + Thêm nhân viên
+            </Button>
+          </div>
+
+          <CustomerFilter
+            initial={filters}
+            onChange={handleFilterChange}
+            statuses={userStatuses}
+            isLoading={isStatusesLoading}
+          />
+        </>
       )}
 
-      <UserModal
-        user={selectedUser}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveUser}
-      />
+      {/* Table */}
+      {isCustomerLoading ? (
+        <SkeletonTable />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={data}
+          currentPage={currentPage}
+          totalPages={customerList?.data?.totalPages ?? 1}
+          onPageChange={setCurrentPage}
+          title="Danh sách người dùng"
+          showGlobalFilter
+          globalFilterPlaceholder="Tìm người dùng..."
+          isLoading={isCustomerLoading}
+        />
+      )}
+
+      {isModalOpen && (
+        <UserModal
+          id={selectedUser?.userId}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSaved={() => {
+            handleCloseModal();
+            reloadList();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -50,7 +50,7 @@ const customerListDataSlice = createSlice({
         state.isError = false;
         state.customerList = action.payload;
       })
-      .addCase(fetchSupplierListData.rejected, (state) => {
+      .addCase(fetchCustomerListData.rejected, (state) => {
         state.isLoading = false;
         state.isError = true;
       });
