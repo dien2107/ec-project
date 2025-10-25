@@ -1,3 +1,4 @@
+import type { PrimaryImage } from "~/types/product/product-image";
 import type { ProductVariant } from "~/types/product/product-variant";
 
 export type ProductImageGalleryProps = {
@@ -12,6 +13,8 @@ export type ProductImageGalleryProps = {
 export type SelectedProductProps = {
   productVariant: ProductVariant | null;
   quantity: number;
+  price: number;
+  image: PrimaryImage | null;
 };
 
 export type StarRatingRowProps = {
