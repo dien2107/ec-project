@@ -7,7 +7,8 @@ import {
   mockCartItems,
   mockSelectedItems,
 } from "~/features/clients/payment/data/payment";
-import type { Address, CartItem } from "~/features/clients/payment/types/payment";
+import type { CartItem } from "~/features/clients/payment/types/payment";
+import type { Address } from "~/types/address/address";
 import AddressSection from "~/features/clients/payment/components/address-section";
 import PaymentMethodSection from "~/features/clients/payment/components/payment-method";
 import CartSummary from "~/features/clients/payment/components/cart-summary";
@@ -22,17 +23,7 @@ export default function Payment() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: "1",
-      fullName: "Nguyễn Văn A",
-      phone: "0912345678",
-      address: "123 Đường ABC",
-      city: "TP. Hồ Chí Minh",
-      isDefault: true,
-    },
-  ]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>("1");
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 
@@ -59,14 +50,9 @@ export default function Payment() {
   const shippingFee = subtotal >= 300000 ? 0 : 30000;
   const total = subtotal + shippingFee;
 
-  const handleAddAddress = (address: Address) => {
-    setAddresses((prev) => [...prev, address]);
-    setSelectedAddressId(address.id);
-  };
-
   const handlePlaceOrder = () => {
-    const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
-    if (!selectedAddress) return;
+    // const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
+    // if (!selectedAddress) return;
 
     setIsProcessing(true);
     setTimeout(() => {
@@ -81,10 +67,8 @@ export default function Payment() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <AddressSection
-            addresses={addresses}
-            selectedAddressId={selectedAddressId}
-            onSelectAddress={setSelectedAddressId}
-            onAddAddress={handleAddAddress}
+            selectedAddress={selectedAddress}
+            onSelectAddress={setSelectedAddress}
           />
           <div className="border rounded-md p-6 space-y-4">
             {cartItems
@@ -104,8 +88,12 @@ export default function Payment() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{item.price.toLocaleString()}₫</div>
-                    <div className="text-sm text-gray-500">x{item.quantity}</div>
+                    <div className="font-medium">
+                      {item.price.toLocaleString()}₫
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      x{item.quantity}
+                    </div>
                   </div>
                 </div>
               ))}
