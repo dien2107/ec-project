@@ -20,9 +20,7 @@ export const getUserById = async (userId: number) => {
 };
 export const updateUserById = async (userId: number, data: any) => {
   try {
-    const response = await instance.put(`/users/${userId}`, data, {
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await instance.put(`/users/${userId}`, data);
     return response.data;
   } catch (error) {
     console.error("Error updating user:", error);
