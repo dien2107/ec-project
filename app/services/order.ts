@@ -45,14 +45,30 @@ export const getOrders = async (params?: Record<string, any>) => {
   }
 };
 
-export const updateOrderById = async (orderId: number, data: any) => {
+export const updateOrderStatus = async (orderId: number, newStatus: number) => {
   try {
-    const response = await instance.put(`/orders/${orderId}`, data, {
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await instance.put(`/orders/${orderId}`, newStatus);
     return response.data;
   } catch (error) {
     console.error("Error updating order:", error);
+    throw error;
+  }
+};
+export const approveOrder = async (orderId: number) => {
+  try {
+    const response = await instance.put(`/orders/approve/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error approving order:", error);
+    throw error;
+  }
+};
+export const cancelOrder = async (orderId: number) => {
+  try {
+    const response = await instance.put(`/orders/cancel/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error cancelling order:", error);
     throw error;
   }
 };
@@ -61,5 +77,5 @@ export default {
   createOrder,
   getOrderByUserId,
   getOrders,
-  updateOrderById,
+  updateOrderStatus,
 };

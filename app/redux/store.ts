@@ -12,6 +12,7 @@ import sizeOptionsReducer from "./slices/sizes-options";
 import purchaseOrderListDataReducer from "./slices/purchase-orders";
 import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
+import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
 
 import permissionListDataReducer from "./slices/permissions";
@@ -33,6 +34,7 @@ export const store = configureStore({
     purchaseOrderList: purchaseOrderListDataReducer,
     addresses: addressesReducer,
     provinces: provincesReducer,
+    orderList: orderListDataReducer,
     permissionList: permissionListDataReducer,
     roleList: roleListDataReducer,
     customerList: customerListDataReducer,
