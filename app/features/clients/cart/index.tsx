@@ -1,23 +1,68 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import CartItem from "./components/cart-item";
 import type { CartItemData } from "./types";
-import { initialCartItems } from "./data";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import {
+  addToCart,
+  removeFromCart,
+  type CartItem as CartSliceItem,
+} from "~/redux/slices/cartSlice";
+import type { ProductVariant } from "~/types/product/product-variant";
+import { Link } from "react-router";
 
 export default function ShoppingCart() {
-  const [cartItems, setCartItems] = useState<CartItemData[]>(initialCartItems);
+  const cartItems = useAppSelector(state => state.cart.items);
+  const dispatch = useAppDispatch();
+
+  const [localItems, setLocalItems] = useState<CartItemData[]>([]);
+
+  useEffect(() => {
+    setLocalItems(prev => {
+      const prevMap = new Map(prev.map(p => [String(p.id), p.selected]));
+      return cartItems.map((ci): CartItemData => {
+        const sliceItem = ci as CartSliceItem;
+        const variant = sliceItem.ProductVariant as ProductVariant;
+        const id = variant.productVariantId;
+        const price = (sliceItem as any).price ?? 0;
+        const quantity = sliceItem.quantity ?? 1;
+        const selected = prevMap.has(String(id))
+          ? !!prevMap.get(String(id))
+          : true;
+
+        const name =
+          (variant && variant.sku) || (sliceItem as any).name || "Sản phẩm";
+        const image =
+          (sliceItem as any).image?.imageUrl ?? (sliceItem as any).image ?? "";
+        const size = variant?.size?.name ?? "";
+        const color = variant?.color?.name ?? "";
+
+        return {
+          id: String(id),
+          name,
+          image,
+          size,
+          color,
+          price,
+          quantity,
+          selected,
+        } as CartItemData;
+      });
+    });
+  }, [cartItems]);
+
   const [discountCode, setDiscountCode] = useState("");
 
-  const selectedItems = cartItems.filter(item => item.selected);
+  const selectedItems = localItems.filter(item => item.selected);
   const selectedCount = selectedItems.length;
   const isAllSelected =
-    cartItems.length > 0 && selectedItems.length === cartItems.length;
+    localItems.length > 0 && selectedItems.length === localItems.length;
 
   const subtotal = useMemo(() => {
     return selectedItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + (item.price || 0) * item.quantity,
       0
     );
   }, [selectedItems]);
@@ -27,11 +72,11 @@ export default function ShoppingCart() {
   const total = subtotal - discount + shippingFee;
 
   const handleSelectAll = (checked: boolean) => {
-    setCartItems(items => items.map(item => ({ ...item, selected: checked })));
+    setLocalItems(items => items.map(item => ({ ...item, selected: checked })));
   };
 
   const handleSelectItem = (id: string, checked: boolean) => {
-    setCartItems(items =>
+    setLocalItems(items =>
       items.map(item =>
         item.id === id ? { ...item, selected: checked } : item
       )
@@ -41,19 +86,60 @@ export default function ShoppingCart() {
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
+    const item = localItems.find(i => i.id === id);
+    if (!item) return;
+
+    setLocalItems(items =>
+      items.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
     );
+
+    // Update store: replace existing quantity by removing then adding with newQuantity
+    const variant = (item as any).variant;
+    if (variant) {
+      const removeId = variant.id ?? variant.productVariantId;
+      if (removeId != null) {
+        dispatch(removeFromCart(removeId));
+      }
+
+      // Find original slice item to reuse its image object (slice stores image shape)
+      const original = cartItems.find(ci => {
+        const pv = (ci as any).ProductVariant;
+        const pid = pv?.id ?? pv?.productVariantId;
+        return String(pid) === String(variant.id ?? variant.productVariantId);
+      }) as CartSliceItem | undefined;
+
+      dispatch(
+        addToCart({
+          ProductVariant: variant,
+          quantity: newQuantity,
+          price: item.price,
+          image: original ? (original as any).image : null,
+        })
+      );
+    }
   };
 
   const handleRemoveItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+    const item = localItems.find(i => i.id === id);
+    if (!item) return;
+    const variant = (item as any).variant;
+    if (variant) {
+      const removeId = variant.id ?? variant.productVariantId;
+      if (removeId != null) dispatch(removeFromCart(removeId));
+    }
+    setLocalItems(items => items.filter(i => i.id !== id));
   };
 
   const handleClearSelected = () => {
-    setCartItems(items => items.filter(item => !item.selected));
+    const toRemove = localItems.filter(i => i.selected);
+    toRemove.forEach(i => {
+      const variant = (i as any).variant;
+      if (variant) {
+        const removeId = variant.id ?? variant.productVariantId;
+        if (removeId != null) dispatch(removeFromCart(removeId));
+      }
+    });
+    setLocalItems(items => items.filter(i => !i.selected));
   };
 
   const formatPrice = (price: number) => {
@@ -77,7 +163,7 @@ export default function ShoppingCart() {
                     className="border-gray-400"
                   />
                   <span className="text-sm">
-                    Chọn tất cả ({cartItems.length})
+                    Chọn tất cả ({localItems.length})
                   </span>
                 </div>
 
@@ -96,7 +182,7 @@ export default function ShoppingCart() {
 
             {/* Cart Items */}
             <div className="divide-y">
-              {cartItems.map(item => (
+              {localItems.map(item => (
                 <CartItem
                   key={item.id}
                   item={item}
@@ -106,7 +192,7 @@ export default function ShoppingCart() {
                 />
               ))}
 
-              {cartItems.length === 0 && (
+              {localItems.length === 0 && (
                 <div className="p-8 text-center text-gray-500">
                   <div className="text-6xl mb-4">🛒</div>
                   <p>Giỏ hàng của bạn đang trống</p>
@@ -171,12 +257,14 @@ export default function ShoppingCart() {
               </div>
 
               {/* Checkout Button */}
-              <Button
-                className="w-full mt-4 bg-gray-800 hover:bg-gray-700 text-white py-3"
-                disabled={selectedCount === 0}
-              >
-                Đến trang thanh toán
-              </Button>
+              <Link to="/payments">
+                <Button
+                  className="w-full mt-4 bg-gray-800 hover:bg-gray-700 text-white py-3"
+                  disabled={selectedCount === 0}
+                >
+                  Đến trang thanh toán
+                </Button>
+              </Link>
 
               {selectedCount > 0 && (
                 <p className="text-xs text-gray-500 text-center mt-2">

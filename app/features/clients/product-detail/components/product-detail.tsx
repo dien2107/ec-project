@@ -14,11 +14,16 @@ import type { ProductDetail } from "~/types/product/product";
 import type { ProductVariant } from "~/types/product/product-variant";
 import { NavLink } from "react-router";
 import { renderStars, formatVND } from "~/libs";
+import { useAppDispatch } from "~/redux/store";
+import { addToCart } from "~/redux/slices/cartSlice";
 
 export default function ProductDetail({ product }: { product: ProductDetail }) {
+  const dispatch = useAppDispatch();
   const [selected, setSelected] = useState<SelectedProductProps>({
     productVariant: null,
     quantity: 1,
+    price: product.basePrice,
+    image: product.primaryImage,
   });
   const variants = product.productVariants ?? [];
   const totalAvailableStock = variants.reduce((s, v) => s + v.stockQuantity, 0);
@@ -26,13 +31,13 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   const availableStock = selected.productVariant?.stockQuantity ?? 0;
 
   const handleSizeSelect = (productVariant: ProductVariant) => {
-    setSelected((prev) => ({ ...prev, productVariant }));
+    setSelected(prev => ({ ...prev, productVariant }));
   };
 
   const handleQuantityChange = (quantity: number, max_value?: number) => {
     if (quantity < 1 || (max_value !== undefined && quantity > max_value))
       return;
-    setSelected((prev) => ({ ...prev, quantity }));
+    setSelected(prev => ({ ...prev, quantity }));
   };
 
   return (
@@ -90,7 +95,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       <div>
         <h1 className="font-medium mb-2">Kích thước</h1>
         <div className="flex flex-wrap gap-2">
-          {product.productVariants.map((productVariant) => (
+          {product.productVariants.map(productVariant => (
             <Button
               key={productVariant.productVariantId}
               variant={
@@ -113,7 +118,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       <div>
         <h1 className="font-medium mb-2">Chọn màu khác</h1>
         <div className="flex flex-wrap gap-2">
-          {product.relatedProducts.map((p) => (
+          {product.relatedProducts.map(p => (
             <NavLink
               key={p.productId}
               to={`/products/${p.slug}`}
@@ -174,10 +179,23 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       <div>
         <Button
           className="h-[44px] !px-8 cursor-pointer bg-black text-white"
-          disabled={noStock || !selected.productVariant}
+          // disabled={noStock || !selected.productVariant}
         >
           <ShoppingCart />
-          <span>Thêm vào giỏ hàng</span>
+          <span
+            onClick={() =>
+              dispatch(
+                addToCart({
+                  ProductVariant: selected.productVariant!,
+                  quantity: selected.quantity,
+                  price: selected.price,
+                  image: selected.image,
+                })
+              )
+            }
+          >
+            Thêm vào giỏ hàng
+          </span>
         </Button>
       </div>
     </div>
