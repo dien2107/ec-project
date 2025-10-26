@@ -34,11 +34,6 @@ export const refreshToken = async (refreshToken?: string) => {
   return res.data;
 };
 
-export const getCurrentUser = async () => {
-  const res = await instance.get("/users/profile");
-  return res.data;
-};
-
 export const changePassword = async (payload: ChangePasswordPayload) => {
   const res = await instance.post("/users/change-password", payload);
   return res.data;
@@ -55,6 +50,7 @@ export const logout = async () => {
   safeLocalStorage.removeItem("refreshToken");
 };
 export const getAuthVerify = async (token: string) => {
+   console.log(token);
   const res = await instance.get("/auth/verify", {
     params: { token },
   });

@@ -41,11 +41,14 @@ const AddAddressForm = ({
   setIsOpen,
   onUpdated,
   selectedAddress,
+  onCancel,
 }: {
   open: boolean;
   setIsOpen: (open: boolean) => void;
   onUpdated: () => void;
   selectedAddress: Address;
+  // optional callback when user cancels the edit form (e.g., reopen the view-addresses dialog)
+  onCancel?: () => void;
 }) => {
   const dispatch = useAppDispatch();
   const { provinces } = useAppSelector((state) => state.provinces);
@@ -312,9 +315,16 @@ const AddAddressForm = ({
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onCancel) {
+                    onCancel();
+                  } else {
+                    setIsOpen(false);
+                  }
+                }}
               >
-                Hủy
+                {onCancel ? "Trở lại" : "Hủy"}
               </Button>
               <Button
                 type="submit"
