@@ -9,6 +9,10 @@ export default [
     route("/profile", "features/clients/user-profile/index.tsx"),
     route("/cart", "features/clients/cart/index.tsx"),
     route("/address", "features/clients/address/index.tsx"),
+    route(
+      "/payment/online",
+      "features/clients/payment/components/payment-handle.tsx"
+    ),
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout

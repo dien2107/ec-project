@@ -1,67 +1,68 @@
-import { useState } from "react";
-import DataTable from "../components/data-table";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getColumns, type Order } from "./types";
+import { fetchOrderListData } from "~/redux/slices/orders";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import DataTable from "../components/data-table";
 import ViewOrderDetailDialog from "./components/view-order-detail-dialog";
-import { fakeOrders } from "./data/fakeOrders";
+import SkeletonFilter from "../../../components/ui/skeleton-filter";
+import SkeletonHeader from "../../../components/ui/skeleton-header";
+import SkeletonTable from "../../../components/ui/skeleton-table";
+import { getColumns, type Order as SliceOrder } from "./types";
 
 export default function Orders() {
+  const dispatch = useAppDispatch();
+  const { orderList, isLoading } = useAppSelector(state => state.orderList);
+
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-  const totalPages = Math.ceil(fakeOrders.length / pageSize);
 
-  const paginatedData = fakeOrders.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<SliceOrder | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const handleView = (order: Order) => {
+  const handleView = useCallback((order: SliceOrder) => {
     setSelectedOrder(order);
     setIsViewOpen(true);
-  };
+  }, []);
 
+  useEffect(() => {
+    dispatch(fetchOrderListData());
+  }, [dispatch, currentPage]);
+
+  const data = orderList?.data ?? [];
+  const totalPages = Math.max(1, Math.ceil((data?.length ?? 0) / pageSize));
   const columns = getColumns(handleView);
-
-  function globalFilterFn<TData>(
-    row: any,
-    columnId: string,
-    filterValue: string
-  ): boolean {
-    if (!filterValue) return true;
-
-    const search = filterValue.toLowerCase();
-    const orderId = row.original.id.toLowerCase();
-    const customerName =
-      row.original.address?.recipient_name?.toLowerCase() ?? "";
-
-    return orderId.includes(search) || customerName.includes(search);
-  }
-
   return (
     <>
       <div className="container">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-2xl font-bold">Quản lý đơn hàng</h3>
-        </div>
-        <DataTable
-          columns={columns}
-          data={paginatedData}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          title="Danh sách đơn hàng"
-          showFilter
-          showGlobalFilter
-          globalFilterFn={globalFilterFn}
-          globalFilterPlaceholder="Tìm kiếm đơn hàng..."
-        />
+        {/* Header */}
+        {isLoading || !orderList?.data ? (
+          <SkeletonHeader />
+        ) : (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold">Quản lý đơn hàng</h3>
+          </div>
+        )}
+
+        {/* DataTable */}
+        {isLoading || !orderList?.data ? (
+          <SkeletonTable />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={orderList?.data}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
 
       {/* View order detail dialog */}
-      <ViewOrderDetailDialog open={isViewOpen} setIsOpen={setIsViewOpen} />
+      <ViewOrderDetailDialog
+        order={selectedOrder}
+        open={isViewOpen}
+        setIsOpen={setIsViewOpen}
+      />
     </>
   );
 }

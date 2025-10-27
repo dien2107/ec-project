@@ -56,7 +56,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
       }));
     }
   };
-
+  const goBack = () => navigate("/login");
   const validateForm = (): boolean => {
     const newErrors: Partial<RegisterFormData> = {};
 
@@ -337,7 +337,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                 Đã có tài khoản?{" "}
                 <button
                   type="button"
-                  onClick={onNavigateToLogin}
+                  onClick={goBack}
                   className="text-blue-600 hover:text-blue-500 font-medium underline-offset-4 hover:underline"
                 >
                   Đăng nhập ngay →

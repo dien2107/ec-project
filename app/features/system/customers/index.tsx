@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Eye, X } from "lucide-react";
 import { type ColumnDef } from "@tanstack/react-table";
 import DataTable from "~/features/system/components/data-table";
@@ -9,72 +9,11 @@ import { getUserById, updateUserById } from "~/services/customers";
 import { fetchStatuses } from "~/redux/slices/statuses";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import toast, { Toaster } from "react-hot-toast";
-
-// ===== Types =====
-export type EntityStatus = {
-  statusId: number;
-  name: string;
-  displayName: string;
-  entityType: string;
-};
-
-export type Role = {
-  roleId: number;
-  name: string;
-  description: string;
-  status: EntityStatus;
-  permissionIds: number[];
-};
-
-export type Address = {
-  addressId?: number;
-  recipientName?: string;
-  phone?: string;
-  streetAddress?: string;
-  city?: string;
-  ward?: string;
-  district?: string;
-  isDefault?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-export type Customer = {
-  userId: number;
-  username?: string;
-  email?: string;
-  imageUrl?: string | null;
-  fullName?: string;
-  phone?: string;
-  gender?: "Male" | "Female" | null;
-  dateOfBirth?: string | null;
-  isVerified?: boolean;
-  createdAt?: string;
-  status?: EntityStatus | null;
-  roles?: Role[];
-  addresses?: Address[];
-  orderCount?: number;
-  totalSpent?: number;
-  joinDate?: string;
-  address?: string;
-  orders?: { id: string; date: string; amount: number; status: string }[];
-};
-
-type UpdateCustomerData = {
-  username: string;
-  email: string;
-  imageUrl: string;
-  fullName: string;
-  phone: string;
-  gender: "Male" | "Female";
-  dateOfBirth: string | null;
-  isVerified: boolean;
-  statusId: number;
-  roleIds: number[];
-  // include addresses to avoid losing them
-  addresses?: Address[];
-};
-
+import CustomerFilter from "./components/customer-filter";
+import SkeletonHeader from "~/components/ui/skeleton-header";
+import SkeletonFilter from "~/components/ui/skeleton-filter";
+import SkeletonTable from "~/components/ui/skeleton-table";
+import type { Customer, EntityStatus, UpdateCustomerData, Address, Role} from "./types";
 // ===== Modal Components =====
 interface ModalProps {
   isOpen: boolean;
@@ -131,16 +70,18 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     }).format(amount);
 
   // helper component to render addresses with "show more"
-  const AddressesList: React.FC<{ addresses?: Address[]; fallback?: string | undefined }> = ({
-    addresses,
-    fallback,
-  }) => {
+  const AddressesList: React.FC<{
+    addresses?: Address[];
+    fallback?: string | undefined;
+  }> = ({ addresses, fallback }) => {
     const [showAll, setShowAll] = useState(false);
-    const list = Array.isArray(addresses) && addresses.length > 0 ? addresses : [];
+    const list =
+      Array.isArray(addresses) && addresses.length > 0 ? addresses : [];
     if (list.length === 0 && fallback) {
       return <p className="text-gray-900">{fallback}</p>;
     }
-    if (list.length === 0) return <p className="text-gray-900">Chưa có địa chỉ</p>;
+    if (list.length === 0)
+      return <p className="text-gray-900">Chưa có địa chỉ</p>;
 
     const shown = showAll ? list : list.slice(0, 3);
     return (
@@ -150,11 +91,15 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <li key={addr.addressId ?? idx} className="text-gray-900">
               {addr.streetAddress ?? addr.recipientName ?? "—"}
               {addr.isDefault && (
-                <span className="ml-2 text-xs text-green-600 font-medium">(Mặc định)</span>
+                <span className="ml-2 text-xs text-green-600 font-medium">
+                  (Mặc định)
+                </span>
               )}
               {addr.city || addr.district ? (
                 <div className="text-sm text-gray-500">
-                  {[addr.ward, addr.district, addr.city].filter(Boolean).join(", ")}
+                  {[addr.ward, addr.district, addr.city]
+                    .filter(Boolean)
+                    .join(", ")}
                 </div>
               ) : null}
             </li>
@@ -175,7 +120,9 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const handleChangeStatus = async () => {
     if (!customer || locking || !selectedStatus) return;
 
-    const targetStatus = userStatuses.find((s) => s.statusId === selectedStatus);
+    const targetStatus = userStatuses.find(
+      (s) => s.statusId === selectedStatus
+    );
     if (!targetStatus) {
       toast.error("Không tìm thấy trạng thái hợp lệ.");
       return;
@@ -206,7 +153,9 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
       console.log("Updating user with data:", updateData);
       await updateUserById(Number(customer.userId), updateData);
-      toast.success(`Cập nhật trạng thái "${targetStatus.displayName}" thành công.`);
+      toast.success(
+        `Cập nhật trạng thái "${targetStatus.displayName}" thành công.`
+      );
 
       reloadList();
       onClose();
@@ -236,7 +185,9 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex items-center justify-between p-5 border-b">
-        <h2 className="text-lg font-semibold">Thông tin khách hàng #{customer?.userId}</h2>
+        <h2 className="text-lg font-semibold">
+          Thông tin khách hàng #{customer?.userId}
+        </h2>
         <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
           <X className="w-5 h-5" />
         </button>
@@ -265,36 +216,59 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Họ tên</label>
-                <p className="text-lg font-semibold">{customer?.fullName ?? customer?.username}</p>
+                <label className="text-sm text-gray-500 block mb-1">
+                  Họ tên
+                </label>
+                <p className="text-lg font-semibold">
+                  {customer?.fullName ?? customer?.username}
+                </p>
               </div>
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Email</label>
+                <label className="text-sm text-gray-500 block mb-1">
+                  Email
+                </label>
                 <p>{customer?.email}</p>
               </div>
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Ngày tham gia</label>
+                <label className="text-sm text-gray-500 block mb-1">
+                  Ngày tham gia
+                </label>
                 <p>
-                  {customer?.createdAt ? new Date(customer.createdAt).toLocaleDateString("vi-VN") : "-"}
+                  {customer?.createdAt
+                    ? new Date(customer.createdAt).toLocaleDateString("vi-VN")
+                    : "-"}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Địa chỉ</label>
-                <AddressesList addresses={customer?.addresses} fallback={customer?.address} />
+                <label className="text-sm text-gray-500 block mb-1">
+                  Địa chỉ
+                </label>
+                <AddressesList
+                  addresses={customer?.addresses}
+                  fallback={customer?.address}
+                />
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Trạng thái hiện tại</label>
-                <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusColor(customer?.status?.name)}`}>
-                  {customer?.status?.displayName ?? customer?.status?.name ?? "-"}
+                <label className="text-sm text-gray-500 block mb-1">
+                  Trạng thái hiện tại
+                </label>
+                <span
+                  className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusColor(customer?.status?.name)}`}
+                >
+                  {customer?.status?.displayName ??
+                    customer?.status?.name ??
+                    "-"}
                 </span>
               </div>
 
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Chuyển trạng thái</label>
+                <label className="text-sm text-gray-500 block mb-1">
+                  Chuyển trạng thái
+                </label>
                 <select
                   value={selectedStatus ?? ""}
                   onChange={(e) => setSelectedStatus(Number(e.target.value))}
@@ -312,12 +286,18 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               </div>
 
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Số điện thoại</label>
+                <label className="text-sm text-gray-500 block mb-1">
+                  Số điện thoại
+                </label>
                 <p>{customer?.phone ?? "-"}</p>
               </div>
               <div>
-                <label className="text-sm text-gray-500 block mb-1">Tổng chi tiêu</label>
-                <p className="font-semibold">{formatCurrency(customer?.totalSpent ?? 0)}</p>
+                <label className="text-sm text-gray-500 block mb-1">
+                  Tổng chi tiêu
+                </label>
+                <p className="font-semibold">
+                  {formatCurrency(customer?.totalSpent ?? 0)}
+                </p>
               </div>
             </div>
           </div>
@@ -325,7 +305,10 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           <div>
             {customer?.orders && customer.orders.length > 0 ? (
               customer.orders.map((order) => (
-                <div key={order.id} className="grid grid-cols-4 gap-4 py-2 border-b text-sm">
+                <div
+                  key={order.id}
+                  className="grid grid-cols-4 gap-4 py-2 border-b text-sm"
+                >
                   <div>{order.id}</div>
                   <div>{order.date}</div>
                   <div>{formatCurrency(order.amount)}</div>
@@ -333,7 +316,9 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-500 py-8">Chưa có đơn hàng nào</p>
+              <p className="text-center text-gray-500 py-8">
+                Chưa có đơn hàng nào
+              </p>
             )}
           </div>
         )}
@@ -353,12 +338,20 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 };
 
 // ===== Main Component =====
+type FilterValues = {
+  Search?: string;
+  Phone?: string;
+  HasRole?: boolean;
+  StatusName?: string | undefined;
+};
+
 const CustomerManagement: React.FC = () => {
   const dispatch = useAppDispatch();
   const PAGE_SIZE = 6;
 
   const { customerList, isLoading: isCustomerLoading } = useAppSelector(
-    (state: any) => state.customerList ?? { customerList: null, isLoading: false }
+    (state: any) =>
+      state.customerList ?? { customerList: null, isLoading: false }
   );
   const { statuses, isLoading: isStatusesLoading } = useAppSelector(
     (state: any) => state.statuses ?? { statuses: null, isLoading: false }
@@ -370,29 +363,46 @@ const CustomerManagement: React.FC = () => {
     return [];
   }, [statuses]);
 
+  // replace previous statusFilter with central filters state
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [filters, setFilters] = useState<FilterValues>({});
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [detailLoading, setDetailLoading] = useState(false);
 
-  const reloadList = () => {
-    dispatch(
-      fetchCustomerListData({
-        PageNumber: currentPage,
-        PageSize: PAGE_SIZE,
-        StatusName: statusFilter === "all" ? undefined : statusFilter,
-      })
-    );
-  };
+  // memoized reload so we can call it from modal and effect without duplicate dispatches
+  const reloadList = useCallback(
+    (override?: { PageNumber?: number }) => {
+      dispatch(
+        fetchCustomerListData({
+          PageNumber: override?.PageNumber ?? currentPage,
+          PageSize: PAGE_SIZE,
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
+          ...(filters.Search ? { Search: filters.Search } : {}),
+          ...(filters.Phone ? { Phone: filters.Phone } : {}),
+          HasRole: false,
+        })
+      );
+    },
+    [dispatch, currentPage, filters, PAGE_SIZE]
+  );
 
   useEffect(() => {
     dispatch(fetchStatuses({ entityType: ENTITY_TYPE.USER }));
   }, [dispatch]);
 
+  // call reloadList whenever page or filters change (single fetch)
   useEffect(() => {
     reloadList();
-  }, [dispatch, currentPage, statusFilter]);
+  }, [reloadList]);
+
+  const handleFilterChange = React.useCallback((next: FilterValues) => {
+    // only update local state here; effect will trigger fetch once
+    setFilters(next);
+    setCurrentPage(1);
+  }, []);
 
   const data = customerList?.data?.items ?? customerList?.data ?? [];
 
@@ -410,10 +420,12 @@ const CustomerManagement: React.FC = () => {
           status?.name?.toLowerCase() === "active"
             ? "bg-green-100 text-green-700"
             : status?.name?.toLowerCase() === "inactive"
-            ? "bg-red-100 text-red-700"
-            : "bg-gray-200 text-gray-700";
+              ? "bg-red-100 text-red-700"
+              : "bg-gray-200 text-gray-700";
         return (
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${color}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-medium ${color}`}
+          >
             {status?.displayName ?? status?.name ?? "-"}
           </span>
         );
@@ -452,30 +464,42 @@ const CustomerManagement: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
       <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-semibold">Quản lý khách hàng</h1>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">Tất cả</option>
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-          </select>
-        </div>
+        {/* header + filter: show skeletons while statuses load (not when list fetches) */}
+        {isStatusesLoading ? (
+          <>
+            <SkeletonHeader />
+            <SkeletonFilter />
+          </>
+        ) : (
+          <>
+            <h1 className="text-xl font-semibold mb-2">Quản lý khách hàng</h1>
+            <div className="flex items-center justify-between mb-4">
+              <CustomerFilter
+                initial={filters}
+                onChange={handleFilterChange}
+                statuses={userStatuses}
+                isLoading={isStatusesLoading}
+              />
+            </div>
+          </>
+        )}
 
-        <DataTable<Customer, unknown>
-          columns={columns}
-          data={data}
-          currentPage={currentPage}
-          totalPages={customerList?.data?.totalPages ?? 1}
-          onPageChange={setCurrentPage}
-          title=""
-          showGlobalFilter
-          globalFilterPlaceholder="Tìm khách hàng..."
-          isLoading={isCustomerLoading}
-        />
+        {/* table: show skeleton panel while loading */}
+        {isCustomerLoading ? (
+          <SkeletonTable />
+        ) : (
+          <DataTable<Customer, unknown>
+            columns={columns}
+            data={data}
+            currentPage={currentPage}
+            totalPages={customerList?.data?.totalPages ?? 1}
+            onPageChange={setCurrentPage}
+            title=""
+            showGlobalFilter
+            globalFilterPlaceholder="Tìm khách hàng..."
+            isLoading={isCustomerLoading}
+          />
+        )}
 
         <CustomerDetailModal
           customer={selectedCustomer}
@@ -487,7 +511,7 @@ const CustomerManagement: React.FC = () => {
           loading={detailLoading}
           userStatuses={userStatuses}
           isStatusesLoading={isStatusesLoading}
-          reloadList={reloadList}
+          reloadList={() => reloadList()}
         />
       </div>
     </div>

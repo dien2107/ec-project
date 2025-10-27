@@ -12,6 +12,8 @@ import sizeOptionsReducer from "./slices/sizes-options";
 import purchaseOrderListDataReducer from "./slices/purchase-orders";
 import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
+import orderListDataReducer from "./slices/orders";
+import cartReducer from "./slices/cartSlice";
 
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
@@ -20,6 +22,7 @@ import authReducer from "./slices/auth";
 import authLogoutListener from "~/middlewares/authLogoutListener";
 export const store = configureStore({
   reducer: {
+    cart: cartReducer,
     productMeta: productFormMetaReducer,
     productList: productListDataReducer,
     productFilterOptions: productFilterOptionsReducer,
@@ -31,12 +34,13 @@ export const store = configureStore({
     purchaseOrderList: purchaseOrderListDataReducer,
     addresses: addressesReducer,
     provinces: provincesReducer,
+    orderList: orderListDataReducer,
     permissionList: permissionListDataReducer,
     roleList: roleListDataReducer,
     customerList: customerListDataReducer,
     auth: authReducer,
   },
-  middleware: (getDefaultMiddleware) =>
+  middleware: getDefaultMiddleware =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
   //     .prepend(authStorageListener.middleware)
 });

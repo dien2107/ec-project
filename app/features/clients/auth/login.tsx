@@ -85,7 +85,7 @@ export default function LoginPage() {
       // nếu unwrap thành công => login ok
       toast.success("Đăng nhập thành công");
       // chuyển về trang chính
-      window.location.href = "/";
+      navigate("/");
     } catch (err: any) {
       // giữ ở trang đăng nhập và show toast lỗi
       const message =

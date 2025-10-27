@@ -26,20 +26,16 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { Input } from "~/components/ui/input";
+
 import { Button } from "~/components/ui/button";
 import { User, CreditCard, Truck, Package } from "lucide-react";
-
+import { statusMap, type Order } from "../types";
+import OrderDetail from "./order-detail";
+import { toast } from "react-hot-toast";
+import { approveOrder, cancelOrder } from "~/services/order";
+import { useAppDispatch } from "~/redux/store";
+import { fetchOrderListData } from "~/redux/slices/orders";
+import { ConfirmActionDialog } from "./confirmation-modal";
 function formatVND(amount: number) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -48,18 +44,56 @@ function formatVND(amount: number) {
 }
 
 export default function ViewOrderDetailDialog({
+  order,
   open,
   setIsOpen,
 }: {
+  order: Order | null;
   open: boolean;
   setIsOpen: (open: boolean) => void;
 }) {
+  const dispatch = useAppDispatch();
+  const handleCancel = async () => {
+    if (!order) return;
+    try {
+      const response = await cancelOrder(order.orderId);
+      if (!response.isSuccess) {
+        toast.error(response.message || "Hủy đơn hàng thất bại.");
+        return;
+      }
+      toast.success("Hủy đơn hàng thành công.");
+      setIsOpen(false);
+      dispatch(fetchOrderListData());
+    } catch (ex) {
+      const error = ex as Error;
+      toast.error(error.message || "Hủy đơn hàng thất bại.");
+    }
+  };
+  const handleApprove = async () => {
+    if (!order) return;
+    try {
+      const response = await approveOrder(order.orderId);
+      if (!response.isSuccess) {
+        toast.error(response.message || "Duyệt đơn hàng thất bại.");
+        return;
+      }
+      toast.success("Duyệt đơn hàng thành công.");
+      setIsOpen(false);
+      dispatch(fetchOrderListData());
+    } catch (ex) {
+      const error = ex as Error;
+      toast.error(error.message || "Duyệt đơn hàng thất bại.");
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={setIsOpen}>
-      <DialogContent className="min-w-[860px] max-w-[860px] bg-[#F8FAFC] ">
+      <DialogContent
+        className="min-w-[900px] max-w-[860px] bg-[#F8FAFC] "
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle className="font-semibold text-xl">
-            Chi tiết đơn hàng ORD-001
+            Chi tiết đơn hàng {`#${order?.orderId}`}
           </DialogTitle>
         </DialogHeader>
 
@@ -78,15 +112,16 @@ export default function ViewOrderDetailDialog({
               <CardContent>
                 <div className="flex flex-col gap-1">
                   <p>
-                    <span className="font-medium">Tên:</span> Nguyễn Văn A
+                    <span className="font-medium">Tên:</span>{" "}
+                    {order?.user.fullName}
                   </p>
                   <p>
                     <span className="font-medium">Số điện thoại:</span>{" "}
                     0901234567
                   </p>
                   <p>
-                    <span className="font-medium">Địa chỉ:</span> 123 Đường Lê
-                    Lợi, Phường Bến Nghé, Quận 1, TP.HCM
+                    <span className="font-medium">Địa chỉ:</span>{" "}
+                    {order?.addressInfo}
                   </p>
                 </div>
               </CardContent>
@@ -103,12 +138,18 @@ export default function ViewOrderDetailDialog({
               <CardContent>
                 <div className="flex flex-col gap-1">
                   <p>
-                    <span className="font-medium">Ngày đặt:</span> 01/01/2023
+                    <span className="font-medium">Ngày đặt:</span>{" "}
+                    {new Date(order?.createdAt ?? "").toLocaleDateString(
+                      "en-GB"
+                    )}
                   </p>
                   <p>
                     <span className="font-medium">Trạng thái:</span>
-                    <span className="bg-yellow-500 py-1 px-2 rounded-lg text-white text-sm ml-2">
-                      Chờ xử lý
+                    <span
+                      className={`${statusMap[order?.status?.name as keyof typeof statusMap]?.color ?? "bg-gray-400"} py-1 px-2 rounded-lg text-white text-sm ml-2`}
+                    >
+                      {statusMap[order?.status?.name as keyof typeof statusMap]
+                        ?.label ?? "Không rõ"}
                     </span>
                   </p>
                   <p className="flex items-center gap-1">
@@ -123,7 +164,9 @@ export default function ViewOrderDetailDialog({
                       <Truck />
                       Hình thức giao hàng:
                     </span>
-                    Giao hàng nhanh
+                    {order?.ship === null
+                      ? "Chưa xác định"
+                      : order?.ship?.corpName}
                   </p>
                 </div>
               </CardContent>
@@ -131,99 +174,31 @@ export default function ViewOrderDetailDialog({
           </div>
 
           {/* Table show list items */}
-          <Card className="shadow-xs mx-1">
-            <CardHeader>
-              <CardTitle>
-                <h3 className=" font-semibold text-lg flex items-center gap-2">
-                  Sản phẩm
-                </h3>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px] font-medium text-gray-400">
-                      Mã SP
-                    </TableHead>
-                    <TableHead className="font-medium text-gray-400">
-                      Tên sản phẩm
-                    </TableHead>
-                    <TableHead className="font-medium text-gray-400">
-                      Số lượng
-                    </TableHead>
-                    <TableHead className="text-right font-medium text-gray-400">
-                      Đơn giá
-                    </TableHead>
-                    <TableHead className="text-right font-medium text-gray-400">
-                      Thành tiền
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>VAR-001</TableCell>
-                    <TableCell className="flex flex-col gap-1">
-                      <span>Áo thun YAME Basic</span>
-                      <span className="text-xs">Trắng - M</span>
-                    </TableCell>
-                    <TableCell className="text-right">2</TableCell>
-                    <TableCell className="text-right flex flex-col">
-                      <span>{formatVND(1200000)}</span>
-                      <span className="text-sm line-through text-gray-500">
-                        {formatVND(2000000)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatVND(1200000 * 2)}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>VAR-001</TableCell>
-                    <TableCell className="flex flex-col gap-1">
-                      <span>Áo thun YAME Basic</span>
-                      <span className="text-xs">Trắng - M</span>
-                    </TableCell>
-                    <TableCell className="text-right">2</TableCell>
-                    <TableCell className="text-right flex flex-col">
-                      <span>{formatVND(1200000)}</span>
-                      <span className="text-sm line-through text-gray-500">
-                        {formatVND(2000000)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatVND(1200000 * 2)}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-right">
-                      Tổng cộng
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {" "}
-                      {formatVND(1200000 * 4)}
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </CardContent>
-          </Card>
+          <OrderDetail order={order} />
           {/* End: Dialog body */}
         </div>
 
         <DialogFooter className="py-4 border-t-2">
-          <Button variant="outline" className=" text-red-500  cursor-pointer">
-            Hủy đơn
-          </Button>
-
-          <Button
-            type="submit"
-            className="bg-[#3770EC] text-white cursor-pointer"
+          <ConfirmActionDialog
+            title="Xác nhận hủy đơn hàng"
+            description="Bạn có chắc chắn muốn hủy đơn hàng này không?"
+            onConfirm={handleCancel} // Gọi function cancel khi confirm
           >
-            Duyệt đơn hàng
-          </Button>
+            <Button variant="outline" className=" text-red-500  cursor-pointer">
+              Hủy đơn
+            </Button>
+          </ConfirmActionDialog>
+
+          <ConfirmActionDialog
+            title="Xác nhận duyệt đơn hàng"
+            description="Bạn có chắc chắn muốn duyệt đơn hàng này không?"
+            confirmText="Duyệt"
+            onConfirm={handleApprove} // Gọi function approve khi confirm
+          >
+            <Button className="bg-[#3770EC] text-white cursor-pointer">
+              Duyệt đơn hàng
+            </Button>
+          </ConfirmActionDialog>
         </DialogFooter>
       </DialogContent>
     </Dialog>

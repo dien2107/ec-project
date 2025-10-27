@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { Button } from "~/components/ui/button";
-import { Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Eye } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 import { formatVND } from "~/libs";
 
@@ -16,7 +16,19 @@ export type address = {
   district: string;
   is_default: boolean;
 };
-
+export const statusMap: Record<
+  Status["name"],
+  { label: string; color: string }
+> = {
+  Draft: { label: "Chờ xử lý", color: "bg-yellow-400" },
+  Pending: { label: "Đang chờ xác nhận", color: "bg-amber-500" },
+  Confirmed: { label: "Đã xác nhận", color: "bg-teal-500" },
+  Processing: { label: "Đang giao", color: "bg-blue-500" },
+  Delivered: { label: "Đã giao", color: "bg-green-500" },
+  Cancelled: { label: "Đã hủy", color: "bg-red-500" },
+  Returned: { label: "Đã hoàn trả", color: "bg-gray-500" },
+  Shipped: { label: "Đã gửi hàng", color: "bg-purple-500" },
+};
 export type discount = {
   id: number;
   code: string;
@@ -44,91 +56,110 @@ export type order_item = {
   price: number;
   subtotal: number;
 };
-
+type Status = {
+  statusId: number;
+  name:
+    | "Draft"
+    | "Pending"
+    | "Confirmed"
+    | "Processing"
+    | "Delivered"
+    | "Cancelled"
+    | "Returned"
+    | "Shipped";
+};
+type User = {
+  userId: number;
+  fullName: string;
+};
+type Ship = {
+  shipId: number;
+  corpName: string;
+};
 export type Order = {
-  id: string;
+  orderId: number;
   address_id: number;
   address: address;
+  addressInfo: string;
   discount_id: number | null;
   discount: discount | null;
   discount_amount: number;
   total_amount: number;
   is_free_ship: boolean;
   shipped_at: Date | null;
+  ship: Ship;
   delivery_at: Date | null;
-  status: "pending" | "processing" | "completed" | "cancelled";
+  user: User;
+  status: Status;
   payment: payment;
   shipping_method: shipping_method;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
   items: order_item[];
 };
-
 
 export const getColumns = (
   handleView: (order: Order) => void
 ): ColumnDef<Order>[] => [
   {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Mã đơn"
-          className="justify-start"
-        />
-      );
-    },
+    accessorKey: "orderId",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Mã đơn" className="text-center" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-center font-medium text-gray-700">
+        #{row.original.orderId}
+      </div>
+    ),
   },
   {
-    accessorKey: "address.recipient_name",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Khách hàng"
-          className="justify-start"
-        />
-      );
-    },
-  },
-  {
-    accessorKey: "created_at",
-    header: ({ column }) => {
-      return (
-        <SortableHeader
-          column={column}
-          title="Ngày đặt"
-          className="justify-start"
-        />
-      );
-    },
+    accessorKey: "user",
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        title="Khách hàng"
+        className="text-center"
+      />
+    ),
     cell: ({ row }) => {
+      const user = row.original.user;
       return (
-        <div className="text-start">
-          {row.original.created_at.toLocaleDateString("en-GB")}
+        <div className="text-center font-semibold text-gray-800">
+          {user.fullName}
         </div>
       );
     },
   },
   {
-    accessorKey: "total_amount",
-    header: () => {
-      return <div className="flex flex-start">Tổng tiền</div>;
-    },
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        title="Ngày đặt"
+        className="text-center"
+      />
+    ),
     cell: ({ row }) => {
+      const createdAt = new Date(row.original.createdAt);
       return (
-        <div className="text-left font-medium">
-          {formatVND(row.getValue("total_amount"))}
+        <div className="text-center text-gray-600">
+          {createdAt.toLocaleDateString("en-GB")}
         </div>
       );
     },
+  },
+  {
+    accessorKey: "totalAmount",
+    header: () => <div className="text-center font-semibold">Tổng tiền</div>,
+    cell: ({ row }) => (
+      <div className="text-center font-bold text-green-600">
+        {formatVND(row.getValue("totalAmount"))}
+      </div>
+    ),
   },
   {
     accessorKey: "status",
-    header: () => {
-      return <div className="flex justify-start">Trạng thái</div>;
-    },
+    header: () => <div className="text-center font-semibold">Trạng thái</div>,
     meta: {
       filterConfig: {
         type: "select",
@@ -143,59 +174,47 @@ export const getColumns = (
       },
     },
     cell: ({ row }) => {
-      const status = row.original.status;
+      const status = row.original.status as Status;
+
+      const info = statusMap[status.name] || {
+        label: "Không xác định",
+        color: "bg-gray-400",
+      };
+
       return (
-        <div className="text-left">
-          {status === "pending" ? (
-            <div>
-              <span className="bg-yellow-500 text-white text-sm font-medium py-2 px-3 rounded-2xl">
-                Chờ xử lý
-              </span>
-            </div>
-          ) : status === "completed" ? (
-            <div>
-              <span className="bg-green-500 text-white text-sm font-medium py-2 px-3 rounded-2xl">
-                Đã giao
-              </span>
-            </div>
-          ) : status === "cancelled" ? (
-            <div>
-              <span className="bg-red-500 text-white text-sm font-medium py-2 px-3 rounded-2xl">
-                Đã hủy
-              </span>
-            </div>
-          ) : (
-            status === "processing" && (
-              <div>
-                <span className="bg-blue-500 text-white text-sm font-medium py-2 px-3 rounded-2xl">
-                  Đang giao
-                </span>
-              </div>
-            )
-          )}
+        <div className="flex justify-center">
+          <span
+            className={`${info.color} text-white text-xs md:text-sm font-medium py-1.5 px-3 rounded-full shadow-sm`}
+          >
+            {info.label}
+          </span>
         </div>
       );
     },
     filterFn: (row, id, value) => {
-      if (!value) return true;
-      if (value === "all") return true;
-      const rowValue = row.getValue(id) as string;
-      return rowValue === value;
+      if (!value || value === "all") return true;
+      const rowValue = (row.getValue(id) as Status).name?.toLowerCase();
+      return rowValue === value.toLowerCase();
     },
   },
   {
     accessorKey: "actions",
-    header: () => {
-      return <div className="flex justify-end">Thao tác</div>;
-    },
+    header: () => <div className="text-center font-semibold">Thao tác</div>,
     cell: ({ row }) => {
       const order = row.original;
-
       return (
-        <div className="text-right">
-          <Button variant="outline" onClick={() => handleView(order)}>
-            <Eye />
-            Xem chi tiết
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={() => {
+              console.log(order);
+              handleView(order);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+            <span>Xem chi tiết</span>
           </Button>
         </div>
       );

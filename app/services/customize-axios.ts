@@ -16,7 +16,7 @@ const instance = axios.create({
 // request: attach access token
 instance.interceptors.request.use((config) => {
   try {
-    const token = safeLocalStorage.getItem("accessToken");
+    const token = safeLocalStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
     if (token && config && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
