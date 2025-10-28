@@ -18,11 +18,12 @@ const AddressManagement = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     // Giả sử userId là 1, thay đổi theo logic thực tế của bạn
     if ((addresses?.length ?? 0) === 0) {
-      dispatch(fetchAddressesByUserId(1));
+      dispatch(fetchAddressesByUserId(user.data.userId));
     }
     // we include addresses.length so if addresses change from undefined->[] we still fetch once
   }, [dispatch, addresses.length]);
@@ -39,8 +40,8 @@ const AddressManagement = () => {
 
   const handleSetAsDefault = async (address: Address) => {
     try {
-      await setDefaultAddress(1, address.addressId);
-      dispatch(fetchAddressesByUserId(1));
+      await setDefaultAddress(address.addressId);
+      dispatch(fetchAddressesByUserId(user.data.userId));
       toast.success("Đã đặt địa chỉ mặc định thành công!");
     } catch (error: any) {
       if (error?.response?.data?.message) {
@@ -63,7 +64,7 @@ const AddressManagement = () => {
         </div>
         <AddAddressForm
           onAdded={() => {
-            dispatch(fetchAddressesByUserId(1));
+            dispatch(fetchAddressesByUserId(user.data.userId));
           }}
         />
       </div>
@@ -94,7 +95,7 @@ const AddressManagement = () => {
           setIsOpen={setIsEditOpen}
           selectedAddress={selectedAddress}
           onUpdated={() => {
-            dispatch(fetchAddressesByUserId(1));
+            dispatch(fetchAddressesByUserId(user.data.userId));
           }}
         />
       )}
@@ -106,7 +107,7 @@ const AddressManagement = () => {
           setIsOpen={setIsDeleteOpen}
           selectedAddress={selectedAddress}
           onDeleted={() => {
-            dispatch(fetchAddressesByUserId(1));
+            dispatch(fetchAddressesByUserId(user.data.userId));
           }}
         />
       )}

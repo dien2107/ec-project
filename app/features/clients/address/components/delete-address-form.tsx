@@ -14,6 +14,7 @@ import type { Address } from "~/types/address/address";
 import { toast } from "react-hot-toast";
 import { deleteAddress } from "~/services/addresses";
 import { Loader2 } from "lucide-react";
+import { useAppSelector } from "~/redux/store";
 
 const DeleteAddressDialog = ({
   open,
@@ -30,10 +31,11 @@ const DeleteAddressDialog = ({
   onCancel?: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteAddress(1, selectedAddress.addressId);
+      await deleteAddress(selectedAddress.addressId);
       toast.success("Xóa địa chỉ thành công!");
       onDeleted();
       setIsOpen(false);

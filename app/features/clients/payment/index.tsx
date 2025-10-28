@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import type { Address } from "~/features/clients/payment/types/payment";
+import type { Address } from "~/types/address/address";
 import AddressSection from "~/features/clients/payment/components/address-section";
 import PaymentMethodSection from "~/features/clients/payment/components/payment-method";
 import CartSummary from "~/features/clients/payment/components/cart-summary";
@@ -23,7 +23,10 @@ export default function Payment() {
   const navigate = useNavigate();
 
   // Lấy cartItems từ Redux store
-  const cartItems = useAppSelector(state => state.cart.items);
+  const cartItems = useAppSelector((state) => state.cart.items);
+  // get logged in user
+  const authUser = useAppSelector((state) => state.auth.user);
+  const userId = authUser?.data?.userId;
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -54,7 +57,7 @@ export default function Payment() {
     } else {
       // Mặc định chọn tất cả items
       setSelectedItems(
-        cartItems.map(item =>
+        cartItems.map((item) =>
           String(
             item.ProductVariant.productVariantId ??
               (item.ProductVariant as any).id
@@ -67,7 +70,7 @@ export default function Payment() {
   // Tính toán các items được chọn
   const selectedCartItems = useMemo(
     () =>
-      cartItems.filter(item =>
+      cartItems.filter((item) =>
         selectedItems.includes(
           String(
             item.ProductVariant.productVariantId ??
@@ -90,29 +93,24 @@ export default function Payment() {
   const shippingFee = subtotal >= 300000 ? 0 : 30000;
   const total = subtotal + shippingFee;
 
-  const handleAddAddress = (address: Address) => {
-    setAddresses(prev => [...prev, address]);
-    setSelectedAddressId(address.id);
-  };
-
   const dispatch = useAppDispatch();
 
   const handlePlaceOrder = async () => {
-    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+    // use selectedAddress from local state (set via AddressSection)
     if (!selectedAddress) {
       toast.error("Vui lòng chọn địa chỉ giao hàng!");
       return;
     }
 
     const payload = {
-      userId: 3,
+      userId,
       discountId: null,
       shipId: null,
       paymentMethod,
-      addressInfo: `${selectedAddress.fullName} - ${selectedAddress.phone} - ${selectedAddress.address}, ${selectedAddress.city}`,
+      addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
       isFreeShip: shippingFee === 0,
       shippingFee,
-      items: selectedCartItems.map(i => ({
+      items: selectedCartItems.map((i) => ({
         productVariantId: Number(
           i.ProductVariant.productVariantId ?? (i.ProductVariant as any).id
         ),
@@ -149,14 +147,15 @@ export default function Payment() {
           return;
         }
 
-        setInterval(() => {
+        // wait a short moment then navigate once
+        setTimeout(() => {
           navigate("/payment/online", {
             state: {
               paymentInfo: paymentResponse.data,
               paymentPayload,
             },
           });
-        }, 5000);
+        }, 500);
       } else {
         // 3️⃣ COD (thanh toán khi nhận hàng)
         toast.success("Đặt hàng thành công!");
@@ -232,7 +231,7 @@ export default function Payment() {
               </h2>
             </div>
             <div className="p-6 space-y-4">
-              {selectedCartItems.map(item => (
+              {selectedCartItems.map((item) => (
                 <div
                   key={String(
                     item.ProductVariant.productVariantId ??
