@@ -1,10 +1,22 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import type { CreateColorData } from "../types";
 
 interface AddColorDialogProps {
@@ -16,11 +28,15 @@ interface AddColorDialogProps {
 const initialForm: CreateColorData = {
   name: "",
   hexCode: "",
-  description: "",
+  // description: "",
   status: "active",
 };
 
-export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialogProps) {
+export default function AddColorDialog({
+  open,
+  setIsOpen,
+  onAdd,
+}: AddColorDialogProps) {
   const [form, setForm] = useState<CreateColorData>(initialForm);
 
   React.useEffect(() => {
@@ -43,9 +59,7 @@ export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialo
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Thêm màu sắc</DialogTitle>
-          <DialogDescription>
-            Thêm màu sắc mới vào hệ thống
-          </DialogDescription>
+          <DialogDescription>Thêm màu sắc mới vào hệ thống</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -54,7 +68,7 @@ export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialo
               <Input
                 id="name"
                 value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Nhập tên màu"
                 required
               />
@@ -66,13 +80,17 @@ export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialo
                   type="color"
                   className="w-12 h-10 border border-input rounded-md cursor-pointer"
                   value={form.hexCode || "#000000"}
-                  onChange={e => setForm({ ...form, hexCode: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, hexCode: e.target.value })
+                  }
                 />
                 <Input
                   id="hexCode"
                   className="flex-1 font-mono text-sm"
                   value={form.hexCode}
-                  onChange={e => setForm({ ...form, hexCode: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, hexCode: e.target.value })
+                  }
                   placeholder="#000000"
                   pattern="^#[0-9A-Fa-f]{6}$"
                   required
@@ -80,13 +98,15 @@ export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialo
               </div>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả</Label>
             <Textarea
               id="description"
               value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="Nhập mô tả màu sắc"
               rows={3}
             />
@@ -94,7 +114,12 @@ export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialo
 
           <div className="space-y-2">
             <Label htmlFor="status">Trạng thái</Label>
-            <Select value={form.status} onValueChange={(value: "active" | "inactive") => setForm({ ...form, status: value })}>
+            <Select
+              value={form.status}
+              onValueChange={(value: "active" | "inactive") =>
+                setForm({ ...form, status: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
@@ -106,12 +131,14 @@ export default function AddColorDialog({ open, setIsOpen, onAdd }: AddColorDialo
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+            >
               Hủy
             </Button>
-            <Button type="submit">
-              Thêm màu
-            </Button>
+            <Button type="submit">Thêm màu</Button>
           </div>
         </form>
       </DialogContent>

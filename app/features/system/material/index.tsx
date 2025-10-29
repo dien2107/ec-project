@@ -1,33 +1,79 @@
-import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
 import DataTable from "../components/data-table";
-import { getColumns, type Material } from "./types";
+import { type Material } from "./types"; // Ensure Material type is defined
 import AddMaterialDialog from "./components/add-material";
 import EditMaterialDialog from "./components/edit-material";
 import DeleteMaterialDialog from "./components/delete-material";
-import { mockMaterials } from "./data/data";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchMaterialListData } from "~/redux/slices/materials"; // Adjust the import as necessary
+import toast, { Toaster } from "react-hot-toast";
+import SkeletonHeader from "~/components/ui/skeleton-header";
+import SkeletonFilter from "~/components/ui/skeleton-filter";
+import SkeletonTable from "~/components/ui/skeleton-table";
+import { getColumns } from "./columns/material"; // Ensure this function is defined
+import MaterialFilter from "./components/material-filter"; // Ensure this component is defined
 
-export default function MaterialManagement() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [materials, setMaterials] = useState<Material[]>(mockMaterials);
-  const pageSize = 10;
-
-  const totalPages = Math.ceil(mockMaterials.length / pageSize);
-  const paginatedData = mockMaterials.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
+const MaterialManagement: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const PAGE_SIZE = 6;
+  const { materialList, isLoading: isMaterialLoading } = useAppSelector(
+    (state: any) =>
+      state.materialList ?? { materialList: null, isLoading: false }
   );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState<{
+    Search?: string;
+    StatusName?: string;
+  }>({});
 
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     null
   );
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  // 🔹 Load material list
+  const reloadList = useCallback(
+    (override?: { PageNumber?: number }) => {
+      dispatch(
+        fetchMaterialListData({
+          PageNumber: override?.PageNumber ?? currentPage,
+          PageSize: PAGE_SIZE,
+          ...(filters.Search ? { Search: filters.Search } : {}),
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
+        })
+      );
+    },
+    [dispatch, currentPage, filters, PAGE_SIZE]
+  );
+
+  useEffect(() => {
+    reloadList();
+  }, [reloadList]);
+
+  const data = materialList?.data?.items ?? materialList?.data ?? [];
+
+  // 🔹 CRUD handlers
+  const handleAdd = (material: Material) => {
+    // TODO: Call API to add material
+    setIsAddOpen(false);
+    reloadList();
+  };
 
   const handleEdit = (material: Material) => {
     setSelectedMaterial(material);
     setIsEditOpen(true);
+  };
+
+  const handleEditSave = (material: Material) => {
+    // TODO: Call API to update material
+    setIsEditOpen(false);
+    setSelectedMaterial(null);
+    reloadList();
   };
 
   const handleDelete = (material: Material) => {
@@ -35,94 +81,95 @@ export default function MaterialManagement() {
     setIsDeleteOpen(true);
   };
 
-  const handleSaveMaterial = (materialData: Partial<Material>) => {
-    if (selectedMaterial) {
-      // Update existing material
-      setMaterials(prev =>
-        prev.map(material =>
-          material.id === selectedMaterial.id
-            ? { ...material, ...materialData }
-            : material
-        )
-      );
-    } else {
-      // Add new material
-      const newMaterial: Material = {
-        id: `MAT${String(materials.length + 1).padStart(3, "0")}`,
-        name: materialData.name || "",
-        type: materialData.type || "cotton",
-        description: materialData.description || "",
-        composition: materialData.composition || "",
-        careInstructions: materialData.careInstructions || "",
-        durability: materialData.durability || 5,
-        breathability: materialData.breathability || 5,
-        comfort: materialData.comfort || 5,
-        status: materialData.status || "active",
-        createdDate: new Date().toLocaleDateString("vi-VN"),
-      };
-      setMaterials(prev => [...prev, newMaterial]);
-    }
+  const handleDeleteConfirm = () => {
+    // TODO: Call API to delete material
+    setIsDeleteOpen(false);
+    setSelectedMaterial(null);
+    reloadList();
   };
 
-  const handleDeleteMaterial = (materialId: string) => {
-    setMaterials(prev => prev.filter(material => material.id !== materialId));
-  };
-
-  const globalFilterFn = (
-    row: Material,
-    _columnId: string,
-    filterValue: string
-  ) => {
-    const searchableFields: (keyof Material)[] = [
-      "id",
-      "name",
-      "description",
-      "composition",
-    ];
-    return searchableFields.some(field =>
-      String(row[field]).toLowerCase().includes(filterValue.toLowerCase())
-    );
-  };
-
-  const columns = getColumns(handleEdit, handleDelete);
+  const columns = useMemo(
+    () => getColumns(handleEdit, handleDelete),
+    [handleEdit, handleDelete]
+  );
 
   return (
-    <>
-      <div className="container">
+    <div className="min-h-screen bg-gray-50">
+      <Toaster position="top-right" />
+      <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-2xl font-bold">Quản lý chất liệu</h3>
-          <AddMaterialDialog onSave={handleSaveMaterial} />
-        </div>
+          <h1 className="text-xl font-semibold">Quản lý chất liệu</h1>
 
-        <DataTable
-          columns={columns}
-          data={paginatedData}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          title="Danh sách chất liệu"
-          filterPlaceholder="Tìm kiếm chất liệu..."
-          showFilter
-          addButtonTitle="Thêm chất liệu"
-          globalFilterFn={globalFilterFn}
+          <Button
+            variant="add"
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Thêm chất liệu
+          </Button>
+        </div>
+        {/* Filter */}
+        <div className="flex items-center justify-between mb-4">
+          {isMaterialLoading ? (
+            <SkeletonFilter />
+          ) : (
+            <MaterialFilter
+              initial={filters}
+              onChange={(values) => {
+                setFilters(values);
+                setCurrentPage(1);
+              }}
+              statuses={[
+                { statusId: 1, name: "active", displayName: "Hoạt động" },
+                {
+                  statusId: 2,
+                  name: "inactive",
+                  displayName: "Không hoạt động",
+                },
+              ]}
+              isLoading={isMaterialLoading}
+            />
+          )}
+        </div>
+        {/* Table */}
+        {isMaterialLoading ? (
+          <SkeletonTable />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data}
+            currentPage={currentPage}
+            totalPages={materialList?.data?.totalPages ?? 1}
+            onPageChange={setCurrentPage}
+            title=""
+            showGlobalFilter
+            globalFilterPlaceholder="Tìm kiếm chất liệu..."
+            isLoading={isMaterialLoading}
+          />
+        )}
+
+        {/* Dialogs */}
+        <AddMaterialDialog
+          open={isAddOpen}
+          setIsOpen={setIsAddOpen}
+          onAdd={handleAdd}
+        />
+        <EditMaterialDialog
+          open={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          material={selectedMaterial}
+          onSave={handleEditSave}
+        />
+        <DeleteMaterialDialog
+          open={isDeleteOpen}
+          setIsOpen={setIsDeleteOpen}
+          onDelete={handleDeleteConfirm}
+          materialName={selectedMaterial?.name}
         />
       </div>
-
-      {/* Edit Modal */}
-      <EditMaterialDialog
-        open={isEditOpen}
-        setIsOpen={setIsEditOpen}
-        material={selectedMaterial}
-        onSave={handleSaveMaterial}
-      />
-
-      {/* Delete Modal */}
-      <DeleteMaterialDialog
-        open={isDeleteOpen}
-        setIsOpen={setIsDeleteOpen}
-        material={selectedMaterial}
-        onDelete={handleDeleteMaterial}
-      />
-    </>
+    </div>
   );
-}
+};
+
+export default MaterialManagement;

@@ -1,11 +1,9 @@
-import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
@@ -19,70 +17,70 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-// import { Slider } from "~/components/ui/slider";
-import { type Material } from "../types";
+import type { Material } from "../types";
 
 interface AddMaterialDialogProps {
-  onSave: (materialData: Partial<Material>) => void;
+  open: boolean;
+  setIsOpen: (open: boolean) => void;
+  onSave: (materialData: Partial<Material> & { id: string }) => void;
 }
 
-export default function AddMaterialDialog({ onSave }: AddMaterialDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    type: "cotton" as Material["type"],
-    description: "",
-    composition: "",
-    careInstructions: "",
-    durability: 3,
-    breathability: 3,
-    comfort: 3,
-    status: "active" as "active" | "inactive",
-  });
+const initialFormData = {
+  name: "",
+  type: "cotton" as Material["type"],
+  description: "",
+  composition: "",
+  careInstructions: "",
+  durability: 3,
+  breathability: 3,
+  comfort: 3,
+  status: "active" as "active" | "inactive",
+};
+
+export default function AddMaterialDialog({
+  open,
+  setIsOpen,
+  onSave,
+}: AddMaterialDialogProps) {
+  const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
+    if (open) setFormData(initialFormData);
+  }, [open]);
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-    setOpen(false);
-    setFormData({
-      name: "",
-      type: "cotton",
-      description: "",
-      composition: "",
-      careInstructions: "",
-      durability: 3,
-      breathability: 3,
-      comfort: 3,
-      status: "active",
-    });
-  };
-
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formData.name && formData.composition) {
+      onSave({
+        ...formData,
+        id: `MAT-${Date.now().toString().slice(-3)}`,
+      });
+      setFormData(initialFormData);
+      setIsOpen(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#3770EC] text-white hover:bg-[#3770EC]/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm chất liệu
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Thêm chất liệu mới</DialogTitle>
         </DialogHeader>
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 py-4">
-            {/* Basic Information */}
+            {/* Thông tin cơ bản */}
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Tên chất liệu *</Label>
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={e => handleInputChange("name", e.target.value)}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="Ví dụ: Cotton 100%"
                   required
                 />
@@ -117,7 +115,9 @@ export default function AddMaterialDialog({ onSave }: AddMaterialDialogProps) {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={e => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 placeholder="Mô tả chi tiết về chất liệu"
                 rows={3}
               />
@@ -128,7 +128,9 @@ export default function AddMaterialDialog({ onSave }: AddMaterialDialogProps) {
               <Input
                 id="composition"
                 value={formData.composition}
-                onChange={e => handleInputChange("composition", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("composition", e.target.value)
+                }
                 placeholder="Ví dụ: 100% Cotton hoặc 65% Polyester, 35% Cotton"
                 required
               />
@@ -139,58 +141,13 @@ export default function AddMaterialDialog({ onSave }: AddMaterialDialogProps) {
               <Textarea
                 id="careInstructions"
                 value={formData.careInstructions}
-                onChange={e =>
+                onChange={(e) =>
                   handleInputChange("careInstructions", e.target.value)
                 }
                 placeholder="Hướng dẫn giặt ủi và bảo quản"
                 rows={2}
               />
             </div>
-
-            {/* Rating Sliders
-            <div className="grid gap-4">
-              <div className="grid gap-3">
-                <Label>Độ bền: {formData.durability}/5</Label>
-                <Slider
-                  value={[formData.durability]}
-                  onValueChange={([value]) =>
-                    handleInputChange("durability", value)
-                  }
-                  max={5}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="grid gap-3">
-                <Label>Độ thoáng khí: {formData.breathability}/5</Label>
-                <Slider
-                  value={[formData.breathability]}
-                  onValueChange={([value]) =>
-                    handleInputChange("breathability", value)
-                  }
-                  max={5}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="grid gap-3">
-                <Label>Độ thoải mái: {formData.comfort}/5</Label>
-                <Slider
-                  value={[formData.comfort]}
-                  onValueChange={([value]) =>
-                    handleInputChange("comfort", value)
-                  }
-                  max={5}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-            </div> */}
 
             <div className="grid gap-2">
               <Label htmlFor="status">Trạng thái</Label>
@@ -210,11 +167,12 @@ export default function AddMaterialDialog({ onSave }: AddMaterialDialogProps) {
               </Select>
             </div>
           </div>
+
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => setIsOpen(false)}
             >
               Hủy
             </Button>
