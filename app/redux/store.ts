@@ -14,12 +14,13 @@ import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
-
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
 import authReducer from "./slices/auth";
 import authLogoutListener from "~/middlewares/authLogoutListener";
+import shipListDataReducer from "./slices/ships";
+
 export const store = configureStore({
   reducer: {
     cart: cartReducer,
@@ -39,8 +40,9 @@ export const store = configureStore({
     roleList: roleListDataReducer,
     customerList: customerListDataReducer,
     auth: authReducer,
+    shipList: shipListDataReducer,
   },
-  middleware: getDefaultMiddleware =>
+  middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
   //     .prepend(authStorageListener.middleware)
 });

@@ -8,24 +8,25 @@ import {
   DialogDescription,
 } from "~/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import { type ShippingMethod } from "../types";
+import type { Ship } from "~/types/ship";
+import { formatVND } from "~/libs";
 
 interface DeleteShippingDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  method: ShippingMethod | null;
-  onDelete: (methodId: string) => void;
+  method: Ship | null;
+  onDeleted: () => void;
 }
 
 export default function DeleteShippingDialog({
   open,
   setIsOpen,
   method,
-  onDelete,
+  onDeleted,
 }: DeleteShippingDialogProps) {
   const handleDelete = () => {
     if (method) {
-      onDelete(method.id);
+      onDeleted();
       setIsOpen(false);
     }
   };
@@ -61,7 +62,7 @@ export default function DeleteShippingDialog({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Mã:</span>
-              <span className="font-medium">{method.id}</span>
+              <span className="font-medium">{method.shipId}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Đơn vị:</span>
@@ -70,10 +71,7 @@ export default function DeleteShippingDialog({
             <div className="flex justify-between">
               <span className="text-gray-600">Phí vận chuyển:</span>
               <span className="font-medium">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(method.baseCost)}
+                {formatVND(Number(method.baseCost))}
               </span>
             </div>
           </div>

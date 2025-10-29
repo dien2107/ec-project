@@ -98,20 +98,12 @@ export default function Products() {
   return (
     <>
       <div className="container">
-        {/* Header */}
-        {isMetaLoading || !meta?.data ? (
-          <SkeletonHeader />
-        ) : (
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-2xl font-bold">Quản lý sản phẩm</h3>
-            <AddProductDialog onAdded={handleReloadProductList} />
-          </div>
-        )}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-2xl font-bold">Quản lý sản phẩm</h3>
+          <AddProductDialog onAdded={handleReloadProductList} />
+        </div>
 
-        {/* Filter component */}
-        {isMetaLoading || !meta?.data ? (
-          <SkeletonFilter />
-        ) : (
+        {meta?.data && (
           <ProductFilter
             filters={filters}
             setFilters={setFilters}
@@ -119,21 +111,16 @@ export default function Products() {
           />
         )}
 
-        {/* DataTable */}
-        {isProductListLoading || !productList?.data.items ? (
-          <SkeletonTable />
-        ) : (
-          <DataTable
-            columns={columns}
-            data={productList?.data?.items.flat() ?? []}
-            currentPage={currentPage}
-            totalPages={productList?.data?.totalPages ?? 1}
-            onPageChange={setCurrentPage}
-            expandedRowContent={(product: Product) => (
-              <ProductVariantRow productId={product.productId} />
-            )}
-          />
-        )}
+        <DataTable
+          columns={columns}
+          data={productList?.data?.items.flat() ?? []}
+          currentPage={currentPage}
+          totalPages={productList?.data?.totalPages ?? 1}
+          onPageChange={setCurrentPage}
+          expandedRowContent={(product: Product) => (
+            <ProductVariantRow productId={product.productId} />
+          )}
+        />
       </div>
 
       {/* Edit Modal */}
