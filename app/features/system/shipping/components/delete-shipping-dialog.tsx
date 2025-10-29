@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -7,10 +7,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "~/components/ui/dialog";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import type { Ship } from "~/types/ship";
 import { formatVND } from "~/libs";
-
+import { toast } from "react-hot-toast";
+import { deleteShipping } from "~/services/ships";
 interface DeleteShippingDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
@@ -24,10 +25,24 @@ export default function DeleteShippingDialog({
   method,
   onDeleted,
 }: DeleteShippingDialogProps) {
-  const handleDelete = () => {
-    if (method) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDelete = async () => {
+    if (!method) return;
+    try {
+      setIsLoading(true);
+      await deleteShipping(method.shipId);
+      toast.success("Xóa phương thức vận chuyển thành công!");
       onDeleted();
       setIsOpen(false);
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi xóa phương thức vận chuyển!");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,15 +93,27 @@ export default function DeleteShippingDialog({
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            disabled={isLoading}
+          >
             Hủy
           </Button>
           <Button
             variant="destructive"
             onClick={handleDelete}
             className="bg-red-600 hover:bg-red-700"
+            disabled={isLoading}
           >
-            Xóa phương thức
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                <span className="ml-2">Đang xóa...</span>
+              </>
+            ) : (
+              <>Xóa phương thức</>
+            )}
           </Button>
         </div>
       </DialogContent>

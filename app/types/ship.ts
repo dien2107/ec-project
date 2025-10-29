@@ -16,6 +16,7 @@ export type Ship = {
   status?: EntityStatus | null;
   createdAt?: string;
   updatedAt?: string;
+  canDelete?: boolean;
 };
 
 // Note: no default export because this file only exports types.

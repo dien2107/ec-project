@@ -133,7 +133,7 @@ export const getColumns = (
     cell: ({ row }) => {
       const ship = row.original as Ship;
       const isActive = ship.status?.name?.toLowerCase() === "active";
-
+      const canDelete = row.original.canDelete;
       return (
         <div className="flex items-center gap-2">
           <Switch
@@ -156,15 +156,17 @@ export const getColumns = (
             <Edit className="h-4 w-4 text-green-600" />
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(ship)}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            title="Xóa"
-          >
-            <Trash2 className="h-4 w-4 text-red-600" />
-          </Button>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(ship)}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              title="Xóa"
+            >
+              <Trash2 className="h-4 w-4 text-red-600" />
+            </Button>
+          )}
         </div>
       );
     },

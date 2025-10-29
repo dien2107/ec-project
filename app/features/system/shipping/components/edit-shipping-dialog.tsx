@@ -18,11 +18,11 @@ import type { Ship } from "~/types/ship";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import { useAppSelector } from "~/redux/store";
 import type { ShippingFormData } from "../types/shipping-form-data";
-
+import { updateShipping } from "~/services/ships";
 interface EditShippingDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  method: Ship | null;
+  method: Ship;
   onEdited: () => void;
 }
 
@@ -79,9 +79,9 @@ export default function EditShippingDialog({
         return;
       }
 
-      // call parent/update service
-      await Promise.resolve(onEdited());
+      await updateShipping(method?.shipId, data);
       toast.success("Cập nhật phương thức vận chuyển thành công!");
+      onEdited();
       setIsOpen(false);
     } catch (err: any) {
       toast.error(
@@ -190,11 +190,7 @@ export default function EditShippingDialog({
                 Hủy
               </Button>
             </DialogClose>
-            <Button
-              type="submit"
-              variant="edit"
-              disabled={isLoading}
-            >
+            <Button type="submit" variant="edit" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin mr-2" size={16} />

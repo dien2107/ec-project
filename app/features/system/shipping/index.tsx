@@ -132,38 +132,42 @@ export default function ShippingMethodManagement() {
       </div>
 
       {/* Edit Modal */}
-      <EditShippingDialog
-        open={isEditOpen}
-        setIsOpen={setIsEditOpen}
-        method={selectedMethod}
-        onEdited={() => {
-          dispatch(
-            fetchShipListData({
-              PageNumber: currentPage,
-              PageSize: pageSize,
-              corpName: filters.corpName,
-              statusId: filters.statusId,
-            })
-          );
-        }}
-      />
+      {selectedMethod && (
+        <EditShippingDialog
+          open={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          method={selectedMethod}
+          onEdited={() => {
+            dispatch(
+              fetchShipListData({
+                PageNumber: currentPage,
+                PageSize: pageSize,
+                corpName: filters.corpName,
+                statusId: filters.statusId,
+              })
+            );
+          }}
+        />
+      )}
 
       {/* Delete Modal */}
-      <DeleteShippingDialog
-        open={isDeleteOpen}
-        setIsOpen={setIsDeleteOpen}
-        method={selectedMethod}
-        onDeleted={() => {
-          dispatch(
-            fetchShipListData({
-              PageNumber: currentPage,
-              PageSize: pageSize,
-              corpName: filters.corpName,
-              statusId: filters.statusId,
-            })
-          );
-        }}
-      />
+      {selectedMethod && (
+        <DeleteShippingDialog
+          open={isDeleteOpen}
+          setIsOpen={setIsDeleteOpen}
+          method={selectedMethod}
+          onDeleted={() => {
+            dispatch(
+              fetchShipListData({
+                PageNumber: currentPage,
+                PageSize: pageSize,
+                corpName: filters.corpName,
+                statusId: filters.statusId,
+              })
+            );
+          }}
+        />
+      )}
     </>
   );
 }
