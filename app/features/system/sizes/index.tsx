@@ -1,105 +1,170 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "~/components/ui/button";
 import { Plus } from "lucide-react";
 import DataTable from "../components/data-table";
-import { getSizeColumns, type Size } from "./types";
-import { mockSizes } from "./data/mockSizes";
+import { getSizeColumns } from "./columns/size";
 import AddSizeDialog from "./components/add-size-dialog";
 import EditSizeDialog from "./components/edit-size-dialog";
 import DeleteSizeDialog from "./components/delete-size-dialog";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchSizeListData } from "~/redux/slices/sizes"; // Gọi API để lấy dữ liệu kích thước
+import { type Size } from "./types";
+import SkeletonHeader from "~/components/ui/skeleton-header";
+import SkeletonFilter from "~/components/ui/skeleton-filter";
+import SkeletonTable from "~/components/ui/skeleton-table";
+import SizeFilter from "./components/size-filter"; // Giả định có SizeFilter
 
-export default function Sizes() {
-    const [sizes, setSizes] = useState<Size[]>(mockSizes);
-    const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 10;
+const Sizes: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const PAGE_SIZE = 6; // Số lượng kích thước mỗi trang
+  const { sizeList, isLoading: isSizeLoading } = useAppSelector(
+    (state: any) => state.sizeList ?? { sizeList: null, isLoading: false }
+  );
 
-    const [selectedSize, setSelectedSize] = useState<Size | null>(null);
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState<{
+    Search?: string;
+    StatusName?: string;
+  }>({});
 
-    const handleAdd = (size: Size) => {
-        setSizes(prev => [
-            { ...size, id: `SIZE-${Date.now().toString().slice(-3)}` },
-            ...prev,
-        ]);
-        setIsAddOpen(false);
-    };
+  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-    const handleEdit = (size: Size) => {
-        setSelectedSize(size);
-        setIsEditOpen(true);
-    };
+  // 🔹 Gọi API để tải danh sách kích thước
+  const reloadList = useCallback(
+    (override?: { PageNumber?: number }) => {
+      dispatch(
+        fetchSizeListData({
+          PageNumber: override?.PageNumber ?? currentPage,
+          PageSize: PAGE_SIZE,
+          ...(filters.Search ? { Search: filters.Search } : {}),
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
+        })
+      );
+    },
+    [dispatch, currentPage, filters, PAGE_SIZE]
+  );
 
-    const handleEditSave = (size: Size) => {
-        setSizes(prev => prev.map(s => s.id === size.id ? size : s));
-        setIsEditOpen(false);
-        setSelectedSize(null);
-    };
+  useEffect(() => {
+    reloadList();
+  }, [reloadList]);
 
-    const handleDelete = (size: Size) => {
-        setSelectedSize(size);
-        setIsDeleteOpen(true);
-    };
+  const data = sizeList?.data?.items ?? sizeList?.data ?? [];
 
-    const handleDeleteConfirm = () => {
-        if (selectedSize) {
-            setSizes(prev => prev.filter(s => s.id !== selectedSize.id));
-            setIsDeleteOpen(false);
-            setSelectedSize(null);
-        }
-    };
+  // 🔹 CRUD handler
+  const handleAdd = (size: Size) => {
+    // TODO: gọi API thêm kích thước
+    setIsAddOpen(false);
+    reloadList();
+  };
 
-    const columns = getSizeColumns(handleEdit, handleDelete);
-    const totalPages = Math.ceil(sizes.length / pageSize);
+  const handleEdit = (size: Size) => {
+    setSelectedSize(size);
+    setIsEditOpen(true);
+  };
 
-    const paginatedData = sizes.slice(
-        (currentPage - 1) * pageSize,
-        currentPage * pageSize
-    );
+  const handleEditSave = (size: Size) => {
+    // TODO: gọi API cập nhật kích thước
+    setIsEditOpen(false);
+    setSelectedSize(null);
+    reloadList();
+  };
 
-    return (
-        <div className="container">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <span>📏</span> Quản lý kích thước
-                </h3>
-                <Button onClick={() => setIsAddOpen(true)} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Thêm kích thước
-                </Button>
-            </div>
+  const handleDelete = (size: Size) => {
+    setSelectedSize(size);
+    setIsDeleteOpen(true);
+  };
 
-            <DataTable
-                columns={columns}
-                data={paginatedData}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                title="Danh sách kích thước"
-                showGlobalFilter={true}
-                showFilter={true}
-                filterPlaceholder="Tìm kiếm kích thước..."
-                showAddButton={false}
-            />
+  const handleDeleteConfirm = () => {
+    // TODO: gọi API xóa kích thước
+    setIsDeleteOpen(false);
+    setSelectedSize(null);
+    reloadList();
+  };
 
-            <AddSizeDialog
-                open={isAddOpen}
-                setIsOpen={setIsAddOpen}
-                onAdd={handleAdd}
-            />
-            <EditSizeDialog
-                open={isEditOpen}
-                setIsOpen={setIsEditOpen}
-                size={selectedSize}
-                onSave={handleEditSave}
-            />
-            <DeleteSizeDialog
-                open={isDeleteOpen}
-                setIsOpen={setIsDeleteOpen}
-                onDelete={handleDeleteConfirm}
-                sizeName={selectedSize?.name}
-            />
+  const columns = useMemo(
+    () => getSizeColumns(handleEdit, handleDelete),
+    [handleEdit, handleDelete]
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-semibold">Quản lý kích thước</h1>
+
+          <Button
+            variant="add"
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Thêm kích thước
+          </Button>
         </div>
-    );
-}
+        {/* Filter */}
+        <div className="flex items-center justify-between mb-4">
+          {isSizeLoading ? (
+            <SkeletonFilter />
+          ) : (
+            <SizeFilter
+              initial={filters}
+              onChange={(values) => {
+                setFilters(values);
+                setCurrentPage(1);
+              }}
+              statuses={[
+                { statusId: 1, name: "active", displayName: "Hoạt động" },
+                {
+                  statusId: 2,
+                  name: "inactive",
+                  displayName: "Không hoạt động",
+                },
+              ]}
+              isLoading={isSizeLoading}
+            />
+          )}
+        </div>
+        {/*  */}
+        {isSizeLoading ? (
+          <SkeletonTable />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data}
+            currentPage={currentPage}
+            totalPages={sizeList?.data?.totalPages ?? 1}
+            onPageChange={setCurrentPage}
+            title=""
+            showGlobalFilter
+            globalFilterPlaceholder="Tìm kiếm kích thước..."
+            isLoading={isSizeLoading}
+          />
+        )}
+
+        {/* Dialogs */}
+        <AddSizeDialog
+          open={isAddOpen}
+          setIsOpen={setIsAddOpen}
+          onAdd={handleAdd}
+        />
+        <EditSizeDialog
+          open={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          size={selectedSize}
+          onSave={handleEditSave}
+        />
+        <DeleteSizeDialog
+          open={isDeleteOpen}
+          setIsOpen={setIsDeleteOpen}
+          onDelete={handleDeleteConfirm}
+          sizeName={selectedSize?.name}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default Sizes;
