@@ -7,4 +7,5 @@ export type UpdateProduct = {
   productGroupId: number;
   statusId: number;
   discountPercentage: number;
+  basePrice: number;
 };

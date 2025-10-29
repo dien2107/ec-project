@@ -58,6 +58,8 @@ const AddAddressForm = ({
   const actualOpen = openProp ?? internalOpen;
   const actualSetOpen = setIsOpenProp ?? setInternalOpen;
 
+  const { addresses } = useAppSelector((state) => state.addresses);
+
   useEffect(() => {
     if (provinces.length === 0) {
       dispatch(fetchProvinces());
@@ -80,7 +82,7 @@ const AddAddressForm = ({
       streetAddress: "",
       provinceId: null,
       wardId: null,
-      isDefault: false,
+      isDefault: addresses.length === 0 ? true : false,
     },
   });
 
@@ -92,7 +94,7 @@ const AddAddressForm = ({
         streetAddress: "",
         provinceId: null,
         wardId: null,
-        isDefault: false,
+        isDefault: addresses.length === 0 ? true : false,
       });
     }
   }, [actualOpen, reset]);
@@ -130,7 +132,7 @@ const AddAddressForm = ({
       const isValid = await trigger();
       if (!isValid) return;
 
-      await createAddress(1, data);
+      await createAddress(data);
       toast.success("Thêm địa chỉ thành công!");
       onAdded();
       actualSetOpen(false);
@@ -316,6 +318,7 @@ const AddAddressForm = ({
                 id="isDefault"
                 type="checkbox"
                 {...register("isDefault")}
+                disabled={addresses.length === 0}
                 className="size-4 accent-blue-600 cursor-pointer"
               />
               <Label

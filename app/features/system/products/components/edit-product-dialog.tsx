@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
 import { Button } from "~/components/ui/button";
@@ -22,6 +22,7 @@ import { updateProduct } from "~/services/products";
 import type { UpdateProduct } from "../types/update-product";
 import type { Product } from "../../../../types/product/product";
 import type { ProductImage } from "../types/product-image";
+import PriceSection from "./price-section";
 
 export default function EditProductDialog({
   open,
@@ -75,6 +76,7 @@ export default function EditProductDialog({
     discountPercentage: selectedProduct?.discountPercentage ?? 0,
     colorId: selectedProduct?.color?.colorId ?? null,
     statusId: selectedProduct?.status?.statusId ?? null,
+    basePrice: selectedProduct?.basePrice ?? 0,
   };
 
   const {
@@ -82,6 +84,7 @@ export default function EditProductDialog({
     handleSubmit,
     reset,
     control,
+    watch,
     formState: { errors },
     trigger,
   } = useForm({
@@ -110,7 +113,9 @@ export default function EditProductDialog({
         discountPercentage: data.discountPercentage,
         colorId: data.colorId,
         statusId: data.statusId,
+        basePrice: data.basePrice,
       };
+
       await updateProduct(selectedProduct!.productId, updateData);
       toast.success("Cập nhật sản phẩm thành công!");
       onUpdated();
@@ -442,7 +447,7 @@ export default function EditProductDialog({
                 </div>
 
                 {/* Dòng 6: Giá cơ bản, Giảm giá (%), Giá bán */}
-                <div className="flex items-center gap-4 col-span-2">
+                {/* <div className="flex items-center gap-4 col-span-2">
                   <div className="flex-1">
                     <label htmlFor="basePrice" className="text-sm font-medium">
                       Giá cơ bản
@@ -450,11 +455,23 @@ export default function EditProductDialog({
                     <Input
                       type="text"
                       id="basePrice"
-                      value={selectedProduct?.basePrice ?? ""}
-                      disabled
-                      className="mt-1 bg-gray-100"
+                      className="mt-1"
+                      disabled={isLoading}
+                      {...register("basePrice", {
+                        required: "Vui lòng nhập giá cơ bản",
+                        pattern: {
+                          value: /^\d*$/,
+                          message: "Giá cơ bản không hợp lệ",
+                        },
+                      })}
+                      placeholder="Nhập giá cơ bản"
                     />
                   </div>
+                  {errors.basePrice && (
+                    <p className="text-sm text-red-500">
+                      {errors.basePrice.message}
+                    </p>
+                  )}
                   <div className="flex-1">
                     <label
                       htmlFor="discountPercentage"
@@ -496,12 +513,18 @@ export default function EditProductDialog({
                     <Input
                       type="text"
                       id="sellingPrice"
-                      value={selectedProduct?.sellingPrice ?? ""}
+                      value={formatVND(Number(sellingPrice))}
                       disabled
                       className="mt-1 bg-gray-100"
                     />
                   </div>
-                </div>
+                </div> */}
+                <PriceSection
+                  control={control}
+                  register={register}
+                  errors={errors}
+                  isLoading={isLoading}
+                />
               </div>
 
               {/* Ảnh sản phẩm */}
