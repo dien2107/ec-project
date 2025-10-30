@@ -21,10 +21,9 @@ const initialState: AddressesState = {
  */
 export const fetchAddressesByUserId = createAsyncThunk(
   "addresses/fetchAddressesByUserId",
-  async (userId: number) => {
-    const response = await instance.get<ApiResponse<Address[]>>(
-      `/addresses/${userId}`
-    );
+  async () => {
+    const response =
+      await instance.get<ApiResponse<Address[]>>(`/addresses/me`);
     return response.data;
   }
 );

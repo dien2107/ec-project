@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import UserInfoView from "../components/user-info/user-info-view";
 import UserInfoEdit from "../components/user-info/user-info-edit";
 import type { RootState } from "~/redux/store";
-import { set } from "date-fns";
 
 export default function UserInfo() {
   const load = useSelector((state: RootState) => state.auth.user);

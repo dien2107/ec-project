@@ -25,6 +25,9 @@ import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
 import authReducer from "./slices/auth";
 import authLogoutListener from "~/middlewares/authLogoutListener";
+import shipListDataReducer from "./slices/ships";
+import paymentDestinationListDataReducer from "./slices/payment-destinations";
+
 export const store = configureStore({
   reducer: {
     cart: cartReducer,
@@ -44,6 +47,8 @@ export const store = configureStore({
     roleList: roleListDataReducer,
     customerList: customerListDataReducer,
     auth: authReducer,
+    shipList: shipListDataReducer,
+    paymentDestinationList: paymentDestinationListDataReducer,
     colorList: colorsReducer,
     discountList: discountReducer,
     sizeList: sizeReducer,

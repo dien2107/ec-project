@@ -5,30 +5,36 @@ import type { ApiPagedResponse } from "~/types/api-response";
 import type { ImportOrder } from "~/features/system/import-orders/types";
 
 interface PurchaseOrderListState {
-  data: ImportOrder[];
+  purchaseOrderList: ApiPagedResponse<ImportOrder[]> | null;
   isLoading: boolean;
   isError: boolean;
 }
 
 const initialState: PurchaseOrderListState = {
-  data: [],
+  purchaseOrderList: null,
   isLoading: false,
   isError: false,
 };
 
 export const fetchPurchaseOrderListData = createAsyncThunk(
   "purchaseOrders/fetchPurchaseOrderListData",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await instance.get("/purchase-orders");
-      console.log(response.data.data);
-      return response.data.data as ImportOrder[];
-    } catch (error) {
-      return rejectWithValue(error);  
-    }
+  async (params: {
+    Search?: string;
+    StatusId?: number;
+    PageNumber?: number;
+    PageSize?: number;
+    SupplierId?: number;
+    startDate?: string;
+    endDate?: string;
+    OrderBy?: string;
+  }) => {
+    const response = await instance.get<ApiPagedResponse<ImportOrder[]>>(
+      "/purchase-orders",
+      { params }
+    );
+    return response.data;
   }
 );
-
 const purchaseOrderListSlice = createSlice({
   name: "purchaseOrderList",
   initialState,
@@ -41,11 +47,13 @@ const purchaseOrderListSlice = createSlice({
       })
       .addCase(fetchPurchaseOrderListData.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.data = action.payload;
+        state.isError = false;
+        state.purchaseOrderList = action.payload;
       })
       .addCase(fetchPurchaseOrderListData.rejected, (state) => {
         state.isLoading = false;
         state.isError = true;
+        state.purchaseOrderList = null;
       });
   },
 });

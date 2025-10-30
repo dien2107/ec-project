@@ -3,6 +3,7 @@ import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
 import { Edit, Trash2 } from "lucide-react";
 import { formatVND } from "~/libs";
+import type { Product as SharedProduct } from "~/types/product/product";
 
 export interface ImportOrder {
   purchaseOrderId: number;
@@ -11,6 +12,12 @@ export interface ImportOrder {
   orderDate: string;
   statusId: number;
   statusName: string;
+  status: {
+    displayName: string;
+    name: string;
+    statusId: number;
+    entityType: string;
+  };
   totalAmount: number;
   items: ImportOrderItem[];
 }
@@ -32,7 +39,6 @@ export interface ImportOrderFormData {
   total: number;
   status: "pending" | "approved" | "received";
   orderDate: string;
-  expectedDate: string;
 }
 
 export interface AddImportOrderDialogProps {
@@ -61,15 +67,7 @@ export interface Supplier {
   phone: string;
 }
 
-export interface Product {
-  id: number;
-  code: string;
-  name: string;
-  category: string;
-  currentStock: number;
-  price: number;
-  image: string;
-}
+export type Product = SharedProduct;
 
 export interface SelectedProduct extends Product {
   importQuantity: number;
@@ -77,24 +75,41 @@ export interface SelectedProduct extends Product {
   profitMargin: number;
   suggestedPrice: number;
   totalPrice: number;
+  code: string;
 }
-
 export interface ImportOrderAdd {
-  id?: string;
   supplier: string;
-  products: SelectedProduct[];
+  products: {
+    productVariantId: number;
+    importQuantity: number;
+    importPrice: number;
+    profitMargin: number;
+  }[];
   totalQuantity: number;
   totalAmount: number;
   orderDate: string;
-  expectedDate: string;
-  note: string;
   status: string;
 }
-
+export interface SelectedVariant {
+  productId: number;
+  productName: string;
+  productCode: string;
+  productVariantId: number;
+  sku?: string;
+  size?: string;
+  color?: string;
+  imageUrl?: string;
+  currentStock?: number;
+  importQuantity: number;
+  importPrice: number;
+  profitMargin: number;
+  suggestedPrice: number;
+  totalPrice: number;
+}
 export interface AddImportOrderModalProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (order: ImportOrderAdd) => void;
+  onAdd: (order: any) => void;
 }
 export const statusMap: Record<string, { label: string; className: string }> = {
   Pending: { label: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
