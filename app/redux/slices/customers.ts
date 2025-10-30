@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
-import type { Customer } from "~/features/system/customers";
+import type { Customer } from "~/features/system/customers/types";
 import type { ApiPagedResponse } from "~/types/api-response";
 import type { Supplier } from "~/features/system/import-orders/types";
 import { fetchSupplierListData } from "./suppliers";
@@ -44,6 +44,7 @@ const customerListDataSlice = createSlice({
       .addCase(fetchCustomerListData.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
+        state.customerList = null;
       })
       .addCase(fetchCustomerListData.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -53,6 +54,7 @@ const customerListDataSlice = createSlice({
       .addCase(fetchCustomerListData.rejected, (state) => {
         state.isLoading = false;
         state.isError = true;
+        state.customerList = null; 
       });
   },
 });

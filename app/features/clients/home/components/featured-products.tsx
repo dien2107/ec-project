@@ -1,43 +1,140 @@
-import React from "react";
-import { Card, CardContent } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import ProductCard from "~/components/ui/product-card";
 import { fakeProducts } from "../data/products";
 
-function formatPrice(price: number) {
-  return price.toLocaleString("vi-VN") + "₫";
-}
-
 export default function FeaturedProducts() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const checkScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    const atStart = scrollLeft <= 10;
+    const atEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+
+    setCanScrollLeft(!atStart);
+    setCanScrollRight(!atEnd);
+  }, []);
+  useEffect(() => {
+    checkScroll();
+    const handleResize = () => checkScroll();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [checkScroll]);
+  const scroll = (direction: "left" | "right") => {
+    if (!scrollRef.current) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    const amount = 320;
+
+    if (direction === "right") {
+      // Nếu gần cuối, quay về đầu
+      if (scrollLeft >= scrollWidth - clientWidth - 50) {
+        scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
+      }
+    } else {
+      // Nếu ở đầu, nhảy về cuối
+      if (scrollLeft <= 50) {
+        scrollRef.current.scrollTo({
+          left: scrollWidth - clientWidth,
+          behavior: "smooth",
+        });
+      } else {
+        scrollRef.current.scrollBy({ left: -amount, behavior: "smooth" });
+      }
+    }
+
+    setTimeout(checkScroll, 400);
+  };
+
+  const featuredProducts = fakeProducts.slice(0, 8);
+
   return (
-    <section className="max-w-6xl mx-auto py-12">
-      <h2 className="text-2xl font-bold mb-8">Sản Phẩm Nổi Bật</h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {fakeProducts.slice(0, 4).map((p) => (
-          <Card key={p.id} className="overflow-hidden hover:scale-105 transition-transform duration-200 cursor-pointer group">
-            <div className="relative">
-              <img src={p.image} alt={p.title} className="w-full h-56 object-cover group-hover:opacity-90 transition-opacity" />
-              {p.oldPrice && (
-                <Badge variant="destructive" className="absolute top-2 right-2">
-                  Sale
-                </Badge>
-              )}
-            </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{p.title}</h3>
-              <div className="flex items-center gap-2">
-                <span className={`font-bold ${p.oldPrice ? "text-red-500" : "text-gray-900"}`}>
-                  {formatPrice(p.price)}
-                </span>
-                {p.oldPrice && (
-                  <span className="line-through text-gray-400 text-sm">
-                    {formatPrice(p.oldPrice)}
-                  </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    <section className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center mb-12">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-gray-300"></div>
+        <h2 className="text-3xl font-bold text-gray-900 mx-8 tracking-wide uppercase">
+          Sản phẩm nổi bật
+        </h2>
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-gray-300"></div>
       </div>
+      <div
+        className="relative"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <button
+          onClick={() => scroll("left")}
+          className={`
+            hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
+            bg-white shadow-lg rounded-full p-3
+            hover:bg-gray-100 transition-all duration-300
+            ${isHovered ? "opacity-100 -translate-x-2" : "opacity-0"}
+          `}
+          aria-label="Cuộn trái"
+        >
+          <ChevronLeft className="h-6 w-6 text-gray-700" />
+        </button>
+        <div
+          ref={scrollRef}
+          onScroll={checkScroll}
+          className="overflow-x-auto scrollbar-hide scroll-smooth"
+        >
+          <div className="flex gap-6 md:gap-6">
+            {featuredProducts.map((product, index) => (
+              <div
+                key={product.id}
+                className="flex-shrink-0 w-full sm:w-64 md:w-64 opacity-0 animate-fadeInUp"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                }}
+              >
+                <ProductCard {...product} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={() => scroll("right")}
+          className={`
+            hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
+            bg-white shadow-lg rounded-full p-3
+            hover:bg-gray-100 transition-all duration-300
+            ${isHovered ? "opacity-100 translate-x-2" : "opacity-0"}
+          `}
+          aria-label="Cuộn phải"
+        >
+          <ChevronRight className="h-6 w-6 text-gray-700" />
+        </button>
+      </div>
+      <style>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+      `}</style>
     </section>
   );
 }
