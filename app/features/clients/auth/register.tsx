@@ -138,12 +138,20 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
         }
       }, 2000);
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        err?.message ||
-        (typeof err === "string" ? err : "Đăng ký thất bại");
+      const errors = err?.response?.data?.errors;
+      let message = "Đăng ký thất bại";
+      if (errors && typeof errors === "object") {
+        const allErrors = Object.values(errors)
+          .flat() 
+          .filter(Boolean) 
+          .join("\n");
+        if (allErrors) message = allErrors;
+      } else if (err?.response?.data?.message) {
+        message = err.response.data.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       toast.error(message);
-      console.error("Register failed:", err);
     } finally {
       setIsLoading(false);
     }

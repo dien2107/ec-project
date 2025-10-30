@@ -50,9 +50,9 @@ export default function UserPermissionSystem() {
         fetchCustomerListData({
           PageNumber: override?.PageNumber ?? currentPage,
           PageSize: PAGE_SIZE,
-          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           ...(filters.Search ? { Search: filters.Search } : {}),
           ...(filters.Phone ? { Phone: filters.Phone } : {}),
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           HasRole: true,
         })
       );
@@ -64,7 +64,6 @@ export default function UserPermissionSystem() {
     dispatch(fetchStatuses({ entityType: ENTITY_TYPE.USER }));
   }, [dispatch]);
 
-  // load list whenever page or filters change
   useEffect(() => {
     reloadList();
   }, [reloadList]);
@@ -147,7 +146,6 @@ export default function UserPermissionSystem() {
       ),
     },
   ];
-
   return (
     <div className="p-4">
       {/* Header + filter: show skeletons while statuses load */}
@@ -186,10 +184,6 @@ export default function UserPermissionSystem() {
           currentPage={currentPage}
           totalPages={customerList?.data?.totalPages ?? 1}
           onPageChange={setCurrentPage}
-          title="Danh sách người dùng"
-          showGlobalFilter
-          globalFilterPlaceholder="Tìm người dùng..."
-          isLoading={isCustomerLoading}
         />
       )}
 

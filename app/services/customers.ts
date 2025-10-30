@@ -1,6 +1,6 @@
 import instance from "./customize-axios";
 
-export const postUserData = async (data: FormData) => {
+export const postUserData = async (data: any) => {
   try {
     const response = await instance.post("/users", data);
     return response.data;

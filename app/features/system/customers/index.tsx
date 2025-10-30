@@ -14,7 +14,6 @@ import SkeletonHeader from "~/components/ui/skeleton-header";
 import SkeletonFilter from "~/components/ui/skeleton-filter";
 import SkeletonTable from "~/components/ui/skeleton-table";
 import type { Customer, EntityStatus, UpdateCustomerData, Address, Role} from "./types";
-// ===== Modal Components =====
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -379,9 +378,9 @@ const CustomerManagement: React.FC = () => {
         fetchCustomerListData({
           PageNumber: override?.PageNumber ?? currentPage,
           PageSize: PAGE_SIZE,
-          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           ...(filters.Search ? { Search: filters.Search } : {}),
           ...(filters.Phone ? { Phone: filters.Phone } : {}),
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           HasRole: false,
         })
       );
@@ -398,12 +397,10 @@ const CustomerManagement: React.FC = () => {
     reloadList();
   }, [reloadList]);
 
-  const handleFilterChange = React.useCallback((next: FilterValues) => {
-    // only update local state here; effect will trigger fetch once
+  const handleFilterChange = useCallback((next: FilterValues) => {
     setFilters(next);
-    setCurrentPage(1);
+    setCurrentPage(1); 
   }, []);
-
   const data = customerList?.data?.items ?? customerList?.data ?? [];
 
   const columns: ColumnDef<Customer>[] = [
@@ -494,10 +491,6 @@ const CustomerManagement: React.FC = () => {
             currentPage={currentPage}
             totalPages={customerList?.data?.totalPages ?? 1}
             onPageChange={setCurrentPage}
-            title=""
-            showGlobalFilter
-            globalFilterPlaceholder="Tìm khách hàng..."
-            isLoading={isCustomerLoading}
           />
         )}
 

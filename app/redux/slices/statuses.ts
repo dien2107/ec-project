@@ -22,8 +22,6 @@ export const fetchStatuses = createAsyncThunk(
       console.warn("[fetchStatuses] Called without params — skipped request");
       return [];
     }
-
-    console.log("Fetching statuses with params:", params);
     const response = await instance.get<ApiResponse<Status[]>>("/statuses", { params });
     return response.data.data;
   }
