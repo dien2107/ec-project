@@ -44,10 +44,11 @@ export default function ViewAddressesDialog({
   const [localSelectedId, setLocalSelectedId] = useState<string | null>(
     selectedId ?? null
   );
+  const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if ((addresses?.length ?? 0) === 0) {
-      dispatch(fetchAddressesByUserId(1));
+      dispatch(fetchAddressesByUserId(user.data.userId));
     }
   }, [dispatch, addresses.length]);
 
@@ -62,8 +63,8 @@ export default function ViewAddressesDialog({
 
   const handleSetAsDefault = async (address: Address) => {
     try {
-      await setDefaultAddress(1, address.addressId);
-      dispatch(fetchAddressesByUserId(1));
+      await setDefaultAddress(address.addressId);
+      dispatch(fetchAddressesByUserId(user.data.userId));
       toast.success("Đã đặt địa chỉ mặc định thành công!");
     } catch (error: any) {
       if (error?.response?.data?.message) {

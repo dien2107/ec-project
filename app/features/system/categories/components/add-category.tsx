@@ -1,12 +1,10 @@
-import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -19,47 +17,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type AddCategoryDialogProps, type Category } from "../types";
+import type { AddCategoryDialogProps } from "../types";
 
-export default function AddCategoryDialog({ onSave }: AddCategoryDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    status: "active" as "active" | "inactive",
-  });
+const initialForm = {
+  name: "",
+  description: "",
+  status: "active" as "active" | "inactive",
+};
+
+export default function AddCategoryDialog({
+  open,
+  setIsOpen,
+  onSave,
+}: AddCategoryDialogProps) {
+  const [form, setForm] = useState(initialForm);
+
+  useEffect(() => {
+    if (open) setForm(initialForm);
+  }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-    setOpen(false);
-    setFormData({ name: "", description: "", status: "active" });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (form.name) {
+      onSave(form);
+      setForm(initialForm);
+      setIsOpen(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#3770EC] text-white hover:bg-[#3770EC]/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm danh mục
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Thêm danh mục mới</DialogTitle>
+          <DialogDescription>Thêm danh mục mới vào hệ thống</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Tên danh mục *</Label>
               <Input
                 id="name"
-                value={formData.name}
-                onChange={e => handleInputChange("name", e.target.value)}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Nhập tên danh mục"
                 required
               />
@@ -68,8 +68,10 @@ export default function AddCategoryDialog({ onSave }: AddCategoryDialogProps) {
               <Label htmlFor="description">Mô tả</Label>
               <Textarea
                 id="description"
-                value={formData.description}
-                onChange={e => handleInputChange("description", e.target.value)}
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 placeholder="Nhập mô tả danh mục"
                 rows={3}
               />
@@ -77,9 +79,9 @@ export default function AddCategoryDialog({ onSave }: AddCategoryDialogProps) {
             <div className="grid gap-2">
               <Label htmlFor="status">Trạng thái</Label>
               <Select
-                value={formData.status}
+                value={form.status}
                 onValueChange={(value: "active" | "inactive") =>
-                  handleInputChange("status", value)
+                  setForm({ ...form, status: value })
                 }
               >
                 <SelectTrigger>
@@ -92,21 +94,16 @@ export default function AddCategoryDialog({ onSave }: AddCategoryDialogProps) {
               </Select>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => setIsOpen(false)}
             >
               Hủy
             </Button>
-            <Button
-              type="submit"
-              className="bg-[#3770EC] hover:bg-[#3770EC]/90"
-            >
-              Thêm mới
-            </Button>
-          </DialogFooter>
+            <Button type="submit">Thêm mới</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

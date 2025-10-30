@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -7,26 +7,42 @@ import {
   DialogTitle,
   DialogDescription,
 } from "~/components/ui/dialog";
-import { AlertTriangle } from "lucide-react";
-import { type ShippingMethod } from "../types";
-
+import { AlertTriangle, Loader2 } from "lucide-react";
+import type { Ship } from "~/types/ship";
+import { formatVND } from "~/libs";
+import { toast } from "react-hot-toast";
+import { deleteShipping } from "~/services/ships";
 interface DeleteShippingDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  method: ShippingMethod | null;
-  onDelete: (methodId: string) => void;
+  method: Ship | null;
+  onDeleted: () => void;
 }
 
 export default function DeleteShippingDialog({
   open,
   setIsOpen,
   method,
-  onDelete,
+  onDeleted,
 }: DeleteShippingDialogProps) {
-  const handleDelete = () => {
-    if (method) {
-      onDelete(method.id);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDelete = async () => {
+    if (!method) return;
+    try {
+      setIsLoading(true);
+      await deleteShipping(method.shipId);
+      toast.success("Xóa phương thức vận chuyển thành công!");
+      onDeleted();
       setIsOpen(false);
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi xóa phương thức vận chuyển!");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,7 +77,7 @@ export default function DeleteShippingDialog({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Mã:</span>
-              <span className="font-medium">{method.id}</span>
+              <span className="font-medium">{method.shipId}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Đơn vị:</span>
@@ -70,25 +86,34 @@ export default function DeleteShippingDialog({
             <div className="flex justify-between">
               <span className="text-gray-600">Phí vận chuyển:</span>
               <span className="font-medium">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(method.baseCost)}
+                {formatVND(Number(method.baseCost))}
               </span>
             </div>
           </div>
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            disabled={isLoading}
+          >
             Hủy
           </Button>
           <Button
             variant="destructive"
             onClick={handleDelete}
             className="bg-red-600 hover:bg-red-700"
+            disabled={isLoading}
           >
-            Xóa phương thức
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                <span className="ml-2">Đang xóa...</span>
+              </>
+            ) : (
+              <>Xóa phương thức</>
+            )}
           </Button>
         </div>
       </DialogContent>

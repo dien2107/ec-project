@@ -11,9 +11,10 @@ export const getWardsByProvinceId = async (provinceId: number) => {
   }
 };
 
-export const createAddress = async (userId: number, data: AddressFormData) => {
+export const createAddress = async (data: AddressFormData) => {
   try {
-    const response = await instance.post(`/addresses/${userId}`, data);
+    console.log(data)
+    const response = await instance.post(`/addresses/me`, data);
     return response.data;
   } catch (error) {
     console.error("Error fetching wards by province ID:", error);
@@ -22,13 +23,13 @@ export const createAddress = async (userId: number, data: AddressFormData) => {
 };
 
 export const updateAddress = async (
-  userId: number,
   addressId: number,
   data: AddressFormData
 ) => {
   try {
+    console.log(data);
     const response = await instance.patch(
-      `/addresses/${userId}/address/${addressId}`,
+      `/addresses/me/address/${addressId}`,
       data
     );
     return response.data;
@@ -38,10 +39,10 @@ export const updateAddress = async (
   }
 };
 
-export const deleteAddress = async (userId: number, addressId: number) => {
+export const deleteAddress = async (addressId: number) => {
   try {
     const response = await instance.delete(
-      `/addresses/${userId}/address/${addressId}`
+      `/addresses/me/address/${addressId}`
     );
     return response.data;
   } catch (error) {
@@ -50,10 +51,10 @@ export const deleteAddress = async (userId: number, addressId: number) => {
   }
 };
 
-export const setDefaultAddress = async (userId: number, addressId: number) => {
+export const setDefaultAddress = async (addressId: number) => {
   try {
     const response = await instance.patch(
-      `/addresses/${userId}/address/${addressId}/set-default`
+      `/addresses/me/address/${addressId}/set-default`
     );
     return response.data;
   } catch (error) {

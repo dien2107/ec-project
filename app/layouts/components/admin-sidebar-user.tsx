@@ -68,7 +68,7 @@ export default function AdminSidebarUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <NavLink to={`/user`}>
+              <NavLink to={`/system/user`}>
                 <DropdownMenuItem className="hover:cursor-pointer hover:bg-gray-100">
                   <SquareUser />
                   Thông tin cá nhân
