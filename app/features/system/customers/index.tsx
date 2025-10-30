@@ -13,7 +13,13 @@ import CustomerFilter from "./components/customer-filter";
 import SkeletonHeader from "~/components/ui/skeleton-header";
 import SkeletonFilter from "~/components/ui/skeleton-filter";
 import SkeletonTable from "~/components/ui/skeleton-table";
-import type { Customer, EntityStatus, UpdateCustomerData, Address, Role} from "./types";
+import type {
+  Customer,
+  EntityStatus,
+  UpdateCustomerData,
+  Address,
+  Role,
+} from "./types";
 // ===== Modal Components =====
 interface ModalProps {
   isOpen: boolean;
@@ -403,7 +409,6 @@ const CustomerManagement: React.FC = () => {
     setFilters(next);
     setCurrentPage(1);
   }, []);
-
   const data = customerList?.data?.items ?? customerList?.data ?? [];
 
   const columns: ColumnDef<Customer>[] = [

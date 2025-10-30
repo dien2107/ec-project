@@ -14,6 +14,12 @@ import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
+import colorsReducer from "./slices/colors";
+import discountReducer from "./slices/discount";
+import sizeReducer from "./slices/sizes";
+import CategoryReducer from "./slices/categories";
+import materialReducer from "./slices/materials";
+
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
@@ -43,6 +49,11 @@ export const store = configureStore({
     auth: authReducer,
     shipList: shipListDataReducer,
     paymentDestinationList: paymentDestinationListDataReducer,
+    colorList: colorsReducer,
+    discountList: discountReducer,
+    sizeList: sizeReducer,
+    categoryList: CategoryReducer,
+    materialList: materialReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),

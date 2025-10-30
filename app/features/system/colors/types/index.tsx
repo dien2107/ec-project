@@ -4,8 +4,8 @@ import { Edit, Trash2 } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 
 export interface Color {
-  id: string;
-  name: string;
+  colorId: string;
+  displayName: string;
   hexCode: string;
   description: string;
   status: "active" | "inactive";
@@ -33,28 +33,22 @@ export const getColorColumns = (
 ): ColumnDef<Color>[] => [
   {
     accessorKey: "id",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Mã màu" />
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Mã màu" />,
     cell: ({ row }) => (
       <span className="font-mono text-sm">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "name",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Tên màu" />
-    ),
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.name}</span>
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Tên màu" />,
+    cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
   },
   {
     accessorKey: "hexCode",
     header: "Màu hiển thị",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <div 
+        <div
           className="w-6 h-6 rounded-full border border-gray-300"
           style={{ backgroundColor: row.original.hexCode }}
         />
@@ -64,9 +58,7 @@ export const getColorColumns = (
   },
   {
     accessorKey: "description",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Mô tả" />
-    ),
+    header: ({ column }) => <SortableHeader column={column} title="Mô tả" />,
     cell: ({ row }) => (
       <span className="text-gray-600">{row.original.description}</span>
     ),
@@ -80,7 +72,9 @@ export const getColorColumns = (
       const status = row.original.status as keyof typeof statusMap;
       const map = statusMap[status] || { label: status, className: "" };
       return (
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${map.className}`}>
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${map.className}`}
+        >
           {map.label}
         </span>
       );

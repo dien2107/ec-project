@@ -5,12 +5,13 @@ import { Badge } from "~/components/ui/badge";
 import { SortableHeader } from "../../components/data-table";
 
 export interface Category {
-  id: string;
+  categoryId: string;
   name: string;
   description: string;
   productCount: number;
   status: "active" | "inactive";
-  createdDate: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 export interface EditCategoryDialogProps {
   open: boolean;
