@@ -1,106 +1,105 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
+import { Input } from "~/components/ui/input";
+import Select from "react-select";
+import { Button } from "~/components/ui/button";
+import { RotateCcw } from "lucide-react";
+import { reactSelectStyles } from "~/components/ui/react-select-styles";
+import { useDebounce } from "~/hooks/use-debounce";
 
 type FilterValues = {
-  Search?: string; // Use Search as per backend requirements
+  Search?: string;
   StatusName?: string;
 };
 
 type Props = {
-  initial?: FilterValues;
-  onChange: (values: FilterValues) => void;
-  statuses: { statusId: number; name: string; displayName: string }[];
-  isLoading?: boolean;
+  filters: FilterValues;
+  setFilters: (updater: (prev: FilterValues) => FilterValues) => void;
 };
 
-const ColorFilter: React.FC<Props> = ({
-  initial,
-  onChange,
-  statuses,
-  isLoading,
-}) => {
-  // State for search and status name
-  const [search, setSearch] = useState(initial?.Search ?? "");
-  const [statusName, setStatusName] = useState<string | undefined>(
-    initial?.StatusName
-  );
+const statusOptions = [
+  { value: "", label: "Tất cả trạng thái" },
+  { value: "Active", label: "Hoạt động" },
+  { value: "Inactive", label: "Không hoạt động" },
+];
 
-  const lastSentRef = useRef<FilterValues | null>(null);
+const ColorFilter: React.FC<Props> = ({ filters, setFilters }) => {
+  // State nội bộ cho input tìm kiếm
+  const [searchInput, setSearchInput] = React.useState(filters.Search ?? "");
+  const debouncedSearch = useDebounce(searchInput, 400);
 
-  useEffect(() => {
-    // Sync inputs with initial props
-    setSearch(initial?.Search ?? "");
-    setStatusName(initial?.StatusName);
-    lastSentRef.current = {
-      Search: initial?.Search ?? undefined,
-      StatusName: initial?.StatusName ?? undefined,
-    };
-  }, [initial]);
+  // Khi debounce xong thì cập nhật filter cha
+  React.useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      Search: debouncedSearch,
+    }));
+  }, [debouncedSearch, setFilters]);
 
-  // Debounce input changes
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const next: FilterValues = {
-        Search: search || undefined,
-        StatusName: statusName || undefined,
-      };
+  // Nếu filter cha thay đổi (ví dụ khi reset), cập nhật lại input
+  React.useEffect(() => {
+    setSearchInput(filters.Search ?? "");
+  }, [filters.Search]);
 
-      const prev = lastSentRef.current;
-      const changed =
-        !prev ||
-        prev.Search !== next.Search ||
-        prev.StatusName !== next.StatusName;
-
-      if (changed) {
-        lastSentRef.current = next;
-        onChange(next); // Call onChange with updated values
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [search, statusName, onChange]);
-
-  const handleReset = () => {
-    setSearch("");
-    setStatusName(undefined);
-    lastSentRef.current = {};
-    onChange({}); // Reset filters
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-3">
-        <div className="w-60 h-10 bg-gray-200 rounded animate-pulse" />
-        <div className="w-48 h-10 bg-gray-200 rounded animate-pulse" />
-      </div>
-    );
-  }
+  const handleStatusChange = (option: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      StatusName: option ? option.value : "",
+    }));
+  };
+
+  const handleReset = () => {
+    setFilters((prev) => ({
+      ...prev,
+      Search: "",
+      StatusName: "",
+    }));
+  };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <input
-        type="text"
-        placeholder="Tìm theo mã hoặc tên màu..."
-        value={search} // Bind input value to state
-        onChange={(e) => setSearch(e.target.value)} // Update state on change
-        className="border rounded-lg px-3 py-2 text-sm w-60"
-      />
-      <select
-        value={statusName ?? ""}
-        onChange={(e) => setStatusName(e.target.value || undefined)}
-        className="border rounded-lg px-3 py-2 text-sm"
-      >
-        <option value="">Tất cả trạng thái</option>
-        {statuses.map((s) => (
-          <option key={s.statusId} value={s.name ?? s.displayName}>
-            {s.displayName ?? s.name}
-          </option>
-        ))}
-      </select>
-      <button
+    <div className="flex flex-wrap items-end gap-4">
+      {/* Ô tìm kiếm */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
+        <Input
+          type="text"
+          placeholder="Tìm màu sắc..."
+          value={searchInput}
+          onChange={handleSearchChange}
+          className="w-60"
+        />
+      </div>
+
+      {/* Dropdown trạng thái */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">Trạng thái</label>
+        <Select
+          instanceId="color-status-filter"
+          placeholder="Tất cả trạng thái"
+          options={statusOptions}
+          value={
+            statusOptions.find((opt) => opt.value === filters.StatusName) ||
+            statusOptions[0]
+          }
+          onChange={handleStatusChange}
+          isSearchable={false}
+          styles={reactSelectStyles}
+          className="min-w-[180px]"
+        />
+      </div>
+
+      {/* Nút reset */}
+      <Button
+        variant="outline"
+        className="text-sm flex items-center gap-2"
         onClick={handleReset}
-        className="text-sm text-gray-600 hover:underline px-2 py-1"
       >
+        <RotateCcw size={16} />
         Đặt lại
-      </button>
+      </Button>
     </div>
   );
 };

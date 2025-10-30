@@ -1,109 +1,146 @@
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { Plus, Loader2 } from "lucide-react";
+
 import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import type { CreateSizeData } from "../types";
+import { createSize } from "~/services/sizes";
 
 interface AddSizeDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  onAdd: (size: CreateSizeData & { id: string }) => void;
+  onAdded: () => void;
 }
 
-const initialForm: CreateSizeData = {
-  name: "",
-  code: "",
-  description: "",
-  status: "active",
+type SizeForm = {
+  name: string;
 };
 
-export default function AddSizeDialog({ open, setIsOpen, onAdd }: AddSizeDialogProps) {
-  const [form, setForm] = useState<CreateSizeData>(initialForm);
+export default function AddSizeDialog({ onAdded }: AddSizeDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  React.useEffect(() => {
-    if (open) setForm(initialForm);
-  }, [open]);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SizeForm>({
+    defaultValues: {
+      name: "",
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.name && form.code) {
-      onAdd({
-        ...form,
-        id: `SIZE-${Date.now().toString().slice(-3)}`,
-      });
-      setForm(initialForm);
+  useEffect(() => {
+    if (open) reset();
+  }, [open, reset]);
+
+  const handleSubmitClick = async (data: SizeForm) => {
+    try {
+      setIsLoading(true);
+
+      const formData = new FormData();
+      formData.append("name", data.name.trim());
+
+      const res = await createSize(formData);
+      console.log("API res:", res);
+
+      if (res?.isSuccess) {
+        toast.success(res?.message || "Thêm kích thước thành công!");
+        onAdded?.();
+        setOpen(false);
+      } else {
+        toast.error(res?.message || "Không thể thêm kích thước!");
+      }
+    } catch (error: any) {
+      console.error("Error creating size:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.errors?.[0] ||
+        "Có lỗi xảy ra khi thêm kích thước!";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="ml-auto bg-[#3770EC] text-white cursor-pointer">
+          <Plus />
+          Thêm kích thước
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="min-w-[480px] max-h-[90vh] flex flex-col justify-start">
         <DialogHeader>
           <DialogTitle>Thêm kích thước</DialogTitle>
           <DialogDescription>
-            Thêm kích thước mới vào hệ thống
+            Nhập tên kích thước mới để thêm vào hệ thống
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Tên kích thước</Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="Nhập tên kích thước"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="code">Mã kích thước</Label>
-              <Input
-                id="code"
-                value={form.code}
-                onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                placeholder="XS, S, M, L..."
-                className="font-mono"
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
-            <Textarea
-              id="description"
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-              placeholder="Nhập mô tả kích thước"
-              rows={3}
+
+        <form
+          onSubmit={handleSubmit(handleSubmitClick)}
+          className="flex flex-col gap-4 py-1"
+        >
+          {/* Tên kích thước */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Tên kích thước</label>
+            <Input
+              type="text"
+              placeholder="VD: S, M, L, XL..."
+              disabled={isLoading}
+              {...register("name", {
+                required: "Vui lòng nhập tên kích thước",
+                maxLength: {
+                  value: 50,
+                  message: "Tên kích thước không được vượt quá 50 ký tự",
+                },
+              })}
             />
+            {errors.name && (
+              <span className="text-red-500 text-xs">
+                {errors.name.message}
+              </span>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select value={form.status} onValueChange={(value: "active" | "inactive") => setForm({ ...form, status: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Hoạt động</SelectItem>
-                <SelectItem value="inactive">Ngưng hoạt động</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
-              Hủy
+          {/* Footer buttons */}
+          <DialogFooter className="mt-4">
+            {!isLoading && (
+              <DialogClose asChild>
+                <Button variant="outline">Hủy</Button>
+              </DialogClose>
+            )}
+            <Button
+              type="submit"
+              className="bg-[#3770EC] text-white cursor-pointer"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  Đang thêm...
+                </>
+              ) : (
+                <>
+                  <Plus />
+                  Thêm kích thước
+                </>
+              )}
             </Button>
-            <Button type="submit">
-              Thêm kích thước
-            </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

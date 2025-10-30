@@ -5,10 +5,10 @@ export type Size = {
   name: string;
 };
 
-export interface SizeDetail {
+export interface SizeDetailDto {
   sizeId: number;
   name: string;
   status: Status;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
