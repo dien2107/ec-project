@@ -1,6 +1,6 @@
 import instance from "./customize-axios";
 
-export const postColorData = async (data: FormData) => {
+export const createColor = async (data: FormData) => {
   try {
     const response = await instance.post("/colors", data);
     return response.data;
@@ -10,7 +10,7 @@ export const postColorData = async (data: FormData) => {
   }
 };
 
-export const getColorById = async (colorId: number) => {
+export const getColor = async (colorId: number) => {
   try {
     const response = await instance.get(`/colors/${colorId}`);
     return response.data;
@@ -20,7 +20,7 @@ export const getColorById = async (colorId: number) => {
   }
 };
 
-export const updateColorById = async (colorId: number, data: any) => {
+export const updateColor = async (colorId: number, data: any) => {
   try {
     const response = await instance.put(`/colors/${colorId}`, data);
     return response.data;
@@ -30,7 +30,7 @@ export const updateColorById = async (colorId: number, data: any) => {
   }
 };
 
-export const deleteColorById = async (colorId: number) => {
+export const deleteColor = async (colorId: number) => {
   try {
     const response = await instance.delete(`/colors/${colorId}`);
     return response.data;
