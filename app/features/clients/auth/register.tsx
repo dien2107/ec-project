@@ -149,8 +149,16 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     }
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-neutral-900 to-gray-800 px-4 py-12">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/background.png')" }}
+        />
+        <div className="absolute inset-0 bg-black/55" />
+      </div>
+
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
             <UserPlus className="w-8 h-8 text-blue-600" />
@@ -318,6 +326,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               className="w-full"
               disabled={isLoading}
               onClick={handleSubmit}
+              variant="primary"
             >
               {isLoading ? (
                 <div className="flex items-center">
@@ -338,7 +347,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                 <button
                   type="button"
                   onClick={goBack}
-                  className="text-blue-600 hover:text-blue-500 font-medium underline-offset-4 hover:underline"
+                  className="cursor-pointer text-blue-600 hover:text-blue-500 font-medium underline-offset-4 hover:underline"
                 >
                   Đăng nhập ngay →
                 </button>

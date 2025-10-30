@@ -41,7 +41,14 @@ export default function ShippingFilter({
           value={
             statusOptions.find((opt) => opt.value === filters.statusId) || null
           }
-          styles={reactSelectStyles}
+          styles={{
+            ...reactSelectStyles,
+            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+            menu: (base) => ({ ...base, zIndex: 9999 }),
+          }}
+          menuPortalTarget={
+            typeof document !== "undefined" ? document.body : null
+          }
           classNames={{ menu: () => "scrollbar-custom" }}
           onChange={(option) =>
             setFilters((prev) => ({

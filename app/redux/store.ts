@@ -20,6 +20,7 @@ import customerListDataReducer from "./slices/customers";
 import authReducer from "./slices/auth";
 import authLogoutListener from "~/middlewares/authLogoutListener";
 import shipListDataReducer from "./slices/ships";
+import paymentDestinationListDataReducer from "./slices/payment-destinations";
 
 export const store = configureStore({
   reducer: {
@@ -41,6 +42,7 @@ export const store = configureStore({
     customerList: customerListDataReducer,
     auth: authReducer,
     shipList: shipListDataReducer,
+    paymentDestinationList: paymentDestinationListDataReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
