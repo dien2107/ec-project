@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,38 +11,66 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { deleteSize } from "~/services/sizes";
+import type { SizeDetailDto } from "~/types/product/size";
 
-interface DeleteSizeDialogProps {
+export default function DeleteSizeDialog({
+  open,
+  setIsOpen,
+  selectedSize,
+  onDeleted,
+}: {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  onDelete: () => void;
-  sizeName?: string;
-}
+  selectedSize: SizeDetailDto;
+  onDeleted: () => void;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
 
-export default function DeleteSizeDialog({ 
-  open, 
-  setIsOpen, 
-  onDelete, 
-  sizeName 
-}: DeleteSizeDialogProps) {
+  const handleDelete = async () => {
+    try {
+      setIsLoading(true);
+      await deleteSize(selectedSize.sizeId);
+      toast.success("Xóa kích thước thành công!");
+      onDeleted();
+      setIsOpen(false);
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi xóa kích thước!");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={setIsOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Xác nhận xóa kích thước</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa kích thước <strong>"{sizeName}"</strong>?
-            <br />
-            Hành động này không thể hoàn tác và có thể ảnh hưởng đến các sản phẩm đang sử dụng kích thước này.
+            Bạn có chắc chắn muốn xóa kích thước{" "}
+            <strong>{selectedSize.name}</strong>? Hành động này không thể hoàn
+            tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Hủy</AlertDialogCancel>
           <AlertDialogAction
-            onClick={onDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="bg-[#EF4444] text-white flex items-center gap-2"
+            onClick={handleDelete}
+            disabled={isLoading}
           >
-            Xóa kích thước
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Đang xóa...
+              </>
+            ) : (
+              <>Xóa</>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

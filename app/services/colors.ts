@@ -22,7 +22,7 @@ export const getColor = async (colorId: number) => {
 
 export const updateColor = async (colorId: number, data: any) => {
   try {
-    const response = await instance.put(`/colors/${colorId}`, data);
+    const response = await instance.patch(`/colors/${colorId}`, data);
     return response.data;
   } catch (error) {
     console.error("Error updating color:", error);

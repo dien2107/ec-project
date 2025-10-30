@@ -12,11 +12,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { updateColor } from "~/services/colors";
 import type { ColorDetailDto } from "~/types/product/color";
+
+// 🧩 Redux imports
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchStatuses } from "~/redux/slices/statuses";
 
 type ColorForm = {
   name: string;
@@ -37,12 +42,25 @@ export default function EditColorDialog({
   onUpdated: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
+
+  // 🧠 Lấy danh sách trạng thái từ Redux
+  const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
+    (state) => state.statuses
+  );
+
+  // 🧩 Gọi API khi mở dialog
+  useEffect(() => {
+    if (open) {
+      dispatch(fetchStatuses({ entityType: "Color" }));
+    }
+  }, [open, dispatch]);
 
   const defaultValues: ColorForm = {
     name: selectedColor?.name ?? "",
     displayName: selectedColor?.displayName ?? "",
     hexCode: selectedColor?.hexCode ?? "#000000",
-    statusId: selectedColor?.statusId ?? null,
+    statusId: selectedColor?.status?.statusId ?? null,
   };
 
   const {
@@ -58,13 +76,14 @@ export default function EditColorDialog({
     defaultValues,
   });
 
+  // 🧠 Khi mở dialog hoặc đổi selectedColor => set lại form
   useEffect(() => {
     if (open && selectedColor) {
       reset({
         name: selectedColor.name,
         displayName: selectedColor.displayName,
         hexCode: selectedColor.hexCode,
-        statusId: selectedColor.status.statusId,
+        statusId: selectedColor.status?.statusId ?? null,
       });
     }
   }, [open, selectedColor, reset]);
@@ -82,6 +101,7 @@ export default function EditColorDialog({
         statusId: data.statusId,
       };
 
+      console.log("Updating color with data:", updateData);
       const res = await updateColor(selectedColor!.colorId, updateData);
 
       if (res?.isSuccess) {
@@ -101,11 +121,17 @@ export default function EditColorDialog({
     }
   };
 
-  // Trạng thái mẫu (có thể sau này lấy từ API)
-  const statuses = [
-    { value: 1, label: "Hoạt động" },
-    { value: 0, label: "Ngưng hoạt động" },
-  ];
+  // 🧩 Tạo danh sách options từ Redux
+  const statuses =
+    statusesData["Color"]?.map((s) => ({
+      value: s.statusId,
+      label:
+        s.name === "Active"
+          ? "Hoạt động"
+          : s.name === "Inactive"
+            ? "Không hoạt động"
+            : s.name, // fallback nếu có status khác
+    })) ?? [];
 
   const hexValue = watch("hexCode");
 
@@ -114,6 +140,7 @@ export default function EditColorDialog({
       <DialogContent className="min-w-[600px] max-h-[90vh] flex flex-col justify-start">
         <DialogHeader>
           <DialogTitle>Cập nhật màu sắc</DialogTitle>
+          <DialogDescription>Cập nhật thông tin màu sắc</DialogDescription>
         </DialogHeader>
 
         <form
@@ -168,69 +195,83 @@ export default function EditColorDialog({
             )}
           </div>
 
-          {/* Mã màu */}
-          <div>
-            <label className="text-sm font-medium mb-1 block">
-              Mã màu (Hex)
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
-                value={hexValue}
-                onChange={(e) => setValue("hexCode", e.target.value)}
-                disabled={isLoading}
-              />
-              <Input
-                type="text"
-                placeholder="#RRGGBB"
-                className="flex-1"
-                disabled={isLoading}
-                {...register("hexCode", {
-                  required: "Vui lòng nhập mã màu hex",
-                  pattern: {
-                    value: /^#[0-9A-Fa-f]{6}$/,
-                    message: "Mã màu phải ở dạng #RRGGBB",
-                  },
-                })}
-              />
-            </div>
-            {errors.hexCode && (
-              <span className="text-red-500 text-xs">
-                {errors.hexCode.message}
-              </span>
-            )}
-          </div>
+          {/* Hàng Mã màu + Trạng thái */}
+          <div className="flex gap-4">
+            {/* Cột Mã màu */}
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-1 block">
+                Mã màu (Hex)
+              </label>
+              <div className="flex items-center gap-3">
+                {/* Ô chọn màu */}
+                <input
+                  type="color"
+                  className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                  value={hexValue}
+                  onChange={(e) => setValue("hexCode", e.target.value)}
+                  disabled={isLoading}
+                />
 
-          {/* Trạng thái */}
-          <div>
-            <label className="text-sm font-medium mb-1 block">Trạng thái</label>
-            <Controller
-              name="statusId"
-              control={control}
-              rules={{ required: "Vui lòng chọn trạng thái" }}
-              render={({ field, fieldState }) => (
-                <>
-                  <Select
-                    {...field}
-                    options={statuses}
-                    placeholder="Chọn trạng thái"
-                    isSearchable={false}
-                    styles={reactSelectStyles}
-                    onChange={(option) => field.onChange(option?.value ?? null)}
-                    value={
-                      statuses.find((opt) => opt.value === field.value) || null
-                    }
-                    isDisabled={isLoading}
+                {/* Ô nhập mã hex */}
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    placeholder="#RRGGBB"
+                    disabled={isLoading}
+                    {...register("hexCode", {
+                      required: "Vui lòng nhập mã màu hex",
+                      pattern: {
+                        value: /^#[0-9A-Fa-f]{6}$/,
+                        message: "Mã màu phải ở dạng #RRGGBB",
+                      },
+                    })}
                   />
-                  {fieldState.error && (
+                  {errors.hexCode && (
                     <span className="text-red-500 text-xs">
-                      {fieldState.error.message}
+                      {errors.hexCode.message}
                     </span>
                   )}
-                </>
-              )}
-            />
+                </div>
+              </div>
+            </div>
+
+            {/* Cột Trạng thái */}
+            <div className="w-[180px]">
+              <label className="text-sm font-medium mb-1 block">
+                Trạng thái
+              </label>
+              <Controller
+                name="statusId"
+                control={control}
+                rules={{ required: "Vui lòng chọn trạng thái" }}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Select
+                      {...field}
+                      options={statuses}
+                      placeholder={
+                        isStatusesLoading ? "Đang tải..." : "Chọn trạng thái"
+                      }
+                      isSearchable={false}
+                      styles={reactSelectStyles}
+                      onChange={(option) =>
+                        field.onChange(option?.value ?? null)
+                      }
+                      value={
+                        statuses.find((opt) => opt.value === field.value) ||
+                        null
+                      }
+                      isDisabled={isLoading || isStatusesLoading}
+                    />
+                    {fieldState.error && (
+                      <span className="text-red-500 text-xs">
+                        {fieldState.error.message}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            </div>
           </div>
 
           {/* Footer */}

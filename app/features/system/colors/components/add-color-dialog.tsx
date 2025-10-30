@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 
@@ -96,12 +97,13 @@ export default function AddColorDialog({ onAdded }: AddColorDialogProps) {
 
       <DialogContent className="min-w-[480px] max-h-[90vh] flex flex-col justify-start">
         <DialogHeader>
-          <DialogTitle>Thêm màu sắc mới</DialogTitle>
+          <DialogTitle>Thêm màu sắc</DialogTitle>
+          <DialogDescription>Thêm màu sắc mới vào hệ thống</DialogDescription>
         </DialogHeader>
 
         <form
           onSubmit={handleSubmit(handleSubmitClick)}
-          className="flex flex-col gap-4 py-4"
+          className="flex flex-col gap-4 py-1"
         >
           {/* Tên màu (Tiếng anh) */}
           <div className="flex flex-col gap-1">

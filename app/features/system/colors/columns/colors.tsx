@@ -2,7 +2,7 @@ import { Button } from "~/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Color, ColorDetailDto } from "../../../../types/product/color";
+import type { ColorDetailDto } from "../../../../types/product/color";
 
 export const getColumns = (
   handleEdit: (color: ColorDetailDto) => void,
