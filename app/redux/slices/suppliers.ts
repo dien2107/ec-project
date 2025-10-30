@@ -18,11 +18,11 @@ const initialState: SupplierListDataState = {
 export const fetchSupplierListData = createAsyncThunk(
   "suppliers/fetchSupplierListData",
   async (params: {
-    StatusName?: string;
-    Search?: string;
-    SupplierGroupId?: number;
+    StatusId?: number;
+    Name?: string;
     PageNumber?: number;
     PageSize?: number;
+    OrderBy?: string;
   }) => {
     const response = await instance.get<ApiPagedResponse<Supplier[]>>(
       "/suppliers",

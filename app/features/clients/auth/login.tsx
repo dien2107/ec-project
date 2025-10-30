@@ -81,15 +81,11 @@ export default function LoginPage() {
           rememberMe: formData.rememberMe,
         })
       ).unwrap();
-
-      // nếu unwrap thành công => login ok
       toast.success("Đăng nhập thành công");
-      // chuyển về trang chính
       navigate("/");
     } catch (err: any) {
-      // giữ ở trang đăng nhập và show toast lỗi
       const message =
-        err?.message || (typeof err === "string" ? err : "Đăng nhập thất bại");
+        err?.response?.data?.message || (typeof err === "string" ? err : "Đăng nhập thất bại");
       toast.error(message);
       console.error("Login failed:", err);
     } finally {
