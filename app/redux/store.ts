@@ -19,6 +19,7 @@ import discountReducer from "./slices/discount";
 import sizeReducer from "./slices/sizes";
 import CategoryReducer from "./slices/categories";
 import materialReducer from "./slices/materials";
+import homePageReducer from "./slices/home-page";
 
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
@@ -54,10 +55,10 @@ export const store = configureStore({
     sizeList: sizeReducer,
     categoryList: CategoryReducer,
     materialList: materialReducer,
+    homePage: homePageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
-  //     .prepend(authStorageListener.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>;

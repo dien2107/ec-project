@@ -31,6 +31,7 @@ import type {
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchRoleListData } from "~/redux/slices/roles";
 import { AxiosError } from "axios";
+import { ENTITY_TYPE } from "~/constants/entity-types";
 
 interface UserModalProps {
   id?: number | undefined;
@@ -47,18 +48,19 @@ export const UserModal: React.FC<UserModalProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const { statuses } = useAppSelector(
-    (s: any) => s.statuses ?? { statuses: null }
-  );
+  const statusOptions = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.USER] ?? []
+  ) as EntityStatus[];
+
   const { roleList, isLoading: isRoleLoading } = useAppSelector(
     (state) => state.roleList
   );
 
-  const statusOptions: EntityStatus[] = Array.isArray(statuses)
-    ? statuses
-    : Array.isArray(statuses?.data)
-      ? statuses.data
-      : [];
+  // Debug: log statusOptions
+  useEffect(() => {
+    console.log("🔍 statusOptions:", statusOptions);
+    console.log("🔍 ENTITY_TYPE.USER:", ENTITY_TYPE.USER);
+  }, [statusOptions]);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -79,14 +81,21 @@ export const UserModal: React.FC<UserModalProps> = ({
     addresses: [],
   });
 
-  // Fetch role list
   useEffect(() => {
     if (isOpen && !roleList) {
       dispatch(fetchRoleListData({}));
     }
   }, [isOpen, dispatch, roleList]);
 
-  // Load user data
+  useEffect(() => {
+    if (statusOptions.length > 0 && !id && form.statusId === 0) {
+      setForm((prev) => ({
+        ...prev,
+        statusId: statusOptions[0]?.statusId ?? 0,
+      }));
+    }
+  }, [statusOptions, id, form.statusId]);
+
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -100,7 +109,7 @@ export const UserModal: React.FC<UserModalProps> = ({
           gender: "Male",
           dateOfBirth: null,
           isVerified: false,
-          statusId: statusOptions?.[0]?.statusId ?? 0,
+          statusId: 0, // Sẽ set lại sau khi có statusOptions
           roleIds: [],
           addresses: [],
         });
@@ -123,14 +132,15 @@ export const UserModal: React.FC<UserModalProps> = ({
             ? customer.dateOfBirth.split("T")[0]
             : null,
           isVerified: !!customer.isVerified,
-          statusId:
-            customer.status?.statusId ?? statusOptions?.[0]?.statusId ?? 0,
+          statusId: customer.status?.statusId ?? 0,
           roleIds: (customer.roles ?? []).map((r) => r.roleId),
           addresses: customer.addresses ?? [],
         });
       } catch (err) {
         if (err instanceof AxiosError) {
-          alert(err.response?.data?.message || "Lấy thông tin người dùng thất bại.");
+          alert(
+            err.response?.data?.message || "Lấy thông tin người dùng thất bại."
+          );
         } else {
           alert("Đã xảy ra lỗi không xác định.");
         }
@@ -142,7 +152,7 @@ export const UserModal: React.FC<UserModalProps> = ({
     return () => {
       mounted = false;
     };
-  }, [id, statusOptions]);
+  }, [id]); // Chỉ phụ thuộc vào id, không phụ thuộc statusOptions
 
   const handleChange = <K extends keyof typeof form>(
     key: K,
@@ -215,11 +225,11 @@ export const UserModal: React.FC<UserModalProps> = ({
       onSaved();
       onClose();
     } catch (err) {
-       if (err instanceof AxiosError) {
-          alert(err.response?.data?.message || "Lưu người dùng thất bại.");
-        } else {
-          alert("Đã xảy ra lỗi không xác định.");
-        }
+      if (err instanceof AxiosError) {
+        alert(err.response?.data?.message || "Lưu người dùng thất bại.");
+      } else {
+        alert("Đã xảy ra lỗi không xác định.");
+      }
     } finally {
       setSaving(false);
     }
@@ -228,13 +238,12 @@ export const UserModal: React.FC<UserModalProps> = ({
   const roles = Array.isArray(roleList?.data)
     ? roleList.data
     : Array.isArray((roleList as any)?.data?.items)
-    ? (roleList as any).data.items.flat()
-    : [];
+      ? (roleList as any).data.items.flat()
+      : [];
 
   const selectedRoles = (roles as Array<any>).filter((r) =>
     form.roleIds.includes(r.roleId)
   );
-
   const isEditMode = !!id;
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -337,18 +346,24 @@ export const UserModal: React.FC<UserModalProps> = ({
                   Trạng thái
                 </label>
                 <Select
-                  value={String(form.statusId ?? "")}
+                  value={form.statusId > 0 ? String(form.statusId) : undefined}
                   onValueChange={(v) => handleChange("statusId", Number(v))}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Chọn trạng thái..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {statusOptions.map((s) => (
-                      <SelectItem key={s.statusId} value={String(s.statusId)}>
-                        {s.displayName ?? s.name}
-                      </SelectItem>
-                    ))}
+                    {statusOptions.length === 0 ? (
+                      <div className="p-2 text-sm text-gray-500">
+                        Không có trạng thái
+                      </div>
+                    ) : (
+                      statusOptions.map((s) => (
+                        <SelectItem key={s.statusId} value={String(s.statusId)}>
+                          {s.displayName ?? s.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -386,40 +401,46 @@ export const UserModal: React.FC<UserModalProps> = ({
                             Không có vai trò
                           </div>
                         ) : (
-                          roles.map((role: { roleId: number; name: string; description?: string }) => {
-                            const isSelected = form.roleIds.includes(
-                              role.roleId
-                            );
-                            return (
-                              <div
-                                key={role.roleId}
-                                onClick={() => toggleRole(role.roleId)}
-                                className="p-2 flex items-start gap-2 cursor-pointer hover:bg-gray-50"
-                              >
+                          roles.map(
+                            (role: {
+                              roleId: number;
+                              name: string;
+                              description?: string;
+                            }) => {
+                              const isSelected = form.roleIds.includes(
+                                role.roleId
+                              );
+                              return (
                                 <div
-                                  className={`w-4 h-4 rounded border flex items-center justify-center mt-1 ${
-                                    isSelected
-                                      ? "bg-blue-600 border-blue-600"
-                                      : "border-gray-300"
-                                  }`}
+                                  key={role.roleId}
+                                  onClick={() => toggleRole(role.roleId)}
+                                  className="p-2 flex items-start gap-2 cursor-pointer hover:bg-gray-50"
                                 >
-                                  {isSelected && (
-                                    <Check className="w-3 h-3 text-white" />
-                                  )}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="font-medium text-sm">
-                                    {role.name}
+                                  <div
+                                    className={`w-4 h-4 rounded border flex items-center justify-center mt-1 ${
+                                      isSelected
+                                        ? "bg-blue-600 border-blue-600"
+                                        : "border-gray-300"
+                                    }`}
+                                  >
+                                    {isSelected && (
+                                      <Check className="w-3 h-3 text-white" />
+                                    )}
                                   </div>
-                                  {role.description && (
-                                    <div className="text-xs text-gray-500">
-                                      {role.description}
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm">
+                                      {role.name}
                                     </div>
-                                  )}
+                                    {role.description && (
+                                      <div className="text-xs text-gray-500">
+                                        {role.description}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
+                              );
+                            }
+                          )
                         )}
                       </div>
                     )}
@@ -459,7 +480,11 @@ export const UserModal: React.FC<UserModalProps> = ({
           >
             Hủy
           </Button>
-          <Button onClick={handleSubmit} disabled={saving || loading}>
+          <Button
+            variant="add"
+            onClick={handleSubmit}
+            disabled={saving || loading}
+          >
             {saving ? "Đang lưu..." : "Lưu"}
           </Button>
         </AlertDialogFooter>

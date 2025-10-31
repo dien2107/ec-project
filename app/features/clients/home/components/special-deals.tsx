@@ -3,10 +3,14 @@ import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { NavLink } from "react-router";
-import { fakeProducts } from "../data/products";
+import type { Product } from "~/types/home-page";
 
 function formatPrice(price: number) {
   return price.toLocaleString("vi-VN") + "₫";
+}
+
+interface SpecialDealsProps {
+  products: Product[];
 }
 
 function Countdown({ endTime }: { endTime: Date }) {
@@ -50,7 +54,7 @@ function Countdown({ endTime }: { endTime: Date }) {
   );
 }
 
-export default function SpecialDeals() {
+export default function SpecialDeals({ products }: SpecialDealsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -94,8 +98,7 @@ export default function SpecialDeals() {
     }
 
     setTimeout(checkScroll, 400);
-  }; 
-  const dealProducts = fakeProducts.filter((p) => p.discount >= 20);
+  };
 
   return (
     <section className="bg-gray-50 py-16">
@@ -128,34 +131,36 @@ export default function SpecialDeals() {
             className="overflow-x-auto scrollbar-hide scroll-smooth"
           >
             <div className="flex gap-6 md:gap-6">
-              {dealProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <div
-                  key={product.id}
+                  key={product.productId}
                   className="flex-shrink-0 w-full sm:w-64 md:w-64"
                 >
                   <NavLink
-                    to={`/products/${product.slug}`}
+                    to={`/products/${product.productId}`}
                     className="block bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
                   >
                     <div className="relative aspect-[3/4] overflow-hidden">
                       <img
-                        src={product.image}
-                        alt={product.title}
+                        src={product.thumbnail}
+                        alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         loading="lazy"
                       />
-                      <Badge
-                        variant={
-                          product.tag === "Sale" ? "destructive" : "default"
-                        }
-                        className="absolute top-3 left-3 text-xs font-bold px-3 py-1"
-                      >
-                        {product.tag}
-                      </Badge>
-                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
-                        -{product.discount}%
-                      </div>
-                      {product.discount >= 25 && (
+                      {product.soldQuantity > 50 && (
+                        <Badge
+                          variant="default"
+                          className="absolute top-3 left-3 text-xs font-bold px-3 py-1"
+                        >
+                          Hot
+                        </Badge>
+                      )}
+                      {product.discountPercentage > 0 && (
+                        <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
+                          -{product.discountPercentage}%
+                        </div>
+                      )}
+                      {product.discountPercentage >= 25 && (
                         <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 rounded-md backdrop-blur-sm">
                           <Countdown endTime={flashSaleEnd} />
                         </div>
@@ -164,15 +169,17 @@ export default function SpecialDeals() {
 
                     <div className="p-4">
                       <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-2 group-hover:text-black transition-colors">
-                        {product.title}
+                        {product.name}
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-red-500 font-bold text-base">
-                          {formatPrice(product.price)}
+                          {formatPrice(product.salePrice || product.price)}
                         </span>
-                        <span className="line-through text-gray-400 text-sm">
-                          {formatPrice(product.oldPrice)}
-                        </span>
+                        {product.salePrice && (
+                          <span className="line-through text-gray-400 text-sm">
+                            {formatPrice(product.price)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </NavLink>
@@ -191,8 +198,8 @@ export default function SpecialDeals() {
             <ChevronRight className="h-6 w-6 text-gray-700" />
           </button>
         </div>
-
-\        <div className="flex justify-center mt-12">
+        \{" "}
+        <div className="flex justify-center mt-12">
           <Button
             size="lg"
             className="bg-gray-900 text-white hover:bg-gray-800 font-semibold px-8 py-6 text-base"
