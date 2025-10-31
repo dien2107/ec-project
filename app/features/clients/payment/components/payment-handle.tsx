@@ -8,24 +8,31 @@ export default function PaymentOnline() {
   const navigate = useNavigate();
   const location = useLocation();
   const { paymentInfo, paymentPayload } = location.state || {};
+  const [isChecking, setIsChecking] = useState(false);
   const orderId = paymentPayload?.orderId;
-
-  const [timeLeft, setTimeLeft] = useState(900); // 15 phút = 900 giây
-
+  const [timeLeft, setTimeLeft] = useState(600); // 10 phút = 600 giây
   const checkOrderStatus = async () => {
-    if (!orderId) return;
+    if (!orderId || isChecking) return;
+    setIsChecking(true);
+
     try {
       const data = await getOrderStatus(orderId);
+      console.log(data.data);
 
-      if (data.isPaid) {
+      if (data.data.isPaid) {
         toast.success("Thanh toán thành công!");
-        navigate("/profile");
+        navigate("/payment/success", {
+          state: {
+            paymentData: data.data,
+          },
+        });
       }
     } catch (error) {
       console.error("Lỗi khi kiểm tra đơn hàng:", error);
+    } finally {
+      setIsChecking(false); // ✅ reset cờ sau khi xong
     }
   };
-
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
@@ -35,16 +42,15 @@ export default function PaymentOnline() {
   }, []);
 
   useEffect(() => {
-    if (!orderId || timeLeft <= 0) return;
-
-    checkOrderStatus();
+    if (!orderId) return;
 
     const interval = setInterval(() => {
       checkOrderStatus();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [orderId, timeLeft]);
+  }, [orderId]);
+
   useEffect(() => {
     if (timeLeft === 0) {
       toast.error("Hết thời gian thanh toán!");
@@ -78,68 +84,76 @@ export default function PaymentOnline() {
   };
 
   const qrData = parseQrUrl(paymentInfo.qrCodeUrl || "");
-  const qrUrl = paymentInfo.qrCodeUrl;
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center py-10 bg-gray-50 text-gray-800">
-      <div className="w-full max-w-5xl bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+    <div className="min-h-screen flex flex-col items-center py-12 bg-gradient-to-b from-blue-50 to-blue-100 text-gray-800">
+      <div className="w-full max-w-5xl bg-white rounded-2xl p-8 shadow-2xl border border-blue-200">
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-red-500 pb-2 mb-6">
-          <h2 className="text-2xl font-bold text-red-600">
-            Thông Tin Thanh Toán
+        <div className="flex justify-between items-center border-b-2 border-blue-500 pb-3 mb-8">
+          <h2 className="text-3xl font-bold text-blue-600 tracking-wide">
+            💳 Thông Tin Thanh Toán
           </h2>
-          <div className="text-red-500 font-semibold text-lg">
-            ⏱ {formatTime(timeLeft)}
+          <div className="text-blue-600 font-semibold text-xl flex items-center gap-2">
+            ⏱ <span className="font-mono">{formatTime(timeLeft)}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* QR Code */}
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <h3 className="text-lg text-center text-gray-600">
+          <div className="flex flex-col items-center justify-center space-y-5">
+            <h3 className="text-lg font-medium text-gray-600 uppercase tracking-wide">
               Quét Mã QR Để Thanh Toán
             </h3>
-            <div className="p-2 bg-white rounded-xl border border-gray-300 shadow-sm">
+            <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-sm hover:shadow-md transition">
               <img
-                src={qrUrl}
+                src={paymentInfo.data.qrCodeUrl}
                 alt="QR Code"
                 className="w-64 h-64 rounded-xl object-contain"
               />
             </div>
+            <p className="text-sm text-gray-500 italic">
+              * Vui lòng quét mã bằng ứng dụng ngân hàng để thanh toán
+            </p>
           </div>
 
           {/* Payment Info */}
-          <div className="bg-gray-100 rounded-xl p-6 space-y-4 shadow-inner">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="bg-blue-50 rounded-2xl p-6 space-y-5 shadow-inner border border-blue-200">
+            {/* Bank Header */}
+            <div className="flex items-center gap-4 mb-5">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/2/25/Logo_MB_new.png"
                 alt="MB Bank"
-                className="w-10 h-10"
+                className="w-12 h-12 rounded-md border border-blue-200"
               />
               <div>
-                <h3 className="text-xl font-semibold text-gray-800">MB Bank</h3>
+                <h3 className="text-2xl font-semibold text-gray-800">
+                  MB Bank
+                </h3>
                 <p className="text-gray-500 text-sm">Chuyển Khoản Ngân Hàng</p>
               </div>
             </div>
 
-            <div className="space-y-3 text-gray-700">
+            {/* Info Details */}
+            <div className="space-y-4 text-gray-700">
               <div>
                 <p className="text-sm text-gray-500">Chủ Tài Khoản</p>
-                <p className="font-semibold text-gray-900">Lu Quang Minh</p>
+                <p className="font-semibold text-gray-900 text-lg">
+                  Lưu Quang Minh
+                </p>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Số Tài Khoản</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-gray-900 text-lg tracking-wide">
                     {qrData.account}
                   </p>
                 </div>
                 <Copy
-                  className="cursor-pointer text-gray-500 hover:text-red-500"
+                  className="cursor-pointer text-gray-400 hover:text-blue-600 transition"
                   size={18}
                   onClick={() => handleCopy(qrData.account)}
                 />
@@ -147,7 +161,7 @@ export default function PaymentOnline() {
 
               <div>
                 <p className="text-sm text-gray-500">Số Tiền</p>
-                <p className="font-semibold text-lg text-red-600">
+                <p className="font-semibold text-xl text-blue-600">
                   {paymentPayload.amount.toLocaleString()} VND
                 </p>
               </div>
@@ -155,22 +169,22 @@ export default function PaymentOnline() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Nội Dung Chuyển Khoản</p>
-                  <p className="font-semibold text-sm break-all text-gray-900">
+                  <p className="font-semibold text-gray-900 text-sm bg-white border border-blue-100 px-3 py-1 rounded-md">
                     {`DH${paymentPayload.description}`}
                   </p>
                 </div>
                 <Copy
-                  className="cursor-pointer text-gray-500 hover:text-red-500"
+                  className="cursor-pointer text-gray-400 hover:text-blue-600 transition"
                   size={18}
                   onClick={() => handleCopy(paymentPayload.description)}
                 />
               </div>
             </div>
 
-            <div className="border-t border-gray-300 mt-6 pt-3">
+            <div className="border-t border-blue-200 mt-6 pt-4 text-right">
               <p className="text-lg font-semibold text-gray-800">
                 Tổng Tiền:{" "}
-                <span className="text-red-600">
+                <span className="text-blue-600 text-xl">
                   {paymentPayload.amount.toLocaleString()} VND
                 </span>
               </p>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +12,7 @@ import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { createOrder } from "~/services/order";
 import { clearCart } from "~/redux/slices/cartSlice";
 import { createPayment, type CreatePaymentPayload } from "~/services/payment";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const paymentSchema = z.object({
   paymentMethod: z.enum(["bank", "cod"]),
@@ -154,19 +154,17 @@ export default function Payment() {
 
         const paymentResponse = await createPayment(paymentPayload);
         console.log(paymentResponse);
-        if (!paymentResponse.data.isSuccess) {
+        if (!paymentResponse.isSuccess) {
           toast.error("Không thể tạo đơn thanh toán!");
           return;
         }
-
-        setInterval(() => {
-          navigate("/payment/online", {
-            state: {
-              paymentInfo: paymentResponse.data,
-              paymentPayload,
-            },
-          });
-        }, 5000);
+        console.log(`${paymentResponse.qrCodeUrl}`);
+        navigate("/payment/online", {
+          state: {
+            paymentInfo: paymentResponse,
+            paymentPayload,
+          },
+        });
       } else {
         // 3️⃣ COD (thanh toán khi nhận hàng)
         toast.success("Đặt hàng thành công!");
