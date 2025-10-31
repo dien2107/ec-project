@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as authService from "../../services/auth";
 import { safeLocalStorage } from "~/helper/safeLocalStorage";
+import * as userService from "~/services/customers";
 type State = {
   user: any | null;
   accessToken: string | null;
@@ -43,7 +44,7 @@ export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      const data = await authService.getCurrentUser();
+      const data = await userService.getUserBySelf();
       return data;
     } catch (err: any) {
       return rejectWithValue(
@@ -80,41 +81,42 @@ const slice = createSlice({
         state.loading = false;
         state.error = null;
 
-        const token =
-          action.payload?.accessToken ?? action.payload?.token ?? null;
-        const refresh = action.payload?.refreshToken ?? null;
-        const user = action.payload?.user ?? action.payload ?? null;
+        const token = action.payload?.data?.accessToken ?? action.payload?.data?.token ?? null;
+        const refresh = action.payload?.data?.refreshToken ?? null;
+        const user = action.payload?.data?.user ?? null;
 
         state.accessToken = token;
         state.refreshToken = refresh;
         state.user = user ?? null;
-
+        console.log("Login successful:", action.payload);
         const remember = (action.meta?.arg as any)?.rememberMe ?? true;
 
         try {
           if (typeof window !== "undefined") {
             if (remember) {
-              if (token) safeLocalStorage.setItem("accessToken", token);
-              else safeLocalStorage.removeItem("accessToken");
-              if (refresh) safeLocalStorage.setItem("refreshToken", refresh);
-              else safeLocalStorage.removeItem("refreshToken");
-              if (user) safeLocalStorage.setItem("user", JSON.stringify(user));
+              token
+                ? safeLocalStorage.setItem("accessToken", token)
+                : safeLocalStorage.removeItem("accessToken");
+              refresh
+                ? safeLocalStorage.setItem("refreshToken", refresh)
+                : safeLocalStorage.removeItem("refreshToken");
+
               sessionStorage.removeItem("accessToken");
               sessionStorage.removeItem("refreshToken");
-              sessionStorage.removeItem("user");
             } else {
-              if (token) sessionStorage.setItem("accessToken", token);
-              else sessionStorage.removeItem("accessToken");
-              if (refresh) sessionStorage.setItem("refreshToken", refresh);
-              else sessionStorage.removeItem("refreshToken");
-              if (user) sessionStorage.setItem("user", JSON.stringify(user));
+              token
+                ? sessionStorage.setItem("accessToken", token)
+                : sessionStorage.removeItem("accessToken");
+              refresh
+                ? sessionStorage.setItem("refreshToken", refresh)
+                : sessionStorage.removeItem("refreshToken");
+
               safeLocalStorage.removeItem("accessToken");
               safeLocalStorage.removeItem("refreshToken");
-              safeLocalStorage.removeItem("user");
             }
           }
         } catch (e) {
-          console.warn("persist auth storage failed", e);
+          console.warn("Persist auth tokens failed:", e);
         }
       })
       .addCase(loginThunk.rejected, (state, action) => {

@@ -26,17 +26,7 @@ export default function Payment() {
   const cartItems = useAppSelector(state => state.cart.items);
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: "1",
-      fullName: "Nguyễn Văn A",
-      phone: "0912345678",
-      address: "123 Đường ABC",
-      city: "TP. Hồ Chí Minh",
-      isDefault: true,
-    },
-  ]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>("1");
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 
@@ -228,10 +218,8 @@ export default function Payment() {
         <div className="lg:col-span-2 space-y-6">
           {/* Address Section */}
           <AddressSection
-            addresses={addresses}
-            selectedAddressId={selectedAddressId}
-            onSelectAddress={setSelectedAddressId}
-            onAddAddress={handleAddAddress}
+            selectedAddress={selectedAddress}
+            onSelectAddress={setSelectedAddress}
           />
 
           {/* Cart Items */}

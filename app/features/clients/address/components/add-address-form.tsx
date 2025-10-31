@@ -1,27 +1,26 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import Select from "react-select";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Plus, Loader2 } from "lucide-react";
-import Select from "react-select";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
-import type { AddressFormData } from "../types/address";
-import type { Province } from "~/types/address/province";
-import type { Ward } from "~/types/address/ward";
-import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchProvinces } from "~/redux/slices/provinces";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { createAddress, getWardsByProvinceId } from "~/services/addresses";
-import { useQuery } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import type { Province } from "~/types/address/province";
+import type { AddressFormData } from "../types/address";
 
 const mergedSelectStyles = {
   ...reactSelectStyles,
@@ -36,17 +35,34 @@ const mergedSelectStyles = {
   }),
 };
 
-const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
+const AddAddressForm = ({
+  onAdded,
+  onCancel,
+  onOpen,
+  open: openProp,
+  setIsOpen: setIsOpenProp,
+  showAddButton = true,
+}: {
+  onAdded: () => void;
+  onCancel?: () => void;
+  onOpen?: () => void;
+  open?: boolean;
+  setIsOpen?: (open: boolean) => void;
+  showAddButton?: boolean;
+}) => {
   const dispatch = useAppDispatch();
   const { provinces } = useAppSelector((state) => state.provinces);
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const actualOpen = openProp ?? internalOpen;
+  const actualSetOpen = setIsOpenProp ?? setInternalOpen;
 
   useEffect(() => {
     if (provinces.length === 0) {
       dispatch(fetchProvinces());
     }
-  }, [dispatch]);
+  }, [dispatch, provinces.length]);
 
   const {
     register,
@@ -69,7 +85,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
   });
 
   useEffect(() => {
-    if (open) {
+    if (actualOpen) {
       reset({
         recipientName: "",
         phone: "",
@@ -79,9 +95,8 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
         isDefault: false,
       });
     }
-  }, [open, reset]);
+  }, [actualOpen, reset]);
 
-  // Use react-hook-form state instead of a separate local formData state
   const provinceId = watch("provinceId");
   const wardId = watch("wardId");
 
@@ -97,7 +112,13 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
     enabled: !!provinceId,
   });
 
-  const wardOptions = (wards.data ?? []).map((w: any) => ({
+  // normalize possible shapes returned by getWardsByProvinceId
+  // it may return an array or an object like { data: [...] } depending on service implementation
+  const wardsList: any[] = Array.isArray(wards)
+    ? wards
+    : (wards?.data ?? wards?.items ?? []);
+
+  const wardOptions = wardsList.map((w: any) => ({
     label: w.name,
     value: w.wardId ?? w.id,
   }));
@@ -112,7 +133,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
       await createAddress(1, data);
       toast.success("Thêm địa chỉ thành công!");
       onAdded();
-      setOpen(false);
+      actualSetOpen(false);
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -125,16 +146,22 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          // onClick={handleAdd}
-          className="ml-auto bg-[#3770EC] text-white cursor-pointer"
-        >
-          <Plus />
-          Thêm địa chỉ
-        </Button>
-      </DialogTrigger>
+    <Dialog open={actualOpen} onOpenChange={actualSetOpen}>
+      {showAddButton && (
+        <DialogTrigger asChild>
+          <Button
+            onClick={() => {
+              if (onOpen) onOpen();
+              actualSetOpen(true);
+            }}
+            className="ml-auto bg-[#3770EC] text-white cursor-pointer"
+          >
+            <Plus />
+            Thêm địa chỉ
+          </Button>
+        </DialogTrigger>
+      )}
+
       <DialogContent
         className="sm:max-w-[600px]"
         onOpenAutoFocus={(e) => e.preventDefault()}
@@ -192,7 +219,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                 )}
               </div>
             </div>
-            {/* Select combobox province and ward */}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Tỉnh/Thành phố</Label>
@@ -204,7 +231,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                     <Select
                       id="city"
                       name="city"
-                      isSearchable={true}
+                      isSearchable
                       options={provinceOptions}
                       value={
                         provinceOptions.find((p) => p.value === field.value) ||
@@ -212,14 +239,13 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                       }
                       onChange={(val) => {
                         field.onChange(val ? val.value : null);
-                        // clear ward selection when province changes
                         setValue("wardId", null);
                       }}
                       placeholder="Chọn Tỉnh/TP"
                       classNamePrefix="react-select"
                       styles={mergedSelectStyles}
-                      closeMenuOnSelect={true}
-                      blurInputOnSelect={true}
+                      closeMenuOnSelect
+                      blurInputOnSelect
                     />
                   )}
                 />
@@ -239,7 +265,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                     <Select
                       id="ward"
                       name="ward"
-                      isSearchable={true}
+                      isSearchable
                       isDisabled={!provinceId || wardsLoading}
                       options={wardOptions}
                       value={
@@ -260,7 +286,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                 )}
               </div>
             </div>
-            {/* Address */}
+
             <div className="space-y-2">
               <Label htmlFor="address">Địa chỉ cụ thể </Label>
               <Input
@@ -284,7 +310,7 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                 </p>
               )}
             </div>
-            {/* Checkbox set default address */}
+
             <div className="flex items-center gap-2 pt-2">
               <Input
                 id="isDefault"
@@ -299,13 +325,20 @@ const AddAddressForm = ({ onAdded }: { onAdded: () => void }) => {
                 Đặt làm địa chỉ mặc định
               </Label>
             </div>
+
             <DialogFooter className="pt-4">
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  if (onCancel) {
+                    onCancel();
+                  } else {
+                    actualSetOpen(false);
+                  }
+                }}
               >
-                Hủy
+                {onCancel ? "Trở về" : "Hủy"}
               </Button>
               <Button
                 type="submit"
