@@ -3,29 +3,17 @@ import { Edit, Trash2 } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Size } from "../types"; // Đảm bảo đường dẫn đúng với cấu trúc dự án của bạn
+import type { SizeDetailDto } from "../../../../types/product/size";
 
-export const getSizeColumns = (
-  handleEdit: (size: Size) => void,
-  handleDelete: (size: Size) => void
-): ColumnDef<Size>[] => [
-  {
-    accessorKey: "sizeId",
-    header: ({ column }) => (
-      <div className="w-[150px] text-center">
-        <SortableHeader column={column} title="Mã kích thước" />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="w-[120px] text-center">
-        <span className="font-mono text-sm">{row.original.sizeId}</span>
-      </div>
-    ),
-  },
+export const getColumns = (
+  handleEdit: (size: SizeDetailDto) => void,
+  handleDelete: (size: SizeDetailDto) => void
+): ColumnDef<SizeDetailDto>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => (
       <div className="w-[150px] text-center">
-        <SortableHeader column={column} title="Tên kích thước" />
+        <div className="text-center font-medium w-full">Tên kích thước</div>
       </div>
     ),
     cell: ({ row }) => (
@@ -35,10 +23,36 @@ export const getSizeColumns = (
     ),
   },
   {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <div className="w-[150px] text-center">
+        <SortableHeader column={column} title="Ngày tạo" />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="w-[130px] text-center">
+        {new Date(row.original.createdAt).toLocaleDateString("en-GB")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }) => (
+      <div className="w-[150px] text-center">
+        <SortableHeader column={column} title="Ngày cập nhật" />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="w-[150px] text-center">
+        {new Date(row.original.updatedAt).toLocaleDateString("en-GB")}
+      </div>
+    ),
+  },
+  {
     accessorKey: "status",
     header: ({ column }) => (
       <div className="w-[130px] text-center">
-        <SortableHeader column={column} title="Trạng thái" />
+        <div className="text-center font-medium w-full">Trạng thái</div>
       </div>
     ),
     // ✅ Sửa tại đây
@@ -69,7 +83,7 @@ export const getSizeColumns = (
     id: "actions",
     header: ({ column }) => (
       <div className="w-[180px] text-center">
-        <SortableHeader column={column} title="Thao tác" />
+        <div className="text-center font-medium w-full">Thao tác</div>
       </div>
     ),
     cell: ({ row }) => (
@@ -83,15 +97,17 @@ export const getSizeColumns = (
         >
           <Edit className="h-4 w-4 text-green-600" />
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleDelete(row.original)}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          title="Xóa"
-        >
-          <Trash2 className="h-4 w-4 text-red-600" />
-        </Button>
+        {row.original.status.name === "Inactive" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(row.original)}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            title="Xóa"
+          >
+            <Trash2 className="h-4 w-4 text-red-600" />
+          </Button>
+        )}
       </div>
     ),
   },

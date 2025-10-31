@@ -191,7 +191,7 @@ export default function AdminLoginPage() {
 
             <Button
               type="submit"
-              variant="add"
+              variant="primary"
               className="w-full"
               disabled={isLoading}
             >

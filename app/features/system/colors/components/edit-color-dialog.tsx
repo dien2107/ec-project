@@ -1,116 +1,304 @@
-import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import type { Color, UpdateColorData } from "../types";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import Select from "react-select";
+import toast from "react-hot-toast";
+import { Loader2, Save } from "lucide-react";
 
-interface EditColorDialogProps {
+import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { reactSelectStyles } from "~/components/ui/react-select-styles";
+import { updateColor } from "~/services/colors";
+import type { ColorDetailDto } from "~/types/product/color";
+
+// 🧩 Redux imports
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchStatuses } from "~/redux/slices/statuses";
+
+type ColorForm = {
+  name: string;
+  displayName: string;
+  hexCode: string;
+  statusId: number | null;
+};
+
+export default function EditColorDialog({
+  open,
+  setIsOpen,
+  selectedColor,
+  onUpdated,
+}: {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  color: Color | null;
-  onSave: (color: Color) => void;
-}
+  selectedColor: ColorDetailDto | null;
+  onUpdated: () => void;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
 
-export default function EditColorDialog({ open, setIsOpen, color, onSave }: EditColorDialogProps) {
-  const [form, setForm] = useState<UpdateColorData>({
-    id: "",
-    name: "",
-    hexCode: "",
-    description: "",
-    status: "active",
+  // 🧠 Lấy danh sách trạng thái từ Redux
+  const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
+    (state) => state.statuses
+  );
+
+  // 🧩 Gọi API khi mở dialog
+  useEffect(() => {
+    if (open) {
+      dispatch(fetchStatuses({ entityType: "Color" }));
+    }
+  }, [open, dispatch]);
+
+  const defaultValues: ColorForm = {
+    name: selectedColor?.name ?? "",
+    displayName: selectedColor?.displayName ?? "",
+    hexCode: selectedColor?.hexCode ?? "#000000",
+    statusId: selectedColor?.status?.statusId ?? null,
+  };
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors },
+    trigger,
+    watch,
+    setValue,
+  } = useForm<ColorForm>({
+    defaultValues,
   });
 
+  // 🧠 Khi mở dialog hoặc đổi selectedColor => set lại form
   useEffect(() => {
-    if (open && color) {
-      setForm(color);
+    if (open && selectedColor) {
+      reset({
+        name: selectedColor.name,
+        displayName: selectedColor.displayName,
+        hexCode: selectedColor.hexCode,
+        statusId: selectedColor.status?.statusId ?? null,
+      });
     }
-  }, [open, color]);
+  }, [open, selectedColor, reset]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.name && form.hexCode) {
-      onSave(form as Color);
+  const handleSubmitClick = async (data: ColorForm) => {
+    try {
+      setIsLoading(true);
+      const isValid = await trigger();
+      if (!isValid) return;
+
+      const updateData = {
+        name: data.name,
+        displayName: data.displayName,
+        hexCode: data.hexCode,
+        statusId: data.statusId,
+      };
+
+      console.log("Updating color with data:", updateData);
+      const res = await updateColor(selectedColor!.colorId, updateData);
+
+      if (res?.isSuccess) {
+        toast.success("Cập nhật màu sắc thành công!");
+        onUpdated();
+        setIsOpen(false);
+      } else {
+        toast.error(res?.message || "Không thể cập nhật màu sắc!");
+      }
+    } catch (error: any) {
+      console.error("Error updating color:", error);
+      const message =
+        error?.response?.data?.message || "Có lỗi xảy ra khi cập nhật màu sắc!";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // 🧩 Tạo danh sách options từ Redux
+  const statuses =
+    statusesData["Color"]?.map((s) => ({
+      value: s.statusId,
+      label:
+        s.name === "Active"
+          ? "Hoạt động"
+          : s.name === "Inactive"
+            ? "Không hoạt động"
+            : s.name, // fallback nếu có status khác
+    })) ?? [];
+
+  const hexValue = watch("hexCode");
+
   return (
     <Dialog open={open} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="min-w-[600px] max-h-[90vh] flex flex-col justify-start">
         <DialogHeader>
-          <DialogTitle>Sửa màu sắc</DialogTitle>
-          <DialogDescription>
-            Cập nhật thông tin màu sắc
-          </DialogDescription>
+          <DialogTitle>Cập nhật màu sắc</DialogTitle>
+          <DialogDescription>Cập nhật thông tin màu sắc</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Tên màu</Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="Nhập tên màu"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hexCode">Mã màu</Label>
-              <div className="flex gap-2">
+
+        <form
+          onSubmit={handleSubmit(handleSubmitClick)}
+          className="flex flex-col gap-4 py-4"
+        >
+          {/* Tên màu */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">
+              Tên màu sắc
+            </label>
+            <Input
+              type="text"
+              placeholder="Nhập tên màu sắc"
+              disabled={isLoading}
+              {...register("name", {
+                required: "Vui lòng nhập tên màu sắc",
+                maxLength: {
+                  value: 50,
+                  message: "Tên màu sắc không được vượt quá 50 ký tự",
+                },
+              })}
+            />
+            {errors.name && (
+              <span className="text-red-500 text-xs">
+                {errors.name.message}
+              </span>
+            )}
+          </div>
+
+          {/* Tên hiển thị */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">
+              Tên hiển thị
+            </label>
+            <Input
+              type="text"
+              placeholder="Nhập tên hiển thị"
+              disabled={isLoading}
+              {...register("displayName", {
+                required: "Vui lòng nhập tên hiển thị",
+                maxLength: {
+                  value: 50,
+                  message: "Tên hiển thị không được vượt quá 50 ký tự",
+                },
+              })}
+            />
+            {errors.displayName && (
+              <span className="text-red-500 text-xs">
+                {errors.displayName.message}
+              </span>
+            )}
+          </div>
+
+          {/* Hàng Mã màu + Trạng thái */}
+          <div className="flex gap-4">
+            {/* Cột Mã màu */}
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-1 block">
+                Mã màu (Hex)
+              </label>
+              <div className="flex items-center gap-3">
+                {/* Ô chọn màu */}
                 <input
                   type="color"
-                  className="w-12 h-10 border border-input rounded-md cursor-pointer"
-                  value={form.hexCode || "#000000"}
-                  onChange={e => setForm({ ...form, hexCode: e.target.value })}
+                  className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                  value={hexValue}
+                  onChange={(e) => setValue("hexCode", e.target.value)}
+                  disabled={isLoading}
                 />
-                <Input
-                  id="hexCode"
-                  className="flex-1 font-mono text-sm"
-                  value={form.hexCode}
-                  onChange={e => setForm({ ...form, hexCode: e.target.value })}
-                  placeholder="#000000"
-                  pattern="^#[0-9A-Fa-f]{6}$"
-                  required
-                />
+
+                {/* Ô nhập mã hex */}
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    placeholder="#RRGGBB"
+                    disabled={isLoading}
+                    {...register("hexCode", {
+                      required: "Vui lòng nhập mã màu hex",
+                      pattern: {
+                        value: /^#[0-9A-Fa-f]{6}$/,
+                        message: "Mã màu phải ở dạng #RRGGBB",
+                      },
+                    })}
+                  />
+                  {errors.hexCode && (
+                    <span className="text-red-500 text-xs">
+                      {errors.hexCode.message}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
-            <Textarea
-              id="description"
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-              placeholder="Nhập mô tả màu sắc"
-              rows={3}
-            />
+
+            {/* Cột Trạng thái */}
+            <div className="w-[180px]">
+              <label className="text-sm font-medium mb-1 block">
+                Trạng thái
+              </label>
+              <Controller
+                name="statusId"
+                control={control}
+                rules={{ required: "Vui lòng chọn trạng thái" }}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Select
+                      {...field}
+                      options={statuses}
+                      placeholder={
+                        isStatusesLoading ? "Đang tải..." : "Chọn trạng thái"
+                      }
+                      isSearchable={false}
+                      styles={reactSelectStyles}
+                      onChange={(option) =>
+                        field.onChange(option?.value ?? null)
+                      }
+                      value={
+                        statuses.find((opt) => opt.value === field.value) ||
+                        null
+                      }
+                      isDisabled={isLoading || isStatusesLoading}
+                    />
+                    {fieldState.error && (
+                      <span className="text-red-500 text-xs">
+                        {fieldState.error.message}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select value={form.status} onValueChange={(value: "active" | "inactive") => setForm({ ...form, status: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Hoạt động</SelectItem>
-                <SelectItem value="inactive">Ngưng hoạt động</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
-              Hủy
+          {/* Footer */}
+          <DialogFooter className="mt-4">
+            {!isLoading && (
+              <DialogClose asChild>
+                <Button variant="outline">Hủy</Button>
+              </DialogClose>
+            )}
+            <Button
+              type="submit"
+              className="bg-[#3770EC] text-white flex items-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  Đang cập nhật...
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  Lưu thay đổi
+                </>
+              )}
             </Button>
-            <Button type="submit">
-              Lưu thay đổi
-            </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
