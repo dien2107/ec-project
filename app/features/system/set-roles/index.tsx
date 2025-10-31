@@ -24,15 +24,12 @@ export default function UserPermissionSystem() {
     (state: any) =>
       state.customerList ?? { customerList: null, isLoading: false }
   );
-  const { statuses, isLoading: isStatusesLoading } = useAppSelector(
-    (state: any) => state.statuses ?? { statuses: null, isLoading: false }
-  );
 
-  const userStatuses = useMemo(() => {
-    if (Array.isArray(statuses)) return statuses;
-    if (Array.isArray(statuses?.data)) return statuses.data;
-    return [];
-  }, [statuses]);
+  
+  const userStatuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.USER] ?? []
+  );
+  const isStatusesLoading = useAppSelector((state) => state.statuses.isLoading);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<{
@@ -43,7 +40,7 @@ export default function UserPermissionSystem() {
   const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // memoized reload so effect / modal can call without duplicate dispatches
+  
   const reloadList = useCallback(
     (override?: { PageNumber?: number }) => {
       dispatch(

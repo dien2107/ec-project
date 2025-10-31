@@ -108,15 +108,17 @@ const CustomerFilter: React.FC<Props> = ({
         className="border rounded-lg px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-     <Select
-        value={statusName ?? undefined}
-        onValueChange={(value) => setStatusName(value || undefined)}
+      <Select
+        value={statusName || "all"}
+        onValueChange={(value) =>
+          setStatusName(value === "all" ? undefined : value)
+        }
       >
         <SelectTrigger className="w-48">
           <SelectValue placeholder="Tất cả trạng thái" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={undefined as any}>Tất cả trạng thái</SelectItem>
+          <SelectItem value="all">Tất cả trạng thái</SelectItem>
           {statuses.map((s) => (
             <SelectItem key={s.statusId} value={s.name}>
               {s.displayName ?? s.name}

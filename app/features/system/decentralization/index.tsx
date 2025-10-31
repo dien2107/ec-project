@@ -21,7 +21,6 @@ import {
 } from "~/services/roles";
 import toast, { Toaster } from "react-hot-toast";
 
-// Types từ backend
 type Permission = {
   permissionId: number;
   permissionName: string;
@@ -46,7 +45,6 @@ export type RoleList = {
   permissionIds: number[];
 };
 
-// Modal Component
 const Modal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -62,7 +60,6 @@ const Modal: React.FC<{
   );
 };
 
-// Add/Edit Group Modal
 const GroupModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -193,7 +190,6 @@ const GroupModal: React.FC<{
   );
 };
 
-// Delete Confirmation Modal
 const DeleteConfirmModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -241,7 +237,6 @@ const DeleteConfirmModal: React.FC<{
   );
 };
 
-// Checkbox component
 const CustomCheckbox: React.FC<{
   checked: boolean;
   onCheckedChange: () => void;
@@ -276,7 +271,6 @@ const CustomCheckbox: React.FC<{
 const PermissionManagement: React.FC = () => {
   const dispatch = useAppDispatch();
 
-  // Lấy dữ liệu từ redux store
   const { permissionList, isLoading: isPermissionLoading } = useAppSelector(
     (state) => state.permissionList
   );
@@ -284,7 +278,6 @@ const PermissionManagement: React.FC = () => {
     (state) => state.roleList
   );
 
-  // State cho nhóm quyền đang chọn
   const [activeRoleId, setActiveRoleId] = useState<number | null>(null);
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<number[]>(
     []
@@ -293,14 +286,12 @@ const PermissionManagement: React.FC = () => {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [loadingPermissions, setLoadingPermissions] = useState(false);
 
-  // Chọn nhóm quyền đầu tiên khi có dữ liệu
   useEffect(() => {
     if (!activeRoleId && roleList?.data?.length > 0) {
       setActiveRoleId(roleList.data[0].roleId);
     }
   }, [roleList, activeRoleId]);
 
-  // Khi đổi nhóm quyền, cập nhật permissionIds tạm
   useEffect(() => {
     const activeRole = roleList?.data?.find(
       (r: RoleList) => r.roleId === activeRoleId
@@ -308,24 +299,20 @@ const PermissionManagement: React.FC = () => {
     setSelectedPermissionIds(activeRole?.permissionIds ?? []);
   }, [activeRoleId, roleList]);
 
-  // Call API lấy danh sách quyền và nhóm quyền khi mount
   useEffect(() => {
     dispatch(fetchPermissionListData());
     dispatch(fetchRoleListData({}));
   }, [dispatch]);
 
-  // Lấy nhóm quyền đang chọn
   const activeRole = roleList?.data?.find(
     (r: RoleList) => r.roleId === activeRoleId
   );
 
-  // Modal states
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedGroup, setSelectedGroup] = useState<RoleList | null>(null);
 
-  // Group management functions
   const handleAddGroup = () => {
     setModalMode("add");
     setSelectedGroup(null);
@@ -343,7 +330,6 @@ const PermissionManagement: React.FC = () => {
     setShowDeleteModal(true);
   };
 
-  // Tạo hoặc cập nhật nhóm quyền
   const handleSaveGroup = async (groupData: Partial<RoleList>) => {
     if (loadingGroup) return;
     setLoadingGroup(true);
@@ -372,7 +358,6 @@ const PermissionManagement: React.FC = () => {
     }
   };
 
-  // Xóa nhóm quyền
   const handleConfirmDelete = async () => {
     if (!selectedGroup || loadingDelete) return;
     setLoadingDelete(true);
@@ -391,7 +376,6 @@ const PermissionManagement: React.FC = () => {
     }
   };
 
-  // Chỉ cập nhật state tạm khi tích/bỏ tích checkbox
   const handleTogglePermission = (permId: number) => {
     setSelectedPermissionIds((prev) =>
       prev.includes(permId)
@@ -400,7 +384,6 @@ const PermissionManagement: React.FC = () => {
     );
   };
 
-  // Khi nhấn nút lưu, mới gọi API cập nhật quyền cho nhóm
   const handleSavePermissions = async () => {
     if (!activeRoleId || loadingPermissions) return;
     setLoadingPermissions(true);
@@ -419,7 +402,6 @@ const PermissionManagement: React.FC = () => {
     }
   };
 
-  // Permission Table
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set([0]));
   const toggleExpand = (rowIndex: number) => {
     setExpandedRows((prev) => {
@@ -433,7 +415,6 @@ const PermissionManagement: React.FC = () => {
     });
   };
 
-  // PermissionRow Component
   const PermissionRow: React.FC<{
     resource: PermissionList;
     index: number;
