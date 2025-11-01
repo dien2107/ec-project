@@ -11,36 +11,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { deleteColor } from "~/services/colors";
-import type { ColorDetailDto } from "../../../../types/product/color";
+import { deleteCategory } from "~/services/categories"; // ⚡ Import API service
+import type { CategoryDetailDto } from "~/types/product/category";
 
-interface DeleteColorDialogProps {
+interface DeleteCategoryDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  selectedColor: ColorDetailDto;
-  onDelete: () => void; // ✅ Đổi từ onDeleted thành onDelete
+  selectedCategory: CategoryDetailDto;
+  onDelete: () => void; // callback reload list sau khi xóa
 }
 
-export default function DeleteColorDialog({
+export default function DeleteCategoryDialog({
   open,
   setIsOpen,
-  selectedColor,
-  onDelete, // ✅ Đổi từ onDeleted thành onDelete
-}: DeleteColorDialogProps) {
+  selectedCategory,
+  onDelete,
+}: DeleteCategoryDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteColor(selectedColor.colorId);
-      toast.success("Xóa màu sắc thành công!");
-      onDelete(); // ✅ Gọi prop onDelete
+      await deleteCategory(selectedCategory.categoryId); // ⚡ Gọi API xóa
+      toast.success("Xóa danh mục thành công!");
+      onDelete(); // Reload list
       setIsOpen(false);
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Có lỗi xảy ra khi xóa màu sắc!");
+        toast.error("Có lỗi xảy ra khi xóa danh mục!");
       }
     } finally {
       setIsLoading(false);
@@ -52,25 +52,25 @@ export default function DeleteColorDialog({
       <AlertDialogContent className="p-6 rounded-lg shadow-md bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl font-semibold text-gray-800">
-            Xác nhận xóa màu sắc
+            Xác nhận xóa danh mục
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-600 mt-2">
-            Bạn có chắc chắn muốn xóa màu{" "}
-            <span className="font-mono font-bold text-gray-900">
-              {selectedColor.displayName}
+            Bạn có chắc chắn muốn xóa danh mục{" "}
+            <span className="font-semibold text-gray-900">
+              {selectedCategory.name}
             </span>{" "}
-            (Mã màu:{" "}
-            <span className="font-mono font-bold text-gray-500">
-              {selectedColor.hexCode}
+            (Mã danh mục:{" "}
+            <span className="font-mono text-gray-500">
+              {selectedCategory.categoryId}
             </span>
             )? Hành động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          <strong>Cảnh báo:</strong> Việc xóa chất liệu này có thể ảnh hưởng đến
-          các sản phẩm đang sử dụng nó. Hãy chắc chắn rằng không có sản phẩm nào
-          đang dùng trước khi xóa.
+          <strong>Cảnh báo:</strong> Việc xóa thể loại này có thể ảnh hưởng đến
+          các sản phẩm đang sử dụng nó Hoặc ảnh hưởng đến các thể loại con. Hãy
+          chắc chắn rằng không có sản phẩm nào đang dùng trước khi xóa.
         </div>
 
         <AlertDialogFooter className="flex justify-between mt-4">
@@ -78,9 +78,9 @@ export default function DeleteColorDialog({
             Hủy
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-[#EF4444] text-white flex items-center gap-2 px-4 py-2 rounded hover:bg-red-600 transition duration-200"
             onClick={handleDelete}
             disabled={isLoading}
+            className="bg-[#EF4444] text-white flex items-center gap-2 px-4 py-2 rounded hover:bg-red-600 transition duration-200"
           >
             {isLoading ? (
               <>
@@ -88,7 +88,7 @@ export default function DeleteColorDialog({
                 Đang xóa...
               </>
             ) : (
-              <>Xóa</>
+              <>Xóa danh mục</>
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { createMaterial } from "~/services/materials";
 import toast from "react-hot-toast";
 import { Plus, Loader2 } from "lucide-react";
 
@@ -16,18 +15,19 @@ import {
   DialogDescription,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
+import { createProductGroup } from "~/services/product-groups";
 
-interface AddMaterialDialogProps {
+interface AddProductGroupDialogProps {
   onAdded: () => void;
 }
 
-type MaterialForm = {
+type ProductGroupForm = {
   name: string;
-  description: string;
 };
 
-export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
+export default function AddProductGroupDialog({
+  onAdded,
+}: AddProductGroupDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,10 +36,9 @@ export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<MaterialForm>({
+  } = useForm<ProductGroupForm>({
     defaultValues: {
       name: "",
-      description: "",
     },
   });
 
@@ -47,30 +46,29 @@ export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
     if (open) reset();
   }, [open, reset]);
 
-  const handleSubmitClick = async (data: MaterialForm) => {
+  const handleSubmitClick = async (data: ProductGroupForm) => {
     try {
       setIsLoading(true);
 
       const formData = new FormData();
       formData.append("name", data.name.trim());
-      formData.append("description", data.description.trim() || "");
 
-      const res = await createMaterial(formData);
+      const res = await createProductGroup(formData);
       console.log("API res:", res);
 
       if (res?.isSuccess) {
-        toast.success(res?.message || "Thêm chất liệu thành công!");
+        toast.success(res?.message || "Thêm nhóm sản phẩm thành công!");
         onAdded?.();
         setOpen(false);
       } else {
-        toast.error(res?.message || "Không thể thêm chất liệu!");
+        toast.error(res?.message || "Không thể thêm nhóm sản phẩm!");
       }
     } catch (error: any) {
-      console.error("Error creating material:", error);
+      console.error("Error creating product group:", error);
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.errors?.[0] ||
-        "Có lỗi xảy ra khi thêm chất liệu!";
+        "Có lỗi xảy ra khi thêm nhóm sản phẩm!";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -82,15 +80,15 @@ export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
       <DialogTrigger asChild>
         <Button className="ml-auto bg-[#3770EC] text-white cursor-pointer">
           <Plus />
-          Thêm chất liệu
+          Thêm nhóm sản phẩm
         </Button>
       </DialogTrigger>
 
       <DialogContent className="min-w-[480px] max-h-[90vh] flex flex-col justify-start">
         <DialogHeader>
-          <DialogTitle>Thêm chất liệu</DialogTitle>
+          <DialogTitle>Thêm nhóm sản phẩm</DialogTitle>
           <DialogDescription>
-            Nhập tên chất liệu mới để thêm vào hệ thống
+            Nhập tên nhóm sản phẩm mới để thêm vào hệ thống
           </DialogDescription>
         </DialogHeader>
 
@@ -98,18 +96,18 @@ export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
           onSubmit={handleSubmit(handleSubmitClick)}
           className="flex flex-col gap-4 py-1"
         >
-          {/* Tên chất liệu */}
+          {/* Tên nhóm sản phẩm */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Tên chất liệu</label>
+            <label className="text-sm font-medium">Tên nhóm sản phẩm</label>
             <Input
               type="text"
-              placeholder="VD: Cotton, Lụa, Denim..."
+              placeholder="VD: Áo thun, quần jeans..."
               disabled={isLoading}
               {...register("name", {
-                required: "Vui lòng nhập tên chất liệu",
+                required: "Vui lòng nhập tên nhóm sản phẩm",
                 maxLength: {
-                  value: 100,
-                  message: "Tên chất liệu không được vượt quá 100 ký tự",
+                  value: 50,
+                  message: "Tên nhóm sản phẩm không được vượt quá 50 ký tự",
                 },
               })}
             />
@@ -118,17 +116,6 @@ export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
                 {errors.name.message}
               </span>
             )}
-          </div>
-
-          {/* Mô tả */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Mô tả</label>
-            <Textarea
-              placeholder="Mô tả ngắn gọn về chất liệu (tuỳ chọn)"
-              rows={2}
-              disabled={isLoading}
-              {...register("description")}
-            />
           </div>
 
           {/* Footer buttons */}
@@ -151,7 +138,7 @@ export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
               ) : (
                 <>
                   <Plus />
-                  Thêm chất liệu
+                  Thêm nhóm sản phẩm
                 </>
               )}
             </Button>

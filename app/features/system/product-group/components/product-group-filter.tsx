@@ -18,7 +18,7 @@ type Props = {
   setFilters: (updater: (prev: FilterValues) => FilterValues) => void;
 };
 
-const ColorFilter: React.FC<Props> = ({ filters, setFilters }) => {
+const ProductGroupFilter: React.FC<Props> = ({ filters, setFilters }) => {
   const dispatch = useAppDispatch();
 
   // Get status list from Redux
@@ -28,12 +28,12 @@ const ColorFilter: React.FC<Props> = ({ filters, setFilters }) => {
 
   // Fetch statuses for the specific entity type when the component mounts
   React.useEffect(() => {
-    dispatch(fetchStatuses({ entityType: "Color" }));
+    dispatch(fetchStatuses({ entityType: "ProductGroup" }));
   }, [dispatch]);
 
   // Create status options dynamically based on entity type
   const statuses =
-    statusesData["Color"]?.map((s) => ({
+    statusesData["ProductGroup"]?.map((s) => ({
       value: s.name, // Use the name for filtering
       label: s.displayName || s.name, // Use the displayName if available, otherwise fallback to name
     })) ?? [];
@@ -84,7 +84,7 @@ const ColorFilter: React.FC<Props> = ({ filters, setFilters }) => {
         <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
         <Input
           type="text"
-          placeholder="Tìm màu sắc..."
+          placeholder="Tìm nhóm sản phẩm..."
           value={searchInput}
           onChange={handleSearchChange}
           className="w-60"
@@ -95,7 +95,7 @@ const ColorFilter: React.FC<Props> = ({ filters, setFilters }) => {
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Trạng thái</label>
         <Select
-          instanceId="color-status-filter"
+          instanceId="product-group-status-filter"
           placeholder="Tất cả trạng thái"
           options={statusOptions} // Use the combined options
           value={
@@ -122,4 +122,4 @@ const ColorFilter: React.FC<Props> = ({ filters, setFilters }) => {
   );
 };
 
-export default ColorFilter;
+export default ProductGroupFilter;

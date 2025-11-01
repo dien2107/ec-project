@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
-import type { Color } from "~/features/system/colors/types";
+import type { Color } from "../../types/product/color";
 import type { ApiPagedResponse } from "~/types/api-response";
 
 // State định nghĩa dữ liệu và trạng thái tải

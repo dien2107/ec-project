@@ -11,18 +11,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { deleteSize } from "~/services/sizes";
-import type { SizeDetailDto } from "~/types/product/size";
+import { deleteProductGroup } from "~/services/product-groups";
+import type { ProductGroupDetailDto } from "~/types/product/product-group";
 
-export default function DeleteSizeDialog({
+export default function DeleteProductGroupDialog({
   open,
   setIsOpen,
-  selectedSize,
+  selectedItem,
   onDeleted,
 }: {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  selectedSize: SizeDetailDto;
+  selectedItem: ProductGroupDetailDto;
   onDeleted: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,15 +30,15 @@ export default function DeleteSizeDialog({
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteSize(selectedSize.sizeId);
-      toast.success("Xóa kích thước thành công!");
+      await deleteProductGroup(selectedItem.productGroupId);
+      toast.success("Xóa nhóm sản phẩm thành công!");
       onDeleted();
       setIsOpen(false);
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Có lỗi xảy ra khi xóa kích thước!");
+        toast.error("Có lỗi xảy ra khi xóa nhóm sản phẩm!");
       }
     } finally {
       setIsLoading(false);
@@ -49,17 +49,17 @@ export default function DeleteSizeDialog({
     <AlertDialog open={open} onOpenChange={setIsOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xác nhận xóa kích thước</AlertDialogTitle>
+          <AlertDialogTitle>Xác nhận xóa nhóm sản phẩm</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa kích thước{" "}
-            <strong>{selectedSize.name}</strong>? Hành động này không thể hoàn
+            Bạn có chắc chắn muốn xóa nhóm sản phẩm{" "}
+            <strong>{selectedItem.name}</strong>? Hành động này không thể hoàn
             tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          <strong>Cảnh báo:</strong> Việc xóa chất liệu này có thể ảnh hưởng đến
-          các biến thể sản phẩm đang sử dụng nó. Hãy chắc chắn rằng không có sản
-          phẩm nào đang dùng trước khi xóa.
+          <strong>Cảnh báo:</strong> Việc xóa nhóm sản phẩm này có thể ảnh hưởng
+          đến các sản phẩm đang sử dụng nó. Hãy chắc chắn rằng không có sản phẩm
+          nào đang dùng trước khi xóa.
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Hủy</AlertDialogCancel>
