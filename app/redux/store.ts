@@ -19,6 +19,7 @@ import discountReducer from "./slices/discount";
 import sizeReducer from "./slices/sizes";
 import CategoryReducer from "./slices/categories";
 import materialReducer from "./slices/materials";
+import productGroupListDataReducer from "./slices/product-groups";
 import homePageReducer from "./slices/home-page";
 
 import permissionListDataReducer from "./slices/permissions";
@@ -55,6 +56,7 @@ export const store = configureStore({
     sizeList: sizeReducer,
     categoryList: CategoryReducer,
     materialList: materialReducer,
+    productGroupList: productGroupListDataReducer,
     homePage: homePageReducer,
   },
   middleware: (getDefaultMiddleware) =>

@@ -1,45 +1,44 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
-import { fetchDiscountListData } from "~/redux/slices/discount";
 import { fetchStatuses } from "~/redux/slices/statuses";
-
-import type { Discount } from "./types";
 import DataTable from "../components/data-table";
-import { getColumns } from "./columns/promotion";
+import { getColumns } from "./columns/product-group";
+import AddProductGroupDialog from "./components/add-product-group-dialog";
+import EditProductGroupDialog from "./components/edit-product-group-dialog";
+import DeleteProductGroupDialog from "./components/delete-product-group-dialog";
+import ProductGroupFilter from "./components/product-group-filter";
+import type { ProductGroupDetailDto } from "../../../types/product/product-group";
+import { fetchProductGroupListData } from "~/redux/slices/product-groups"; // ✅ slice giả định
 
-import AddDiscountDialog from "./components/add-promotion-dialog";
-import EditDiscountDialog from "./components/edit-promotion-dialog";
-import DeleteDiscountDialog from "./components/delete-promotion-dialog";
-import DiscountFilter from "./components/promotion-filter";
-
-export default function DiscountManagement() {
+export default function ProductGroupManagement() {
   const dispatch = useAppDispatch();
-  const { discountList, isLoading: isDiscountLoading } = useAppSelector(
-    (state: any) => state.discountList
+
+  // Lấy dữ liệu từ redux store
+  const { productGroupList, isLoading } = useAppSelector(
+    (state: any) => state.productGroupList
   );
 
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     Search: "",
     StatusName: "",
   });
 
-  const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(
-    null
-  );
+  const [selectedItem, setSelectedItem] =
+    useState<ProductGroupDetailDto | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   // ✅ Lấy danh sách trạng thái khi khởi động
   useEffect(() => {
-    dispatch(fetchStatuses({ entityType: "Discount" }));
+    dispatch(fetchStatuses({ entityType: "ProductGroup" }));
   }, [dispatch]);
 
   // ✅ Gọi API load danh sách khi filter hoặc phân trang thay đổi
   useEffect(() => {
     dispatch(
-      fetchDiscountListData({
+      fetchProductGroupListData({
         PageNumber: currentPage,
         PageSize: PAGE_SIZE,
         Search: filters.Search || undefined,
@@ -48,18 +47,19 @@ export default function DiscountManagement() {
     );
   }, [dispatch, currentPage, filters]);
 
-  // ✅ Xử lý sự kiện CRUD
-  const handleEdit = useCallback((discount: Discount) => {
-    setSelectedDiscount(discount);
+  // ✅ Xử lý mở dialog sửa
+  const handleEdit = useCallback((item: ProductGroupDetailDto) => {
+    setSelectedItem(item);
     setIsEditOpen(true);
   }, []);
 
-  const handleDelete = useCallback((discount: Discount) => {
-    setSelectedDiscount(discount);
+  // ✅ Xử lý mở dialog xóa
+  const handleDelete = useCallback((item: ProductGroupDetailDto) => {
+    setSelectedItem(item);
     setIsDeleteOpen(true);
   }, []);
 
-  // ✅ Xử lý thay đổi filter
+  // ✅ Cập nhật filter
   const handleFilterChange = useCallback(
     (updater: (prev: typeof filters) => typeof filters) => {
       setFilters(updater);
@@ -71,7 +71,7 @@ export default function DiscountManagement() {
   // ✅ Reload danh sách sau khi CRUD
   const handleReload = useCallback(() => {
     dispatch(
-      fetchDiscountListData({
+      fetchProductGroupListData({
         PageNumber: currentPage,
         PageSize: PAGE_SIZE,
         Search: filters.Search || undefined,
@@ -80,24 +80,26 @@ export default function DiscountManagement() {
     );
   }, [dispatch, currentPage, filters]);
 
+  // ✅ Cột bảng
   const columns = useMemo(
     () => getColumns(handleEdit, handleDelete),
     [handleEdit, handleDelete]
   );
 
-  const data = discountList?.data?.items ?? [];
+  // ✅ Dữ liệu hiển thị
+  const data = productGroupList?.data?.items ?? [];
 
   return (
     <div className="container">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-bold">Quản lý khuyến mãi</h3>
-        <AddDiscountDialog onAdded={handleReload} />
+        <h3 className="text-2xl font-bold">Quản lý nhóm sản phẩm</h3>
+        <AddProductGroupDialog onAdded={handleReload} />
       </div>
 
       {/* Filter */}
       <div className="flex items-center justify-between mb-4">
-        <DiscountFilter filters={filters} setFilters={handleFilterChange} />
+        <ProductGroupFilter filters={filters} setFilters={handleFilterChange} />
       </div>
 
       {/* Bảng dữ liệu */}
@@ -105,26 +107,25 @@ export default function DiscountManagement() {
         columns={columns}
         data={data}
         currentPage={currentPage}
-        totalPages={discountList?.data?.totalPages ?? 1}
+        totalPages={productGroupList?.data?.totalPages ?? 1}
         onPageChange={setCurrentPage}
-        isLoading={isDiscountLoading}
+        isLoading={isLoading}
       />
 
       {/* Dialogs */}
-      {selectedDiscount && (
-        <EditDiscountDialog
+      {selectedItem && (
+        <EditProductGroupDialog
           open={isEditOpen}
           setIsOpen={setIsEditOpen}
-          discount={selectedDiscount}
+          selectedItem={selectedItem}
           onUpdated={handleReload}
         />
       )}
-
-      {selectedDiscount && (
-        <DeleteDiscountDialog
+      {selectedItem && (
+        <DeleteProductGroupDialog
           open={isDeleteOpen}
           setIsOpen={setIsDeleteOpen}
-          selectedDiscount={selectedDiscount}
+          selectedItem={selectedItem}
           onDeleted={handleReload}
         />
       )}

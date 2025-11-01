@@ -15,31 +15,27 @@ import {
   DialogDescription,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
+import { updateProductGroup } from "~/services/product-groups";
+import type { ProductGroupDetailDto } from "../../../../types/product/product-group";
 
 // 🧩 Redux imports
 import { useAppSelector } from "~/redux/store";
 
-// 🧩 Service
-import { updateMaterial } from "~/services/materials";
-import type { MaterialDetailDto } from "~/types/product/material";
-
-type MaterialForm = {
+type ProductGroupForm = {
   name: string;
-  description: string;
   statusId: number | null;
 };
 
-export default function EditMaterialDialog({
+export default function EditProductGroupDialog({
   open,
   setIsOpen,
-  selectedMaterial,
+  selectedItem,
   onUpdated,
 }: {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  selectedMaterial: MaterialDetailDto | null;
+  selectedItem: ProductGroupDetailDto | null;
   onUpdated: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -49,10 +45,9 @@ export default function EditMaterialDialog({
     (state) => state.statuses
   );
 
-  const defaultValues: MaterialForm = {
-    name: selectedMaterial?.name ?? "",
-    description: selectedMaterial?.description ?? "",
-    statusId: selectedMaterial?.status?.statusId ?? null,
+  const defaultValues: ProductGroupForm = {
+    name: selectedItem?.name ?? "",
+    statusId: selectedItem?.status?.statusId ?? null,
   };
 
   const {
@@ -62,20 +57,19 @@ export default function EditMaterialDialog({
     control,
     formState: { errors },
     trigger,
-  } = useForm<MaterialForm>({ defaultValues });
+  } = useForm<ProductGroupForm>({ defaultValues });
 
-  // 🧠 Reset form khi mở dialog hoặc thay đổi selectedMaterial
+  // 🧠 Reset form khi mở dialog hoặc thay đổi selectedItem
   useEffect(() => {
-    if (open && selectedMaterial) {
+    if (open && selectedItem) {
       reset({
-        name: selectedMaterial.name,
-        description: selectedMaterial.description ?? "",
-        statusId: selectedMaterial.status?.statusId ?? null,
+        name: selectedItem.name,
+        statusId: selectedItem.status?.statusId ?? null,
       });
     }
-  }, [open, selectedMaterial, reset]);
+  }, [open, selectedItem, reset]);
 
-  const handleSubmitClick = async (data: MaterialForm) => {
+  const handleSubmitClick = async (data: ProductGroupForm) => {
     try {
       setIsLoading(true);
       const isValid = await trigger();
@@ -83,28 +77,27 @@ export default function EditMaterialDialog({
 
       const updateData = {
         name: data.name,
-        description: data.description,
         statusId: data.statusId,
       };
 
-      console.log("Updating material with data:", updateData);
-      const res = await updateMaterial(
-        selectedMaterial!.materialId,
+      console.log("Updating product group with data:", updateData);
+      const res = await updateProductGroup(
+        selectedItem!.productGroupId,
         updateData
       );
 
       if (res?.isSuccess) {
-        toast.success("Cập nhật chất liệu thành công!");
+        toast.success("Cập nhật nhóm sản phẩm thành công!");
         onUpdated();
         setIsOpen(false);
       } else {
-        toast.error(res?.message || "Không thể cập nhật chất liệu!");
+        toast.error(res?.message || "Không thể cập nhật nhóm sản phẩm!");
       }
     } catch (error: any) {
-      console.error("Error updating material:", error);
+      console.error("Error updating product group:", error);
       const message =
         error?.response?.data?.message ||
-        "Có lỗi xảy ra khi cập nhật chất liệu!";
+        "Có lỗi xảy ra khi cập nhật nhóm sản phẩm!";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -113,37 +106,39 @@ export default function EditMaterialDialog({
 
   // 🧩 Tạo danh sách trạng thái từ Redux
   const statuses =
-    statusesData["Material"]?.map((s) => ({
+    statusesData["ProductGroup"]?.map((s) => ({
       value: s.statusId,
       label: s.displayName || s.name,
     })) ?? [];
 
   return (
     <Dialog open={open} onOpenChange={setIsOpen}>
-      <DialogContent className="min-w-[600px] max-h-[90vh] flex flex-col justify-start">
+      <DialogContent className="min-w-[500px] flex flex-col justify-start">
         <DialogHeader>
-          <DialogTitle>Cập nhật chất liệu</DialogTitle>
-          <DialogDescription>Cập nhật thông tin chất liệu</DialogDescription>
+          <DialogTitle>Cập nhật nhóm sản phẩm</DialogTitle>
+          <DialogDescription>
+            Cập nhật thông tin nhóm sản phẩm
+          </DialogDescription>
         </DialogHeader>
 
         <form
           onSubmit={handleSubmit(handleSubmitClick)}
           className="flex flex-col gap-4 py-1"
         >
-          {/* Tên chất liệu */}
+          {/* Tên nhóm sản phẩm */}
           <div>
             <label className="text-sm font-medium mb-1 block">
-              Tên chất liệu
+              Tên nhóm sản phẩm
             </label>
             <Input
               type="text"
-              placeholder="Nhập tên chất liệu"
+              placeholder="Nhập tên nhóm sản phẩm"
               disabled={isLoading}
               {...register("name", {
-                required: "Vui lòng nhập tên chất liệu",
+                required: "Vui lòng nhập tên nhóm sản phẩm",
                 maxLength: {
-                  value: 100,
-                  message: "Tên chất liệu không được vượt quá 100 ký tự",
+                  value: 50,
+                  message: "Tên nhóm sản phẩm không được vượt quá 50 ký tự",
                 },
               })}
             />
@@ -152,17 +147,6 @@ export default function EditMaterialDialog({
                 {errors.name.message}
               </span>
             )}
-          </div>
-
-          {/* Mô tả */}
-          <div>
-            <label className="text-sm font-medium mb-1 block">Mô tả</label>
-            <Textarea
-              rows={3}
-              placeholder="Nhập mô tả chất liệu (nếu có)"
-              disabled={isLoading}
-              {...register("description")}
-            />
           </div>
 
           {/* Trạng thái */}

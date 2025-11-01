@@ -39,13 +39,3 @@ export const deleteColor = async (colorId: number) => {
     throw error;
   }
 };
-
-export const getAllColors = async () => {
-  try {
-    const response = await instance.get(`/colors`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching colors:", error);
-    throw error;
-  }
-};

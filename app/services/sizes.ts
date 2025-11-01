@@ -39,13 +39,3 @@ export const deleteSize = async (sizeId: number) => {
     throw error;
   }
 };
-
-export const getAllSizes = async () => {
-  try {
-    const response = await instance.get(`/sizes`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching sizes:", error);
-    throw error;
-  }
-};

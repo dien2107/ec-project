@@ -2,71 +2,55 @@ import { Button } from "~/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { ColorDetailDto } from "../../../../types/product/color";
+import type { ProductGroupDetailDto } from "../../../../types/product/product-group";
 
 export const getColumns = (
-  handleEdit: (color: ColorDetailDto) => void,
-  handleDelete: (color: ColorDetailDto) => void
-): ColumnDef<ColorDetailDto>[] => [
+  handleEdit: (item: ProductGroupDetailDto) => void,
+  handleDelete: (item: ProductGroupDetailDto) => void
+): ColumnDef<ProductGroupDetailDto>[] => [
   {
-    accessorKey: "colorId",
-    header: () => <div className="w-[100px] text-center">ID</div>,
+    accessorKey: "productGroupId",
+    header: () => (
+      <div className="w-[120px] text-center font-medium text-gray-700">ID</div>
+    ),
     cell: ({ row }) => (
-      <div className="w-[65px] text-center px-2">
+      <div className="w-[90px] text-center px-2">
         <span
-          className="block truncate"
-          title={row.original.colorId.toString()}
+          className="block truncate text-sm text-gray-900"
+          title={row.original.productGroupId}
         >
-          {row.original.colorId}
+          {row.original.productGroupId}
         </span>
       </div>
     ),
-    sticky: true,
   },
   {
     accessorKey: "name",
-    header: () => <div className="w-[200px] text-center">Tên màu sắc</div>,
+    header: () => (
+      <div className="w-[200px] text-center font-medium text-gray-700">
+        Tên nhóm sản phẩm
+      </div>
+    ),
     cell: ({ row }) => (
-      <div className="w-[165px] text-center px-2">
-        <span className="block truncate" title={row.original.name}>
+      <div className="w-[180px] text-center px-2">
+        <span
+          className="block truncate text-sm text-gray-900"
+          title={row.original.name}
+        >
           {row.original.name}
         </span>
       </div>
     ),
   },
   {
-    accessorKey: "displayName",
-    header: () => <div className="w-[220px] text-center">Tên hiển thị</div>,
-    cell: ({ row }) => (
-      <div className="w-[190px] text-center px-2">
-        <span className="block truncate" title={row.original.displayName}>
-          {row.original.displayName}
-        </span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "hexCode",
-    header: () => <div className="w-[120px] text-center">Mã HEX</div>,
-    cell: ({ row }) => (
-      <div className="w-[100px] text-center flex items-center gap-2 px-2">
-        <div
-          className="w-6 h-6 rounded-full border border-gray-300"
-          style={{ backgroundColor: row.original.hexCode }}
-        />
-        <span className="font-mono text-sm">{row.original.hexCode}</span>
-      </div>
-    ),
-  },
-  {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <div className="w-[155px] text-center">
+      <div className="w-[150px] text-center">
         <SortableHeader column={column} title="Ngày tạo" />
       </div>
     ),
     cell: ({ row }) => (
-      <div className="w-[130px] text-center">
+      <div className="w-[130px] text-center text-sm text-gray-900">
         {new Date(row.original.createdAt).toLocaleDateString("en-GB")}
       </div>
     ),
@@ -79,7 +63,7 @@ export const getColumns = (
       </div>
     ),
     cell: ({ row }) => (
-      <div className="w-[155px] text-center">
+      <div className="w-[150px] text-center text-sm text-gray-900">
         {new Date(row.original.updatedAt).toLocaleDateString("en-GB")}
       </div>
     ),
@@ -87,7 +71,7 @@ export const getColumns = (
   {
     accessorKey: "status",
     header: () => (
-      <div className="w-[130px] text-center font-medium text-gray-700">
+      <div className="w-[120px] text-center font-medium text-gray-700">
         Trạng thái
       </div>
     ),
@@ -104,7 +88,7 @@ export const getColumns = (
       return (
         <div className="w-[100px] text-center">
           <div
-            className={`${statusClass} py-1 px-2 rounded-lg text-center whitespace-normal break-words`}
+            className={`${statusClass} text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words`}
             title={displayName || name}
           >
             {displayName || name}
@@ -113,10 +97,11 @@ export const getColumns = (
       );
     },
   },
+
   {
     id: "actions",
     header: () => (
-      <div className="w-[175px] text-center font-medium text-gray-700">
+      <div className="w-[100px] text-center font-medium text-gray-700">
         Thao tác
       </div>
     ),
@@ -124,7 +109,7 @@ export const getColumns = (
       const isDeletable = row.original.status.name === "Inactive";
 
       return (
-        <div className="flex gap-2 justify-center w-[150px]">
+        <div className="flex gap-2 w-[80px] justify-center">
           <Button
             variant="ghost"
             size="sm"

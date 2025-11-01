@@ -2,42 +2,53 @@ import { Button } from "~/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { SortableHeader } from "../../components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Material } from "../types";
+import type { MaterialDetailDto } from "../../../../types/product/material";
 
 export const getColumns = (
-  handleEdit: (material: Material) => void,
-  handleDelete: (material: Material) => void
-): ColumnDef<Material>[] => [
+  handleEdit: (material: MaterialDetailDto) => void,
+  handleDelete: (material: MaterialDetailDto) => void
+): ColumnDef<MaterialDetailDto>[] => [
   {
     accessorKey: "materialId",
-    header: ({ column }) => (
-      <div className="w-[120px] text-center">
-        <SortableHeader column={column} title="Mã chất liệu" />
+    header: () => <div className="w-[120px] text-center">ID</div>,
+    cell: ({ row }) => (
+      <div className="w-[90px] text-center px-2">
+        <span
+          className="block truncate"
+          title={row.original.materialId.toString()}
+        >
+          {row.original.materialId}
+        </span>
       </div>
     ),
+    sticky: true,
+  },
+  {
+    accessorKey: "name",
+    header: () => <div className="w-[220px] text-center">Tên chất liệu</div>,
     cell: ({ row }) => (
-      <div className="w-[70px] text-center">
-        <span className="font-mono text-sm">{row.original.materialId}</span>
+      <div className="w-[190px] text-center px-2">
+        <span className="block truncate" title={row.original.name}>
+          {row.original.name}
+        </span>
       </div>
     ),
   },
   {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <div className="w-[120px] text-center">
-        <SortableHeader column={column} title="Tên chất liệu" />
-      </div>
-    ),
+    accessorKey: "description",
+    header: () => <div className="w-[250px] text-center">Mô tả</div>,
     cell: ({ row }) => (
-      <div className="w-[70px] text-center">
-        <span className="font-mono text-sm">{row.original.name}</span>
+      <div className="w-[230px] text-center px-2">
+        <span className="block truncate" title={row.original.description}>
+          {row.original.description || ""}
+        </span>
       </div>
     ),
   },
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <div className="w-[150px] text-center">
+      <div className="w-[155px] text-center">
         <SortableHeader column={column} title="Ngày tạo" />
       </div>
     ),
@@ -55,70 +66,75 @@ export const getColumns = (
       </div>
     ),
     cell: ({ row }) => (
-      <div className="w-[150px] text-center">
+      <div className="w-[155px] text-center">
         {new Date(row.original.updatedAt).toLocaleDateString("en-GB")}
       </div>
     ),
   },
   {
     accessorKey: "status",
-    header: ({ column }) => (
-      <div className="w-[120px] text-center">
-        <SortableHeader column={column} title="Trạng thái" />
+    header: () => (
+      <div className="w-[130px] text-center font-medium text-gray-700">
+        Trạng thái
       </div>
     ),
-    // ✅ Sửa tại đây
     cell: ({ row }) => {
-      const statusName = row.original.status.name;
+      const { name, displayName } = row.original.status;
+
+      const statusColorMap: Record<string, string> = {
+        Active: "bg-green-400 text-white",
+        Inactive: "bg-red-300 text-white",
+      };
+
+      const statusClass = statusColorMap[name] || "bg-gray-300 text-white";
+
       return (
         <div className="w-[100px] text-center">
-          {statusName === "Active" && (
-            <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
-              Hoạt động
-            </div>
-          )}
-          {statusName === "Inactive" && (
-            <div className="bg-red-200 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
-              Không hoạt động
-            </div>
-          )}
-          {statusName === "Draft" && (
-            <div className="bg-gray-200 text-gray-400 py-1 px-2 rounded-lg text-center whitespace-normal break-words">
-              Nháp
-            </div>
-          )}
+          <div
+            className={`${statusClass} py-1 px-2 rounded-lg text-center whitespace-normal break-words`}
+            title={displayName || name}
+          >
+            {displayName || name}
+          </div>
         </div>
       );
     },
   },
   {
     id: "actions",
-    header: ({ column }) => (
-      <div className="w-[100px] text-center">
-        <SortableHeader column={column} title="Thao tác" />
+    header: () => (
+      <div className="w-[175px] text-center font-medium text-gray-700">
+        Thao tác
       </div>
     ),
-    cell: ({ row }) => (
-      <div className="flex gap-2 w-[100px]">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleEdit(row.original)}
-          className="h-8 w-8 p-0 hover:bg-green-100"
-          title="Chỉnh sửa"
-        >
-          <Edit className="h-4 w-4 text-green-600" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleDelete(row.original)}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          title="Xóa"
-        >
-          <Trash2 className="h-4 w-4 text-red-600" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const isDeletable = row.original.status.name === "Inactive";
+
+      return (
+        <div className="flex gap-2 justify-center w-[150px]">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(row.original)}
+            className="h-8 w-8 p-0 hover:bg-green-100"
+            title="Chỉnh sửa"
+          >
+            <Edit className="h-4 w-4 text-green-600" />
+          </Button>
+
+          {isDeletable && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(row.original)}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              title="Xóa"
+            >
+              <Trash2 className="h-4 w-4 text-red-600" />
+            </Button>
+          )}
+        </div>
+      );
+    },
   },
 ];
