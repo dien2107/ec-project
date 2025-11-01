@@ -20,7 +20,6 @@ export const statusMap: Record<
   Status["name"],
   { label: string; color: string }
 > = {
-  Draft: { label: "Chờ xử lý", color: "bg-yellow-400" },
   Pending: { label: "Đang chờ xác nhận", color: "bg-amber-500" },
   Confirmed: { label: "Đã xác nhận", color: "bg-teal-500" },
   Processing: { label: "Đang giao", color: "bg-blue-500" },
@@ -56,10 +55,9 @@ export type order_item = {
   price: number;
   subtotal: number;
 };
-type Status = {
+export type Status = {
   statusId: number;
   name:
-    | "Draft"
     | "Pending"
     | "Confirmed"
     | "Processing"
@@ -68,34 +66,39 @@ type Status = {
     | "Returned"
     | "Shipped";
 };
-type User = {
+
+export type User = {
   userId: number;
   fullName: string;
 };
-type Ship = {
+
+export type Ship = {
   shipId: number;
   corpName: string;
 };
+
+export type OrderItem = {
+  productVariantId: number;
+  productName: string;
+  sku: string;
+  productImage: string;
+  size: string;
+  quantity: number;
+  price: number;
+  subTotal: number;
+};
+
 export type Order = {
   orderId: number;
-  address_id: number;
-  address: address;
   addressInfo: string;
-  discount_id: number | null;
-  discount: discount | null;
-  discount_amount: number;
-  total_amount: number;
-  is_free_ship: boolean;
-  shipped_at: Date | null;
-  ship: Ship;
-  delivery_at: Date | null;
+  isFreeShip: boolean;
+  shippingFee: number;
+  totalAmount: number;
+  createdAt: string; // vì API trả về dạng chuỗi ISO
   user: User;
+  ship: Ship;
   status: Status;
-  payment: payment;
-  shipping_method: shipping_method;
-  createdAt: Date;
-  updatedAt: Date;
-  items: order_item[];
+  items: OrderItem[];
 };
 
 export const getColumns = (
