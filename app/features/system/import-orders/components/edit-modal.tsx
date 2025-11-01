@@ -28,6 +28,7 @@ import { useAppDispatch, useAppSelector } from "~/redux/store";
 import {
   getPurchaseOrderById,
   updatePurchaseOrder,
+  cancelPurchaseOrder,
 } from "~/services/purchase-order";
 import { fetchStatuses } from "~/redux/slices/statuses";
 import { fetchSupplierListData } from "~/redux/slices/suppliers";
@@ -35,6 +36,7 @@ import { ENTITY_TYPE } from "~/constants/entity-types";
 import { fetchProductListData } from "~/redux/slices/products";
 import { fetchProductVariants } from "~/redux/slices/product-variants";
 import { useDebounce } from "~/hooks/use-debounce";
+import toast from "react-hot-toast";
 
 export function EditImportOrderModal({
   open,
@@ -78,6 +80,8 @@ export function EditImportOrderModal({
     number | null
   >(null);
   const [pickerSelectedIds, setPickerSelectedIds] = useState<number[]>([]);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<string>("");
 
   const normalizeItems = <T,>(items: unknown): T[] => {
     if (!items) return [];
@@ -140,6 +144,12 @@ export function EditImportOrderModal({
         const status =
           dto.status ||
           (dto.statusName ? dto.statusName.toLowerCase() : "received");
+
+        // Lưu status hiện tại
+        setCurrentStatus(
+          dto?.data?.status?.name || dto?.status?.name || "Draft"
+        );
+
         setFormData({
           supplier: supplier,
           orderDate: dto?.orderDate
@@ -169,8 +179,9 @@ export function EditImportOrderModal({
           dispatch(fetchStatuses({ entityType: ENTITY_TYPE.PRODUCT })).unwrap(),
         ]);
         setActiveStatusId({
-          supplier: supStatuses.find((s: any) => s.name === "Active")?.statusId,
-          product: prodStatuses.find(
+          supplier: supStatuses.statuses.find((s: any) => s.name === "Active")
+            ?.statusId,
+          product: prodStatuses.statuses.find(
             (s: any) => s.name === "Active" || s.name === "OutOfStock"
           )?.statusId,
         });
@@ -386,11 +397,11 @@ export function EditImportOrderModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.supplier) {
-      alert("Vui lòng chọn nhà cung cấp!");
+      toast.error("Vui lòng chọn nhà cung cấp!");
       return;
     }
     if (selectedProducts.length === 0) {
-      alert("Vui lòng chọn ít nhất một sản phẩm!");
+      toast.error("Vui lòng chọn ít nhất một sản phẩm!");
       return;
     }
     const submit = async () => {
@@ -399,12 +410,19 @@ export function EditImportOrderModal({
       const selectedSupplier = suppliersArr.find(
         (s: any) => s.supplierId === formData.supplier
       );
-      if (!selectedSupplier) return alert("Vui lòng chọn nhà cung cấp hợp lệ");
+      if (!selectedSupplier) {
+        toast.error("Vui lòng chọn nhà cung cấp hợp lệ");
+        return;
+      }
 
       const payload: any = {
         supplierId: (selectedSupplier as any).supplierId,
         orderDate: new Date(formData.orderDate).toISOString(),
-        items: selectedProducts.map((p: any) => ({
+      };
+
+      // Chỉ gửi items khi ở trạng thái Draft (có quyền sửa products)
+      if (canEditProducts) {
+        payload.items = selectedProducts.map((p: any) => ({
           purchaseOrderItemId: p.purchaseOrderItemId ?? null,
           productVariantId: p.productVariantId ?? p.id,
           sku: p.sku ?? p.code ?? "",
@@ -413,11 +431,13 @@ export function EditImportOrderModal({
           totalPrice: p.totalPrice ?? p.importPrice * p.importQuantity,
           profitPercentage: p.profitMargin,
           isPushed: p.isPushed ?? false,
-        })),
-      };
+        }));
+      }
+      // Ở trạng thái Pending, không gửi items để backend cho phép sửa supplier/date
+
       try {
         await updatePurchaseOrder(String(order.purchaseOrderId), payload);
-        alert("Cập nhật đơn thành công");
+        toast.success("Cập nhật đơn thành công");
         onSave({
           ...order,
           supplier: formData.supplier,
@@ -431,10 +451,37 @@ export function EditImportOrderModal({
       } catch (err: any) {
         console.error(err);
         const message = err?.response?.data?.message || "Cập nhật thất bại";
-        alert(message);
+        toast.error(message);
       }
     };
     submit();
+  };
+
+  const handleCancel = async () => {
+    if (!order) return;
+
+    const confirmed = window.confirm(
+      "Bạn có chắc chắn muốn hủy đơn hàng này? Thao tác này không thể hoàn tác."
+    );
+
+    if (!confirmed) return;
+
+    setIsCancelling(true);
+    try {
+      await cancelPurchaseOrder(String(order.purchaseOrderId));
+      toast.success("Đã hủy đơn hàng thành công");
+      onSave({
+        ...order,
+        status: { ...order.status, name: "Cancelled" },
+      } as any);
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      const message = err?.response?.data?.message || "Hủy đơn thất bại";
+      toast.error(message);
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   const handleChange = (
@@ -448,7 +495,13 @@ export function EditImportOrderModal({
     ? (products.find((p) => (p.productId ?? p.id) === variantPickerProductId) ??
       null)
     : null;
-  console.log("Hello:", productVariantsState.variantsByProductId);
+
+  // Xác định quyền chỉnh sửa dựa trên status
+  const canEditProducts = currentStatus === "Draft";
+  const canEditBasicInfo =
+    currentStatus === "Draft" || currentStatus === "Pending";
+  const canCancel = currentStatus === "Pending";
+
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
@@ -457,6 +510,20 @@ export function EditImportOrderModal({
             <DialogTitle>Sửa Đơn Nhập Hàng</DialogTitle>
             <DialogDescription>
               Cập nhật thông tin đơn nhập hàng từ nhà cung cấp
+              {!canEditProducts && (
+                <span className="block mt-2 text-yellow-600 text-sm">
+                  ⚠️ Đơn hàng ở trạng thái{" "}
+                  {currentStatus == "Pending"
+                    ? "đang chờ duyêt"
+                    : currentStatus}{" "}
+                  - Không thể chỉnh sửa danh sách sản phẩm
+                </span>
+              )}
+              {!canEditBasicInfo && (
+                <span className="block mt-2 text-red-600 text-sm">
+                  🔒 Đơn hàng đã bị khóa - Không thể chỉnh sửa
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
 
@@ -485,23 +552,26 @@ export function EditImportOrderModal({
                         onChange={(e) =>
                           handleChange("orderDate", e.target.value)
                         }
+                        disabled={!canEditBasicInfo}
                       />
                     </div>
                   </div>
                 </div>
 
-                <ProductSearchList
-                  products={filteredProducts}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                  isLoading={isProductListLoading}
-                  onAdd={openVariantPicker}
-                />
+                {canEditProducts && (
+                  <ProductSearchList
+                    products={filteredProducts}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    isLoading={isProductListLoading}
+                    onAdd={openVariantPicker}
+                  />
+                )}
 
                 <SelectedProductsTable
                   selected={selectedProducts}
-                  onRemove={removeProduct}
-                  onUpdate={updateProduct}
+                  onRemove={canEditProducts ? removeProduct : () => {}}
+                  onUpdate={canEditProducts ? updateProduct : () => {}}
                   onSelect={(p) => setSelectedProductDetail(p)}
                 />
               </div>
@@ -520,14 +590,32 @@ export function EditImportOrderModal({
           </div>
 
           <DialogFooter>
-            <div className="text-sm text-gray-600">
-              * Vui lòng điền đầy đủ thông tin bắt buộc
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={onClose}>
-                Hủy
-              </Button>
-              <Button onClick={handleSubmit}>Lưu thay đổi</Button>
+            <div className="flex items-center justify-between w-full">
+              <div className="text-sm text-gray-600">
+                {!canEditBasicInfo && "🔒 Đơn hàng đã bị khóa"}
+                {canEditBasicInfo &&
+                  !canEditProducts &&
+                  "⚠️ Chỉ có thể sửa thông tin cơ bản"}
+              </div>
+              <div className="flex gap-3">
+                {canCancel && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleCancel}
+                    disabled={isCancelling}
+                  >
+                    {isCancelling ? "Đang hủy..." : "Hủy đơn"}
+                  </Button>
+                )}
+                <Button variant="outline" onClick={onClose}>
+                  Đóng
+                </Button>
+                {canEditBasicInfo && (
+                  <Button variant="add" onClick={handleSubmit}>
+                    Lưu thay đổi
+                  </Button>
+                )}
+              </div>
             </div>
           </DialogFooter>
         </DialogContent>
@@ -555,7 +643,7 @@ export function EditImportOrderModal({
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {(
                   productVariantsState.variantsByProductId?.[
-                   (variantPickerProductId ?? 0) as number
+                    (variantPickerProductId ?? 0) as number
                   ] ?? []
                 ).map((v: any) => (
                   <label

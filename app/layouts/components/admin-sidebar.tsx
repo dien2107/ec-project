@@ -72,11 +72,11 @@ const mainMangeItems = {
       url: "/system/categories",
       icon: Tags,
     },
-    {
-      title: "Kho hàng",
-      url: "/system/inventory",
-      icon: Warehouse,
-    },
+    // {
+    //   title: "Kho hàng",
+    //   url: "/system/inventory",
+    //   icon: Warehouse,
+    // },
     {
       title: "Nhà cung cấp",
       url: "/system/suppliers",
@@ -129,11 +129,11 @@ const importItems = {
       url: "/system/imports",
       icon: PackagePlus,
     },
-    {
-      title: "Lịch sử nhập hàng",
-      url: "/system/imports/history",
-      icon: History,
-    },
+    // {
+    //   title: "Lịch sử nhập hàng",
+    //   url: "/system/imports/history",
+    //   icon: History,
+    // },
   ],
 };
 

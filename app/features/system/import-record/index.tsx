@@ -68,7 +68,7 @@ export default function ImportHistoryManagement() {
       "createdBy",
     ];
 
-    const matchesSearch = searchableFields.some(field =>
+    const matchesSearch = searchableFields.some((field) =>
       String(row[field]).toLowerCase().includes(filterValue.toLowerCase())
     );
 
@@ -79,7 +79,6 @@ export default function ImportHistoryManagement() {
   };
 
   const columns = getColumns(handleViewImport, formatCurrency);
-
   return (
     <>
       <div className="min-h-screen bg-gray-50">
