@@ -3,7 +3,10 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 export default [
   route("", "./layouts/customer-layout.tsx", [
     index("features/clients/home/index.tsx"),
-    route("/categories/:slug", "features/clients/categories/index.tsx"),
+    route("/categories/:slug", "features/clients/categories/index.tsx", {
+      id: "category-slug",
+    }),
+    route("/search", "features/clients/categories/index.tsx", { id: "search" }),
     route("/payments", "features/clients/payment/index.tsx"),
     route("/products/:slug", "features/clients/product-detail/index.tsx"),
     route("/profile", "features/clients/user-profile/index.tsx"),

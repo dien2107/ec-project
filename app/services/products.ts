@@ -47,12 +47,11 @@ export const getProductFormMeta = async () => {
   }
 };
 
-export const getProductByCategorySlug = async (
-  categorySlug: string,
-  filters: FilterState
-) => {
+export const getProductCatelog = async (filters: FilterState) => {
   try {
     const params = {
+      CategorySlug: filters.categorySlug,
+      Search: filters.search,
       ColorIds: filters.colorIds,
       MaterialIds: filters.materialIds,
       ProductGroupIds: filters.productGroupIds,
@@ -65,7 +64,7 @@ export const getProductByCategorySlug = async (
       PageSize: filters.pageSize,
     };
 
-    const response = await instance.get(`/products/category/${categorySlug}`, {
+    const response = await instance.get(`/products/catelog`, {
       params,
       paramsSerializer: (params) =>
         qs.stringify(params, { arrayFormat: "repeat" }),

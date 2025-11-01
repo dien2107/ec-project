@@ -19,7 +19,6 @@ import discountReducer from "./slices/discount";
 import sizeReducer from "./slices/sizes";
 import CategoryReducer from "./slices/categories";
 import materialReducer from "./slices/materials";
-
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
