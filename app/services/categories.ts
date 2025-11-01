@@ -1,8 +1,12 @@
 import instance from "./customize-axios";
 
-export const createCategory = async (data: FormData) => {
+export const createCategory = async (formData: FormData) => {
   try {
-    const response = await instance.post("/categories", data);
+    const response = await instance.post("/categories", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating category:", error);
@@ -20,9 +24,20 @@ export const getCategory = async (categoryId: number) => {
   }
 };
 
-export const updateCategory = async (categoryId: number, data: any) => {
+export const updateCategory = async (
+  categoryId: number,
+  formData: FormData
+) => {
   try {
-    const response = await instance.patch(`/categories/${categoryId}`, data);
+    const response = await instance.patch(
+      `/categories/${categoryId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating category:", error);

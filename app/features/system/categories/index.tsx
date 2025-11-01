@@ -22,6 +22,7 @@ export default function CategoryManagement() {
   const [filters, setFilters] = useState({
     Search: "",
     StatusName: "",
+    ParentId: null,
   });
 
   const [selectedCategory, setSelectedCategory] =
@@ -37,6 +38,7 @@ export default function CategoryManagement() {
         PageSize: PAGE_SIZE,
         Search: filters.Search || undefined,
         StatusName: filters.StatusName || undefined,
+        ParentId: filters.ParentId || undefined,
       })
     );
   }, [dispatch, currentPage, filters]);
@@ -51,6 +53,19 @@ export default function CategoryManagement() {
     setSelectedCategory(category);
     setIsDeleteOpen(true);
   }, []);
+
+  // 🆕 Xử lý sau khi xóa thành công
+  const handleDeleteSuccess = useCallback(() => {
+    dispatch(
+      fetchCategoryListData({
+        PageNumber: currentPage,
+        PageSize: PAGE_SIZE,
+        Search: filters.Search || undefined,
+        StatusName: filters.StatusName || undefined,
+        ParentId: filters.ParentId || undefined,
+      })
+    );
+  }, [dispatch, currentPage, filters]);
 
   // ✅ Xử lý thay đổi filter
   const handleFilterChange = useCallback(
@@ -81,6 +96,7 @@ export default function CategoryManagement() {
                 PageSize: PAGE_SIZE,
                 Search: filters.Search || undefined,
                 StatusName: filters.StatusName || undefined,
+                ParentId: filters.ParentId || undefined,
               })
             );
           }}
@@ -116,6 +132,7 @@ export default function CategoryManagement() {
                 PageSize: PAGE_SIZE,
                 Search: filters.Search || undefined,
                 StatusName: filters.StatusName || undefined,
+                ParentId: filters.ParentId || undefined,
               })
             );
           }}
@@ -126,17 +143,12 @@ export default function CategoryManagement() {
         <DeleteCategoryDialog
           open={isDeleteOpen}
           setIsOpen={setIsDeleteOpen}
-          selectedCategory={selectedCategory}
-          onDelete={() => {
-            dispatch(
-              fetchCategoryListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
+          selectedCategory={selectedCategory!}
+          onDelete={handleDeleteSuccess}
+          currentPage={currentPage}
+          totalItems={categoryList?.data?.totalCount || 0}
+          pageSize={PAGE_SIZE}
+          onPageChange={setCurrentPage}
         />
       )}
     </div>
