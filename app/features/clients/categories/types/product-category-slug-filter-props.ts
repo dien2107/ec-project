@@ -1,4 +1,6 @@
 export type FilterState = {
+  categorySlug?: string;
+  search?: string;
   colorIds?: number[];
   materialIds?: number[];
   productGroupIds?: number[];

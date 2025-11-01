@@ -37,9 +37,11 @@ export const getColumns = (
       return <SortableHeader column={column} title="ID" className="w-[80px]" />;
     },
     cell: ({ row }) => {
-      const id = row.original.productId;
-      const paddedId = String(id).padStart(3, "0");
-      return <span className="font-mono font-bold ">PRO{paddedId}</span>;
+      return (
+        <span className="font-bold ">
+          {String(row.original.productId).padStart(3, "0")}
+        </span>
+      );
     },
     sticky: true,
   },

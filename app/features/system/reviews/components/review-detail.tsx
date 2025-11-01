@@ -115,10 +115,10 @@ export default function ReviewDetail({
         <div>
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm text-gray-400">Nội dung</p>
-            <p className="text-sm text-gray-400 flex items-center gap-1">
+            {/* <p className="text-sm text-gray-400 flex items-center gap-1">
               <ThumbsUp size={16} />
               12
-            </p>
+            </p> */}
           </div>
           <div className="flex items-center justify-between p-4 border rounded-sm">
             <p className="text-sm ">{selectedReview.comment || ""}</p>

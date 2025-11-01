@@ -24,11 +24,12 @@ export const getColumns = (
     },
     cell: ({ row }) => {
       return (
-        <div className="font-mono font-bold">
-          REV{String(row.original.reviewId).padStart(3, "0")}
-        </div>
+        <span className="font-bold">
+          {String(row.original.reviewId).padStart(3, "0")}
+        </span>
       );
     },
+    sticky: true,
   },
   {
     accessorKey: "username",
@@ -68,8 +69,13 @@ export const getColumns = (
         <SortableHeader
           column={column}
           title="Ngày đánh giá"
-          className="justify-start"
-        />
+          className="w-[80px]"
+        >
+          <div className="flex flex-col items-start">
+            <span>Ngày</span>
+            <span>đánh giá</span>
+          </div>
+        </SortableHeader>
       );
     },
     cell: ({ row }) => {
@@ -80,17 +86,40 @@ export const getColumns = (
     },
   },
   {
-    accessorKey: "helpful_count",
+    accessorKey: "updated_at",
     header: ({ column }) => {
       return (
         <SortableHeader
           column={column}
-          title="Hữu ích"
-          className="justify-start"
-        />
+          title="Ngày cập nhật"
+          className="w-[80px]"
+        >
+          <div className="flex flex-col items-start">
+            <span>Ngày</span>
+            <span>cập nhật</span>
+          </div>
+        </SortableHeader>
+      );
+    },
+    cell: ({ row }) => {
+      const date = new Date(row.original.updatedAt);
+      return (
+        <div className="text-gray-400">{date.toLocaleDateString("en-GB")}</div>
       );
     },
   },
+  // {
+  //   accessorKey: "helpful_count",
+  //   header: ({ column }) => {
+  //     return (
+  //       <SortableHeader
+  //         column={column}
+  //         title="Hữu ích"
+  //         className="justify-start"
+  //       />
+  //     );
+  //   },
+  // },
   {
     accessorKey: "status",
     header: ({ column }) => {
