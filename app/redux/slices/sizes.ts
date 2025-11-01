@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
-import type { Size } from "~/features/system/sizes/types"; // Thay đổi đường dẫn nếu cần
+import type { Size } from "../../types/product/size"; // Thay đổi đường dẫn nếu cần
 import type { ApiPagedResponse } from "~/types/api-response";
 
 // State định nghĩa dữ liệu và trạng thái tải
@@ -33,9 +33,9 @@ export const fetchSizeListData = createAsyncThunk(
       const response = await instance.get<ApiPagedResponse<Size[]>>("/sizes", {
         params,
       });
-      console.log("✅ Keyword:", params.Search);
-      console.log("✅ Status:", params.StatusName);
-      console.log("✅ API trả về:", response.data);
+      // console.log("✅ Keyword:", params.Search);
+      // console.log("✅ Status:", params.StatusName);
+      // console.log("✅ API trả về:", response.data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(

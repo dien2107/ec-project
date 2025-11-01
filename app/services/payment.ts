@@ -7,12 +7,10 @@ export type CreatePaymentPayload = {
 };
 
 export type PaymentResponse = {
-  data: {
-    isSuccess: boolean;
-    qrCodeUrl?: string;
-    message?: string;
-    transactionId: string;
-  };
+  isSuccess: boolean;
+  qrCodeUrl?: string;
+  message?: string;
+  transactionId: string;
 };
 
 export const createPayment = async (data: CreatePaymentPayload) => {

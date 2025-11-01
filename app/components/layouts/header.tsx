@@ -4,99 +4,101 @@ import {
   ShoppingBag,
   Menu as MenuIcon,
   ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
 import { useAppSelector, type RootState } from "~/redux/store";
-import { useEffect, useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+import { useEffect, useState, useMemo } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import SearchBar from "~/components/common/search-bar";
+import type { Category } from "~/types/home-page";
 
-const menuItems = [
-  {
-    name: "SALE",
-    path: "/sale",
-    dropdown: [
-      { name: "Áo Sale", path: "/sale/ao" },
-      { name: "Quần Sale", path: "/sale/quan" },
-      { name: "Phụ kiện Sale", path: "/sale/phu-kien" },
-    ],
-  },
-  {
-    name: "GU",
-    path: "/gu",
-    dropdown: [
-      { name: "Minimalist", path: "/gu/minimalist" },
-      { name: "Streetwear", path: "/gu/streetwear" },
-      { name: "Vintage", path: "/gu/vintage" },
-      { name: "Korean Style", path: "/gu/korean" },
-    ],
-  },
-  {
-    name: "ÁO",
-    path: "/ao",
-    dropdown: [
-      { name: "Áo Thun", path: "/ao/ao-thun" },
-      { name: "Áo Polo", path: "/ao/ao-polo" },
-      { name: "Áo Sơ Mi", path: "/ao/ao-so-mi" },
-      { name: "Áo Hoodie", path: "/ao/ao-hoodie" },
-      { name: "Áo Khoác", path: "/ao/ao-khoac" },
-      { name: "Áo Sweater", path: "/ao/ao-sweater" },
-    ],
-  },
-  {
-    name: "QUẦN",
-    path: "/quan",
-    dropdown: [
-      { name: "Quần Jean", path: "/quan/quan-jean" },
-      { name: "Quần Kaki", path: "/quan/quan-kaki" },
-      { name: "Quần Short", path: "/quan/quan-short" },
-      { name: "Quần Jogger", path: "/quan/quan-jogger" },
-    ],
-  },
-  {
-    name: "PHỤ KIỆN",
-    path: "/phu-kien",
-    dropdown: [
-      { name: "Túi Xách", path: "/phu-kien/tui-xach" },
-      { name: "Mũ Nón", path: "/phu-kien/mu-non" },
-      { name: "Ví", path: "/phu-kien/vi" },
-      { name: "Thắt Lưng", path: "/phu-kien/that-lung" },
-    ],
-  },
-  {
-    name: "MỚI",
-    path: "/moi",
-    dropdown: [
-      { name: "Bộ Sưu Tập Mới", path: "/moi/bo-suu-tap-moi" },
-      { name: "Sản Phẩm Hot", path: "/moi/san-pham-hot" },
-    ],
-  },
-  {
-    name: "CỬA HÀNG",
-    path: "/cua-hang",
-  },
-  {
-    name: "VIP",
-    path: "/vip",
-    dropdown: [
-      { name: "Đăng ký VIP", path: "/vip/dang-ky" },
-      { name: "Ưu đãi VIP", path: "/vip/uu-dai" },
-    ],
-  },
-];
+type MenuItem = {
+  name: string;
+  path: string;
+  dropdown?: MenuItem[];
+};
+
+// Hàm chuyển đổi dữ liệu category từ API thành MenuItem
+const convertCategoryToMenuItem = (category: Category): MenuItem => {
+  const menuItem: MenuItem = {
+    name: category.name,
+    path: `/category/${category.slug}`,
+  };
+
+  // Nếu có children (cấp 2), thêm vào dropdown
+  if (category.children && category.children.length > 0) {
+    menuItem.dropdown = category.children.map((child) => {
+      const childItem: MenuItem = {
+        name: child.name,
+        path: `/category/${child.slug}`,
+      };
+
+      // Nếu child có children (cấp 3), thêm vào dropdown của child
+      if (child.children && child.children.length > 0) {
+        childItem.dropdown = child.children.map((grandChild) => ({
+          name: grandChild.name,
+          path: `/category/${grandChild.slug}`,
+        }));
+      }
+
+      return childItem;
+    });
+  }
+
+  return menuItem;
+};
 
 const Header = () => {
   const cartCount = useAppSelector((state: RootState) => {
     return state.cart.items.reduce((total, item) => total + item.quantity, 0);
   });
+
+  // Lấy categories từ Redux store
+  const categories = useAppSelector(
+    (state: RootState) => state.homePage.homeData?.categories || []
+  );
+
+  // Chuyển đổi categories từ API thành menuItems
+  // Theo cấu trúc API:
+  // - categoryId 1, 2: "Áo", "Quần" (cấp 1 - không có children trong API)
+  // - categoryId 3+: "Áo thun", "Áo polo", "Quần jeans"... (cấp 2 - có children)
+  //
+  // Logic: Hiển thị "Áo" và "Quần" trên header, dropdown là các category liên quan
+  const menuItems = useMemo(() => {
+    // Tách categories thành 2 nhóm
+    const parentCats = categories.filter(
+      (cat) => !cat.children || cat.children.length === 0
+    );
+    const childCats = categories.filter(
+      (cat) => cat.children && cat.children.length > 0
+    );
+
+    return parentCats.map((parent) => {
+      const menuItem: MenuItem = {
+        name: parent.name,
+        path: `/category/${parent.slug}`,
+      };
+
+      // Tìm các category cấp 2 thuộc về parent này
+      // VD: "Áo thun", "Áo polo" thuộc "Áo"
+      const relatedChildren = childCats.filter((cat) =>
+        cat.name.toLowerCase().includes(parent.name.toLowerCase())
+      );
+
+      if (relatedChildren.length > 0) {
+        menuItem.dropdown = relatedChildren.map(convertCategoryToMenuItem);
+      }
+
+      return menuItem;
+    });
+  }, [categories]);
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,6 +107,45 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const MegaMenuDropdown = ({ item }: { item: MenuItem }) => {
+    const hasNestedDropdown = item.dropdown?.some((sub) => sub.dropdown);
+
+    return (
+      <div
+        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white shadow-xl rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50"
+        style={{ minWidth: hasNestedDropdown ? "600px" : "240px" }}
+      >
+        <div
+          className={`p-4 ${hasNestedDropdown ? "grid grid-cols-2 gap-6" : ""}`}
+        >
+          {item.dropdown?.map((subItem, index) => (
+            <div key={subItem.path} className="space-y-2">
+              <Link
+                to={subItem.path}
+                className="block font-semibold text-gray-900 hover:text-blue-600 transition-colors text-sm py-1"
+              >
+                {subItem.name}
+              </Link>
+              {subItem.dropdown && subItem.dropdown.length > 0 && (
+                <div className="pl-3 space-y-1 border-l-2 border-gray-200">
+                  {subItem.dropdown.map((nestedItem) => (
+                    <Link
+                      key={nestedItem.path}
+                      to={nestedItem.path}
+                      className="block text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-2 py-1 rounded transition-colors"
+                    >
+                      {nestedItem.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <header
@@ -124,32 +165,16 @@ const Header = () => {
           </Link>
 
           {/* Desktop Menu - Center */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {menuItems.map((item) =>
               item.dropdown ? (
-                <DropdownMenu key={item.name}>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2"
-                    >
-                      {item.name}
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 animate-in fade-in slide-in-from-top-2">
-                    {item.dropdown.map((subItem) => (
-                      <DropdownMenuItem key={subItem.path} asChild>
-                        <Link
-                          to={subItem.path}
-                          className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {subItem.name}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div key={item.name} className="relative group">
+                  <button className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors flex items-center gap-1">
+                    {item.name}
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  <MegaMenuDropdown item={item} />
+                </div>
               ) : (
                 <Link
                   key={item.name}
@@ -160,11 +185,16 @@ const Header = () => {
                 </Link>
               )
             )}
-          </div>
+          </nav>
 
           {/* Right Icons */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:flex"
+              onClick={() => setIsSearchOpen(true)}
+            >
               <Search className="h-5 w-5 text-gray-700" />
             </Button>
             <Button variant="ghost" size="icon" className="hidden sm:flex">
@@ -198,38 +228,87 @@ const Header = () => {
               >
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* Mobile Search */}
-                  <div className="flex items-center space-x-2 pb-4 border-b">
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsSearchOpen(true);
+                    }}
+                    className="flex items-center space-x-2 pb-4 border-b w-full text-left"
+                  >
                     <Search className="h-5 w-5 text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="Tìm kiếm..."
-                      className="flex-1 outline-none text-sm"
-                    />
-                  </div>
+                    <span className="flex-1 text-sm text-gray-500">
+                      Tìm kiếm...
+                    </span>
+                  </button>
 
                   {/* Mobile Menu Items */}
                   {menuItems.map((item) => (
                     <div key={item.name} className="space-y-2">
-                      <Link
-                        to={item.path}
-                        className="block text-base font-medium text-gray-900 hover:text-gray-600"
-                        onClick={() =>
-                          !item.dropdown && setIsMobileMenuOpen(false)
-                        }
-                      >
-                        {item.name}
-                      </Link>
-                      {item.dropdown && (
-                        <div className="pl-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Link
+                          to={item.path}
+                          className="block text-base font-medium text-gray-900 hover:text-gray-600 flex-1"
+                          onClick={() =>
+                            !item.dropdown && setIsMobileMenuOpen(false)
+                          }
+                        >
+                          {item.name}
+                        </Link>
+                        {item.dropdown && (
+                          <button
+                            onClick={() =>
+                              setOpenDropdown(
+                                openDropdown === item.name ? null : item.name
+                              )
+                            }
+                            className="p-2"
+                          >
+                            <ChevronDown
+                              className={`h-4 w-4 transition-transform ${
+                                openDropdown === item.name ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Level 1 Dropdown */}
+                      {item.dropdown && openDropdown === item.name && (
+                        <div className="pl-4 space-y-2 border-l-2 border-gray-200">
                           {item.dropdown.map((subItem) => (
-                            <Link
-                              key={subItem.path}
-                              to={subItem.path}
-                              className="block text-sm text-gray-600 hover:text-gray-900"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              {subItem.name}
-                            </Link>
+                            <div key={subItem.path} className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <Link
+                                  to={subItem.path}
+                                  className="block text-sm font-medium text-gray-700 hover:text-gray-900 flex-1"
+                                  onClick={() =>
+                                    !subItem.dropdown &&
+                                    setIsMobileMenuOpen(false)
+                                  }
+                                >
+                                  {subItem.name}
+                                </Link>
+                                {subItem.dropdown && (
+                                  <ChevronRight className="h-3 w-3 text-gray-400" />
+                                )}
+                              </div>
+
+                              {/* Level 2 Dropdown */}
+                              {subItem.dropdown && (
+                                <div className="pl-3 space-y-1">
+                                  {subItem.dropdown.map((nestedItem) => (
+                                    <Link
+                                      key={nestedItem.path}
+                                      to={nestedItem.path}
+                                      className="block text-xs text-gray-600 hover:text-gray-900 py-1"
+                                      onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                      • {nestedItem.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
@@ -263,6 +342,7 @@ const Header = () => {
           </div>
         </div>
       </div>
+      <SearchBar isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 };

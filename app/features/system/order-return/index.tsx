@@ -1,759 +1,350 @@
-"use client";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Package, Repeat2 } from "lucide-react";
 
-import { useState, useMemo } from "react";
+// Data will be loaded from redux (product-return service)
+
+// ============= Components =============
+import StatsCard from "./components/stats-card";
+import ReturnFilter from "./components/return-filter";
+import ReturnTable from "./components/return-table";
+import AddReturnDialog from "./components/add-return-dialog";
+import type { MinimalProductReturnRequest } from "./components/add-return-dialog";
+import ViewReturnDialog from "./components/view-return-dialog";
+import ApproveReturnDialog from "./components/approve-return-dialog";
+import RejectReturnDialog from "./components/reject-return-dialog";
+import type { Filters, Return, ReturnStatus } from "./types";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import type { ProductReturnResponse } from "~/services/product-return";
+import { fetchProductReturnList } from "~/redux/slices/product-return";
 import {
-  Package,
-  Repeat2,
-  CheckCircle,
-  XCircle,
-  Eye,
-  Calendar,
-  User,
-  Printer,
-  ChevronUp,
-} from "lucide-react";
-import DataTable from "~/features/system/components/data-table";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "~/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+  approveProductReturn,
+  rejectProductReturn,
+} from "~/services/product-return";
+import { createProductReturnV2 } from "~/services/product-return";
+import type { AxiosError } from "axios";
+import { toast } from "react-hot-toast";
 
-// Mock order data for lookup
-const mockOrders = [
-  {
-    orderId: "ORD1001",
-    customer: { name: "Nguyễn Văn A", phone: "0901234567" },
-    product: {
-      name: "Áo sơ mi nam",
-      sku: "SM001",
-      price: 350000,
-      image:
-        "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
-    },
-  },
-  {
-    orderId: "ORD1002",
-    customer: { name: "Trần Thị B", phone: "0907654321" },
-    product: {
-      name: "Giày sneaker",
-      sku: "SN002",
-      price: 1200000,
-      image:
-        "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
-    },
-  },
-  {
-    orderId: "ORD1003",
-    customer: { name: "Lê Văn C", phone: "0912345678" },
-    product: {
-      name: "Quần jeans",
-      sku: "JN003",
-      price: 800000,
-      image: "https://example.com/jeans.jpg",
-    },
-  },
-];
+// ============= Main Component =============
+export default function OrderReturn() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const dispatch = useAppDispatch();
+  const { data, isLoading, isError } = useAppSelector(
+    state => state.productReturn
+  );
 
-type Return = {
-  id: string;
-  orderId: string;
-  type: "exchange" | "return";
-  customer: { name: string; phone: string };
-  product: { name: string; sku: string; price: number; image: string };
-  reason: string;
-  description: string;
-  status: "pending" | "processing" | "approved" | "rejected";
-  requestDate: string;
-  quantity: number;
-};
+  useEffect(() => {
+    dispatch(fetchProductReturnList());
+  }, [dispatch]);
 
-const returns: Return[] = [
-  {
-    id: "RT001",
-    orderId: "ORD1001",
-    type: "return",
-    customer: { name: "Nguyễn Văn A", phone: "0901234567" },
-    product: {
-      name: "Áo sơ mi nam",
-      sku: "SM001",
-      price: 350000,
-      image:
-        "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
-    },
-    reason: "Sai kích thước",
-    description: "Áo quá chật so với size đặt",
-    status: "pending",
-    requestDate: "2025-08-25",
-    quantity: 2,
-  },
-  {
-    id: "RT002",
-    orderId: "ORD1002",
-    type: "exchange",
-    customer: { name: "Trần Thị B", phone: "0907654321" },
-    product: {
-      name: "Giày sneaker",
-      sku: "SN002",
-      price: 1200000,
-      image:
-        "https://cdn2.yame.vn/pimg/ao-thun-co-tron-tay-ngan-vai-ca-sau-4-chieu-tham-hut-bieu-tuong-dang-rong-on-gian-seventy-seven-13-0023217/6862ecfb-5b3f-eb00-434a-001c69b589e0.jpg",
-    },
-    reason: "Sản phẩm lỗi",
-    description: "Đế giày bị bong keo",
-    status: "approved",
-    requestDate: "2025-08-28",
-    quantity: 1,
-  },
-];
+  // returns used by UI are mapped to local `Return` type
+  const [returns, setReturns] = useState<Return[]>([]);
 
-// 🛠️ Helper
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+  // map ProductReturnResponse -> UI Return
+  const mapPR = (pr: ProductReturnResponse): Return => {
+    const type: Return["type"] = pr.returnType === 2 ? "exchange" : "return";
+    const lowerStatus = (pr.statusName || "").toLowerCase();
+    let status: ReturnStatus = "processing";
+    if (
+      lowerStatus.includes("pending") ||
+      lowerStatus.includes("chờ") ||
+      lowerStatus.includes("draft")
+    )
+      status = "pending";
+    else if (
+      lowerStatus.includes("approved") ||
+      lowerStatus.includes("đồng ý") ||
+      lowerStatus.includes("approved")
+    )
+      status = "approved";
+    else if (
+      lowerStatus.includes("reject") ||
+      lowerStatus.includes("hủy") ||
+      lowerStatus.includes("rejected")
+    )
+      status = "rejected";
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
+    return {
+      id: String(pr.returnId ?? pr.returnId),
+      orderId: String(pr.orderDto?.orderId ?? ""),
+      type,
+      customer: { name: pr.userOrderDto?.fullName ?? "", phone: "" },
+      product: {
+        name: pr.productName ?? "",
+        sku: pr.returnProductVariantId ? String(pr.returnProductVariantId) : "",
+        price: pr.returnAmount ?? pr.orderDto?.totalAmount ?? 0,
+        image: pr.productImageUrl ?? "",
+      },
+      reason: pr.returnReason ?? "",
+      description: pr.returnProductName ?? "",
+      status,
+      requestDate: pr.createdAt ?? "",
+      quantity: 1,
+    };
+  };
+
+  // whenever product-return data updates, map into UI shape
+  useEffect(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      setReturns(data.map(mapPR));
+    } else {
+      setReturns([]);
+    }
+  }, [data]);
+
+  const [filters, setFilters] = useState<Filters>({
+    status: "all",
+    dateFrom: "",
+    dateTo: "",
+    productSearch: "",
+    customerSearch: "",
+    phoneSearch: "",
   });
 
-const returnColumns = (
-  handleView: (ret: Return) => void,
-  handleApprove: (ret: Return) => void,
-  handleReject: (ret: Return) => void,
-  handlePrint: (ret: Return) => void
-): ColumnDef<Return>[] => [
-  {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return <div className="text-center w-[100px]">Mã phiếu</div>;
-    },
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <div className="font-semibold text-slate-800">{row.original.id}</div>
-        <div className="text-xs text-slate-500">
-          Đơn gốc: {row.original.orderId}
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "type",
-    header: ({ column }) => {
-      return <div className="text-center w-[120px]">Loại</div>;
-    },
-    cell: ({ row }) => (
-      <div
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-          row.original.type === "exchange"
-            ? "bg-blue-100 text-blue-800"
-            : "bg-purple-100 text-purple-800"
-        }`}
-      >
-        {row.original.type === "exchange" ? (
-          <>
-            <Repeat2 className="w-4 h-4 mr-1" /> Đổi hàng
-          </>
-        ) : (
-          <>
-            <Package className="w-4 h-4 mr-1" /> Trả hàng
-          </>
-        )}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "customer",
-    header: ({ column }) => {
-      return <div className="text-center w-[180px]">Khách hàng</div>;
-    },
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-          <User className="w-4 h-4 text-white" />
-        </div>
-        <div>
-          <div className="font-medium text-slate-800 text-sm">
-            {row.original.customer.name}
-          </div>
-          <div className="text-xs text-slate-500">
-            {row.original.customer.phone}
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "product",
-    header: ({ column }) => {
-      return <div className="text-center w-[250px]">Sản phẩm</div>;
-    },
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <img
-          src={row.original.product.image}
-          alt={row.original.product.name}
-          className="w-10 h-10 rounded border object-cover"
-        />
-        <div>
-          <div className="font-medium text-sm">{row.original.product.name}</div>
-          <div className="text-xs text-slate-500">
-            {row.original.product.sku}
-          </div>
-          <div className="text-xs font-medium text-green-600">
-            {formatCurrency(row.original.product.price)}
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "quantity",
-    header: ({ column }) => {
-      return <div className="text-center w-[80px]">Số lượng</div>;
-    },
-    cell: ({ row }) => (
-      <div className="text-center font-medium text-slate-800">
-        {row.original.quantity}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return <div className="text-center w-[120px]">Trạng thái</div>;
-    },
-    meta: {
-      filterConfig: {
-        type: "select",
-        placeholder: "Trạng thái",
-        options: [
-          { value: "all", label: "Tất cả" },
-          { value: "pending", label: "Chờ xử lý" },
-          { value: "processing", label: "Đang xử lý" },
-          { value: "approved", label: "Đã duyệt" },
-          { value: "rejected", label: "Từ chối" },
-        ],
+  // Dialog states
+  const [selectedReturn, setSelectedReturn] = useState<Return | null>(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isApproveOpen, setIsApproveOpen] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+
+  // Stats calculation
+  const stats = useMemo(
+    () => [
+      {
+        label: "Tổng phiếu",
+        value: returns.length,
+        icon: Package,
+        color: "bg-blue-100 text-blue-600",
       },
-    },
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const statusConfig = {
-        pending: { label: "Chờ xử lý", color: "bg-yellow-100 text-yellow-800" },
-        processing: { label: "Đang xử lý", color: "bg-blue-100 text-blue-800" },
-        approved: { label: "Đã duyệt", color: "bg-green-100 text-green-800" },
-        rejected: { label: "Từ chối", color: "bg-red-100 text-red-800" },
-      } as const;
-      return (
-        <div
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusConfig[status].color}`}
-        >
-          {statusConfig[status].label}
-        </div>
-      );
-    },
-    filterFn: (row, id, value) => {
-      if (!value) return true;
-      if (value === "all") return true;
-      return row.getValue(id) === value;
-    },
-  },
-  {
-    id: "actions",
-    header: ({ column }) => {
-      return <div className="flex justify-center px-4 w-[200px]">Thao tác</div>;
-    },
-    cell: ({ row }) => {
-      const ret = row.original;
-
-      return (
-        <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => handleView(ret)}>
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-green-600"
-            disabled={ret.status !== "pending"}
-            onClick={() => handleApprove(ret)}
-          >
-            <CheckCircle className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-red-600"
-            disabled={ret.status !== "pending"}
-            onClick={() => handleReject(ret)}
-          >
-            <XCircle className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-blue-600"
-            onClick={() => handlePrint(ret)}
-          >
-            <Printer className="h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-  },
-];
-
-// 🛠️ Component chính
-export default function OrderReturn() {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
-  const [productSearch, setProductSearch] = useState("");
-  const [customerSearch, setCustomerSearch] = useState("");
-  const [phoneSearch, setPhoneSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [orderSuggestions, setOrderSuggestions] = useState<typeof mockOrders>(
-    []
+      {
+        label: "Đổi hàng",
+        value: returns.filter(r => r.type === "exchange").length,
+        icon: Repeat2,
+        color: "bg-purple-100 text-purple-600",
+      },
+      {
+        label: "Trả hàng",
+        value: returns.filter(r => r.type === "return").length,
+        icon: Package,
+        color: "bg-indigo-100 text-indigo-600",
+      },
+    ],
+    [returns]
   );
-  const itemsPerPage = 10; // Số lượng mục trên mỗi trang
 
-  // 📊 Stats
-  const stats = [
-    {
-      label: "Tổng phiếu",
-      value: returns.length,
-      icon: Package,
-      color: "bg-blue-100 text-blue-600",
-    },
-    {
-      label: "Đổi hàng",
-      value: returns.filter((r) => r.type === "exchange").length,
-      icon: Repeat2,
-      color: "bg-purple-100 text-purple-600",
-    },
-    {
-      label: "Trả hàng",
-      value: returns.filter((r) => r.type === "return").length,
-      icon: Package,
-      color: "bg-indigo-100 text-indigo-600",
-    },
-  ];
-
-  // 🔎 Filter logic
+  // Filter logic
   const filteredReturns = useMemo(() => {
-    return returns.filter((r) => {
-      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    return returns.filter(r => {
+      if (filters.status !== "all" && r.status !== filters.status) return false;
       if (
-        dateFilter.from &&
-        new Date(r.requestDate) < new Date(dateFilter.from)
+        filters.dateFrom &&
+        new Date(r.requestDate) < new Date(filters.dateFrom)
       )
         return false;
-      if (dateFilter.to && new Date(r.requestDate) > new Date(dateFilter.to))
+      if (filters.dateTo && new Date(r.requestDate) > new Date(filters.dateTo))
         return false;
-
-      if (productSearch) {
-        const keyword = productSearch.toLowerCase().trim();
+      if (filters.productSearch) {
+        const keyword = filters.productSearch.toLowerCase().trim();
         if (
           !r.product.name.toLowerCase().includes(keyword) &&
           !r.product.sku.toLowerCase().includes(keyword)
-        ) {
+        )
           return false;
-        }
       }
-
-      if (customerSearch) {
-        const keyword = customerSearch.toLowerCase().trim();
+      if (filters.customerSearch) {
+        const keyword = filters.customerSearch.toLowerCase().trim();
         if (!r.customer.name.toLowerCase().includes(keyword)) return false;
       }
-
-      if (phoneSearch) {
-        const keyword = phoneSearch.trim();
+      if (filters.phoneSearch) {
+        const keyword = filters.phoneSearch.trim();
         if (!r.customer.phone.includes(keyword)) return false;
       }
-
       return true;
     });
-  }, [statusFilter, dateFilter, productSearch, customerSearch, phoneSearch]);
+  }, [returns, filters]);
 
-  // 📄 Phân trang
-  const totalPages = Math.ceil(filteredReturns.length / itemsPerPage);
+  // Pagination
+  const totalPages = Math.ceil(filteredReturns.length / pageSize);
   const paginatedReturns = filteredReturns.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
-  // 🛠️ Logic thêm phiếu
-  const [newReturn, setNewReturn] = useState<Partial<Return>>({
-    id: "",
-    orderId: "",
-    type: "return",
-    customer: { name: "", phone: "" },
-    product: { name: "", sku: "", price: 0, image: "" },
-    reason: "",
-    description: "",
-    status: "pending",
-    requestDate: "",
-    quantity: 1,
-  });
+  // Handlers
+  const handleView = useCallback((ret: Return) => {
+    setSelectedReturn(ret);
+    setIsViewOpen(true);
+  }, []);
 
-  // Handle order ID input change for lookup
-  const handleOrderIdChange = (value: string) => {
-    setNewReturn({ ...newReturn, orderId: value });
-    if (value.trim()) {
-      const filteredOrders = mockOrders.filter((order) =>
-        order.orderId.toLowerCase().includes(value.toLowerCase())
-      );
-      setOrderSuggestions(filteredOrders);
-    } else {
-      setOrderSuggestions([]);
-    }
-  };
+  const handleApprove = useCallback((ret: Return) => {
+    // open approve confirmation dialog for this return
+    setSelectedReturn(ret);
+    console.log(ret);
+    setIsApproveOpen(true);
+  }, []);
 
-  // Handle selecting an order from suggestions
-  const handleSelectOrder = (order: (typeof mockOrders)[0]) => {
-    setNewReturn({
-      ...newReturn,
-      orderId: order.orderId,
-      customer: { name: order.customer.name, phone: order.customer.phone },
-      product: {
-        name: order.product.name,
-        sku: order.product.sku,
-        price: order.product.price,
-        image: order.product.image,
-      },
-    });
-    setOrderSuggestions([]);
-  };
+  const handleReject = useCallback((ret: Return) => {
+    // open reject confirmation dialog for this return
+    setSelectedReturn(ret);
+    setIsRejectOpen(true);
+  }, []);
 
-  const handleAddReturn = () => {
-    if (
-      !newReturn.id ||
-      !newReturn.orderId ||
-      !newReturn.customer?.name ||
-      !newReturn.customer?.phone ||
-      !newReturn.product?.name ||
-      !newReturn.product?.sku ||
-      !newReturn.reason ||
-      !newReturn.requestDate
-    ) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+  const handlePrint = useCallback((ret: Return) => {
+    console.log("Print:", ret);
+    // TODO: Implement print functionality
+  }, []);
+
+  const handleAddReturn = useCallback(
+    async (payload: MinimalProductReturnRequest) => {
+      console.log("==> Gọi handleAddReturn");
+      try {
+        await createProductReturnV2(payload);
+        console.log("==> Gọi toast.success");
+        toast.success("Tạo phiếu đổi/trả thành công");
+        // refresh list from server
+        dispatch(fetchProductReturnList());
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("==> Gọi toast.error", err);
+        toast.error("Tạo phiếu đổi/trả thất bại");
+      } finally {
+        setIsAddOpen(false);
+      }
+    },
+    [dispatch]
+  );
+
+  const handleConfirmApprove = useCallback(async () => {
+    if (!selectedReturn) {
+      setIsApproveOpen(false);
       return;
     }
 
-    const newReturnData: Return = {
-      ...newReturn,
-      id: newReturn.id,
-      orderId: newReturn.orderId,
-      type: newReturn.type || "return",
-      customer: {
-        name: newReturn.customer.name,
-        phone: newReturn.customer.phone,
-      },
-      product: {
-        name: newReturn.product.name,
-        sku: newReturn.product.sku,
-        price: newReturn.product.price || 0,
-        image: newReturn.product.image || "",
-      },
-      reason: newReturn.reason,
-      description: newReturn.description || "",
-      status: newReturn.status || "pending",
-      requestDate: newReturn.requestDate,
-      quantity: newReturn.quantity || 1,
-    } as Return;
+    try {
+      // call API to approve the product return
+      const res = await approveProductReturn(Number(selectedReturn.id));
+      if (!res) {
+        throw new Error("Huỷ duyệt đơn đổi/trả thất bại");
+      }
+      // optimistically update local state
+      setReturns(prev =>
+        prev.map(r =>
+          r.id === selectedReturn.id
+            ? { ...r, status: "approved" as ReturnStatus }
+            : r
+        )
+      );
+      console.log("Đang ở đây");
+      // refresh list from server to keep in sync
+      toast.success("Duyệt đơn đổi / trả thành công");
+      setInterval(() => {
+        dispatch(fetchProductReturnList());
+      }, 5000);
+    } catch (err) {
+      const ex = err as AxiosError;
 
-    returns.push(newReturnData); // Thêm vào mảng (tạm thời, nên thay bằng API call)
-    setIsModalOpen(false);
-    setNewReturn({
-      id: "",
-      orderId: "",
-      type: "return",
-      customer: { name: "", phone: "" },
-      product: { name: "", sku: "", price: 0, image: "" },
-      reason: "",
-      description: "",
-      status: "pending",
-      requestDate: "",
-      quantity: 1,
-    });
-    setOrderSuggestions([]);
-  };
+      console.error("Failed to approve return", ex.message);
+      toast.error("Duyệt đơn đổi / trả thất bại");
+    } finally {
+      setIsApproveOpen(false);
+    }
+  }, [selectedReturn, dispatch]);
+
+  const handleConfirmReject = useCallback(async () => {
+    if (!selectedReturn) {
+      setIsRejectOpen(false);
+      return;
+    }
+
+    try {
+      // call API to cancel/reject the product return
+      const res = await rejectProductReturn(Number(selectedReturn.id));
+      if (!res) {
+        throw new Error("Huỷ duyệt đơn đổi/trả thất bại");
+      }
+      // optimistically update local state
+      setReturns(prev =>
+        prev.map(r =>
+          r.id === selectedReturn.id
+            ? { ...r, status: "rejected" as ReturnStatus }
+            : r
+        )
+      );
+
+      // refresh list from server to keep in sync
+      toast.success("Huỷ duyệt đơn đổi/trả thành công");
+      dispatch(fetchProductReturnList());
+    } catch (err) {
+      const ex = err as AxiosError;
+      toast.error("Failed to reject/cancel return: " + ex.message);
+    } finally {
+      setIsRejectOpen(false);
+    }
+  }, [selectedReturn, dispatch]);
+
+  const handleReloadReturns = useCallback(() => {
+    // TODO: Fetch from API
+    console.log("Reload returns list");
+  }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Stats cards */}
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-slate-800">
+          Quản lý đổi/trả hàng
+        </h3>
+        <AddReturnDialog
+          open={isAddOpen}
+          setIsOpen={setIsAddOpen}
+          onAdded={handleAddReturn}
+        />
+      </div>
+
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, i) => (
-          <div
-            key={i}
-            className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4"
-          >
-            <div className={`p-3 rounded-lg ${stat.color}`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-slate-800">
-                {stat.value}
-              </div>
-              <div className="text-slate-500">{stat.label}</div>
-            </div>
-          </div>
+          <StatsCard key={i} {...stat} />
         ))}
       </div>
 
-      {/* Filter and Add Button */}
-      <div className="flex flex-wrap items-center gap-4">
-        {/* Status buttons */}
-        <div className="flex gap-2 flex-wrap">
-          {["all", "pending", "processing", "approved", "rejected"].map(
-            (status) => (
-              <Button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  statusFilter === status
-                    ? "bg-blue-600 text-white shadow"
-                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                {status === "all" && "Tất cả"}
-                {status === "pending" && "Chờ xử lý"}
-                {status === "processing" && "Đang xử lý"}
-                {status === "approved" && "Đã duyệt"}
-                {status === "rejected" && "Từ chối"}
-              </Button>
-            )
-          )}
-        </div>
+      {/* Filter */}
+      <ReturnFilter filters={filters} setFilters={setFilters} />
 
-        {/* Date filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-600">Từ ngày</span>
-          <Input
-            type="date"
-            value={dateFilter.from}
-            onChange={(e) =>
-              setDateFilter({ ...dateFilter, from: e.target.value })
-            }
-            className="w-40"
+      {/* Table */}
+      <ReturnTable
+        data={paginatedReturns}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        onView={handleView}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
+
+      {/* Dialogs */}
+      {selectedReturn && (
+        <>
+          <ViewReturnDialog
+            open={isViewOpen}
+            setIsOpen={setIsViewOpen}
+            returnData={selectedReturn}
           />
-          <span className="text-sm text-slate-600">Đến ngày</span>
-          <Input
-            type="date"
-            value={dateFilter.to}
-            onChange={(e) =>
-              setDateFilter({ ...dateFilter, to: e.target.value })
-            }
-            className="w-40"
+          <ApproveReturnDialog
+            open={isApproveOpen}
+            setIsOpen={setIsApproveOpen}
+            returnData={selectedReturn}
+            onConfirm={handleConfirmApprove}
           />
-        </div>
-
-        {/* Add Button */}
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-green-600 text-white hover:bg-green-700 ml-auto"
-        >
-          Thêm phiếu đổi/trả
-        </Button>
-      </div>
-
-      {/* Search fields */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
-          type="text"
-          placeholder="Tìm theo sản phẩm (tên hoặc SKU)..."
-          value={productSearch}
-          onChange={(e) => setProductSearch(e.target.value)}
-        />
-        <Input
-          type="text"
-          placeholder="Tìm theo tên khách hàng..."
-          value={customerSearch}
-          onChange={(e) => setCustomerSearch(e.target.value)}
-        />
-        <Input
-          type="text"
-          placeholder="Tìm theo số điện thoại..."
-          value={phoneSearch}
-          onChange={(e) => setCustomerSearch(e.target.value)}
-        />
-      </div>
-
-      {/* DataTable */}
-      {paginatedReturns.length > 0 ? (
-        <DataTable
-          columns={returnColumns(
-            (ret) => {
-              /* handle view logic here */
-            },
-            (ret) => {
-              /* handle approve logic here */
-            },
-            (ret) => {
-              /* handle reject logic here */
-            },
-            (ret) => {
-              /* handle print logic here */
-            }
-          )}
-          data={paginatedReturns}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page: number) => setCurrentPage(page)}
-        />
-      ) : (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
-          <p className="text-slate-500">
-            Không tìm thấy phiếu đổi/trả hàng nào phù hợp.
-          </p>
-        </div>
+          <RejectReturnDialog
+            open={isRejectOpen}
+            setIsOpen={setIsRejectOpen}
+            returnData={selectedReturn}
+            onConfirm={handleConfirmReject}
+          />
+        </>
       )}
-
-      {/* Modal thêm phiếu */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Thêm phiếu đổi/trả</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="relative">
-              <label className="block text-sm font-medium text-slate-700">
-                Mã đơn gốc
-              </label>
-              <Input
-                value={newReturn.orderId || ""}
-                onChange={(e) => handleOrderIdChange(e.target.value)}
-                placeholder="Nhập mã đơn gốc (VD: ORD1003)"
-                className="w-full"
-              />
-              {orderSuggestions.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                  {orderSuggestions.map((order) => (
-                    <div
-                      key={order.orderId}
-                      className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
-                      onClick={() => handleSelectOrder(order)}
-                    >
-                      <div className="font-medium">{order.orderId}</div>
-                      <div className="text-sm text-slate-500">
-                        {order.customer.name} - {order.product.name}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Loại
-              </label>
-              <Select
-                value={newReturn.type || "return"}
-                onValueChange={(value) =>
-                  setNewReturn({
-                    ...newReturn,
-                    type: value as "exchange" | "return",
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Chọn loại" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="return">Trả hàng</SelectItem>
-                  <SelectItem value="exchange">Đổi hàng</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Mã SKU
-              </label>
-              <Input
-                value={newReturn.product?.sku || ""}
-                onChange={(e) =>
-                  setNewReturn({
-                    ...newReturn,
-                    product: {
-                      name: newReturn.product?.name ?? "",
-                      sku: e.target.value,
-                      price: newReturn.product?.price ?? 0,
-                      image: newReturn.product?.image ?? "",
-                    },
-                  })
-                }
-                placeholder="Nhập mã SKU"
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Lý do
-              </label>
-              <Input
-                value={newReturn.reason || ""}
-                onChange={(e) =>
-                  setNewReturn({ ...newReturn, reason: e.target.value })
-                }
-                placeholder="Nhập lý do đổi/trả"
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Số lượng
-              </label>
-              <Input
-                type="number"
-                value={newReturn.quantity || 1}
-                onChange={(e) =>
-                  setNewReturn({
-                    ...newReturn,
-                    quantity: Number(e.target.value),
-                  })
-                }
-                placeholder="Nhập số lượng"
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Ngày yêu cầu
-              </label>
-              <Input
-                type="date"
-                value={newReturn.requestDate || ""}
-                onChange={(e) =>
-                  setNewReturn({ ...newReturn, requestDate: e.target.value })
-                }
-                className="w-full"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-              Hủy
-            </Button>
-            <Button onClick={handleAddReturn}>Lưu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

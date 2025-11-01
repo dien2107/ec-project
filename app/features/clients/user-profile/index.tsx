@@ -1,14 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UserInfo from "./components/user-info";
 import { Package } from "lucide-react";
 import type {
   OrderItem,
   OrderStatus,
 } from "~/features/clients/user-profile/types/user";
-import {
-  mockOrders,
-  mockUserData,
-} from "~/features/clients/user-profile/data/fake-user";
 import Sidebar from "~/features/clients/user-profile/components/sidebar";
 import OrderStatusTabs from "~/features/clients/user-profile/components/order-status";
 import OrderCard from "~/features/clients/user-profile/components/order-card";
@@ -16,6 +12,12 @@ import OrderDetailsModal from "~/features/clients/user-profile/components/order-
 import AddressManagement from "../address";
 import ChangePassword from "~/features/clients/user-profile/components/change-password";
 import PaymentCards from "./components/payment-cards";
+import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
+import {
+  fetchOrderListData,
+  fetchOrderListDataByUserId,
+} from "~/redux/slices/orders";
+import { useSelector } from "react-redux";
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("thong-tin");
@@ -23,12 +25,57 @@ export default function UserProfilePage() {
     "Tất cả"
   );
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
+  const dispatch = useAppDispatch();
+  const [editOpen, setEditOpen] = useState(false);
+  const user = useAppSelector((state: RootState) => state.auth.user);
 
+  const { orderList } = useAppSelector(state => state.orderList);
+  const [listOrder, setListOrder] = useState<OrderItem[]>([]);
+  // 🔹 Lấy danh sách đơn hàng khi load trang
+  console.log(user);
+  useEffect(() => {
+    if (user?.data?.userId) {
+      dispatch(fetchOrderListDataByUserId(user.data.userId));
+    }
+  }, [dispatch, user?.data?.userId]);
+
+  // 🔹 Khi orderList từ Redux có dữ liệu -> format lại cho UI
+  useEffect(() => {
+    if (!orderList?.data) return;
+
+    const formattedList: OrderItem[] = orderList.data.map(order => ({
+      id: order.orderId.toString(),
+      status:
+        order.status.name === "Pending"
+          ? "Chờ xác nhận"
+          : order.status.name === "Confirmed"
+            ? "Đang giao"
+            : order.status.name === "Delivered"
+              ? "Đã giao"
+              : order.status.name === "Cancelled"
+                ? "Đã hủy"
+                : "Chờ xác nhận",
+      date: order.createdAt.toString(),
+      total: order.totalAmount,
+      items: order.items.map(item => ({
+        id: item.sku, // hoặc item.productVariantId nếu có
+        name: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.productImage,
+        variant: item.size,
+      })),
+    }));
+
+    setListOrder(formattedList);
+  }, [orderList]);
+
+  // 🔹 Lọc theo trạng thái
   const filteredOrders = useMemo(() => {
     return statusFilter === "Tất cả"
-      ? mockOrders
-      : mockOrders.filter((o) => o.status === statusFilter);
-  }, [statusFilter]);
+      ? listOrder
+      : listOrder.filter(o => o.status === statusFilter);
+  }, [statusFilter, listOrder]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -47,7 +94,7 @@ export default function UserProfilePage() {
             <Sidebar
               activeTab={activeTab}
               onChangeTab={setActiveTab}
-              totalOrders={mockOrders.length}
+              totalOrders={listOrder.length}
             />
           </div>
 
@@ -72,7 +119,7 @@ export default function UserProfilePage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredOrders.map((order) => (
+                      {filteredOrders.map(order => (
                         <OrderCard
                           key={order.id}
                           order={order}
@@ -87,12 +134,7 @@ export default function UserProfilePage() {
 
             {activeTab === "thong-tin" && <UserInfo />}
             {activeTab === "doi-mat-khau" && <ChangePassword />}
-            {activeTab === "dia-chi" && (
-              // <div className="bg-white rounded-lg shadow-sm p-6 text-gray-500 text-center">
-              //   Trang địa chỉ sẽ được cập nhật sau
-              // </div>
-              <AddressManagement></AddressManagement>
-            )}
+            {activeTab === "dia-chi" && <AddressManagement />}
             {activeTab === "thanh-toan" && <PaymentCards />}
           </div>
         </div>

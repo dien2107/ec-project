@@ -47,6 +47,15 @@ export const fetchOrderListData = createAsyncThunk(
     return response.data;
   }
 );
+export const fetchOrderListDataByUserId = createAsyncThunk(
+  "orders/fetchOrderListDataByUserId",
+  async (userId: number) => {
+    const response = await instance.get<ApiResponse<Order[]>>(
+      `/orders/${userId}`
+    );
+    return response.data;
+  }
+);
 
 const orderListDataSlice = createSlice({
   name: "orderListData",
@@ -64,6 +73,19 @@ const orderListDataSlice = createSlice({
         state.orderList = action.payload;
       })
       .addCase(fetchOrderListData.rejected, state => {
+        state.isLoading = false;
+        state.isError = true;
+      })
+      .addCase(fetchOrderListDataByUserId.pending, state => {
+        state.isLoading = true;
+        state.isError = false;
+      })
+      .addCase(fetchOrderListDataByUserId.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.orderList = action.payload;
+      })
+      .addCase(fetchOrderListDataByUserId.rejected, state => {
         state.isLoading = false;
         state.isError = true;
       });

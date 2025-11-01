@@ -14,11 +14,15 @@ import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
+import productReturnReducer from "./slices/product-return";
 import colorsReducer from "./slices/colors";
 import discountReducer from "./slices/discount";
 import sizeReducer from "./slices/sizes";
 import CategoryReducer from "./slices/categories";
 import materialReducer from "./slices/materials";
+import productGroupListDataReducer from "./slices/product-groups";
+import homePageReducer from "./slices/home-page";
+
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
@@ -29,6 +33,7 @@ import paymentDestinationListDataReducer from "./slices/payment-destinations";
 
 export const store = configureStore({
   reducer: {
+    productReturn: productReturnReducer,
     cart: cartReducer,
     productMeta: productFormMetaReducer,
     productList: productListDataReducer,
@@ -53,10 +58,11 @@ export const store = configureStore({
     sizeList: sizeReducer,
     categoryList: CategoryReducer,
     materialList: materialReducer,
+    productGroupList: productGroupListDataReducer,
+    homePage: homePageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
-  //     .prepend(authStorageListener.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>;

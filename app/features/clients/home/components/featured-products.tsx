@@ -1,9 +1,13 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "~/components/ui/product-card";
-import { fakeProducts } from "../data/products";
+import type { Product } from "~/types/home-page";
 
-export default function FeaturedProducts() {
+interface FeaturedProductsProps {
+  products: Product[];
+}
+
+export default function FeaturedProducts({ products }: FeaturedProductsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -51,8 +55,6 @@ export default function FeaturedProducts() {
     setTimeout(checkScroll, 400);
   };
 
-  const featuredProducts = fakeProducts.slice(0, 8);
-
   return (
     <section className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-center mb-12">
@@ -85,15 +87,23 @@ export default function FeaturedProducts() {
           className="overflow-x-auto scrollbar-hide scroll-smooth"
         >
           <div className="flex gap-6 md:gap-6">
-            {featuredProducts.map((product, index) => (
+            {products.map((product, index) => (
               <div
-                key={product.id}
+                key={product.productId}
                 className="flex-shrink-0 w-full sm:w-64 md:w-64 opacity-0 animate-fadeInUp"
                 style={{
                   animationDelay: `${index * 100}ms`,
                 }}
               >
-                <ProductCard {...product} />
+                <ProductCard
+                  id={product.productId}
+                  title={product.name}
+                  slug={`${product.productId}`}
+                  price={product.salePrice || product.price}
+                  oldPrice={product.price}
+                  discount={product.discountPercentage}
+                  image={product.thumbnail}
+                />
               </div>
             ))}
           </div>

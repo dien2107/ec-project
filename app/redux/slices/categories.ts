@@ -3,14 +3,12 @@ import instance from "~/services/customize-axios";
 import type { Category } from "~/features/system/categories/types"; // Thay đổi đường dẫn nếu cần
 import type { ApiPagedResponse } from "~/types/api-response";
 
-// State định nghĩa dữ liệu và trạng thái tải
 interface CategoryListState {
   categoryList: ApiPagedResponse<Category[]> | null;
   isLoading: boolean;
   error: string | null;
 }
 
-// Khởi tạo giá trị ban đầu
 const initialState: CategoryListState = {
   categoryList: null,
   isLoading: false,
