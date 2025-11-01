@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import type { Address } from "~/features/clients/payment/types/payment";
+import type { Address } from "~/types/address/address";
 import AddressSection from "~/features/clients/payment/components/address-section";
 import PaymentMethodSection from "~/features/clients/payment/components/payment-method";
 import CartSummary from "~/features/clients/payment/components/cart-summary";
@@ -27,6 +27,10 @@ export default function Payment() {
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
+    null
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 
@@ -91,14 +95,15 @@ export default function Payment() {
   const total = subtotal + shippingFee;
 
   const handleAddAddress = (address: Address) => {
+    // add to local addresses list and select it
     setAddresses(prev => [...prev, address]);
-    setSelectedAddressId(address.id);
+    setSelectedAddress(address);
+    setSelectedAddressId(address.addressId);
   };
 
   const dispatch = useAppDispatch();
 
   const handlePlaceOrder = async () => {
-    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
     if (!selectedAddress) {
       toast.error("Vui lòng chọn địa chỉ giao hàng!");
       return;
@@ -109,7 +114,7 @@ export default function Payment() {
       discountId: null,
       shipId: null,
       paymentMethod,
-      addressInfo: `${selectedAddress.fullName} - ${selectedAddress.phone} - ${selectedAddress.address}, ${selectedAddress.city}`,
+      addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
       isFreeShip: shippingFee === 0,
       shippingFee,
       items: selectedCartItems.map(i => ({
@@ -139,7 +144,7 @@ export default function Payment() {
         const paymentPayload: CreatePaymentPayload = {
           orderId: orderId,
           amount: total,
-          description: orderId + "",
+          description: `ORD${orderId}`,
         };
 
         const paymentResponse = await createPayment(paymentPayload);

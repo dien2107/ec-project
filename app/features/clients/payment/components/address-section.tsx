@@ -16,7 +16,7 @@ export default function AddressSection({
   onSelectAddress: (address: Address | null) => void;
 }) {
   const dispatch = useAppDispatch();
-  const { addresses = [] } = useAppSelector((state) => state.addresses);
+  const { addresses = [] } = useAppSelector(state => state.addresses);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -34,7 +34,7 @@ export default function AddressSection({
 
   // Lấy địa chỉ mặc định nếu chưa có selectedAddress
   const defaultAddress = useMemo(
-    () => addresses.find((a) => a.isDefault) || null,
+    () => addresses.find(a => a.isDefault) || null,
     [addresses]
   );
 
@@ -59,9 +59,9 @@ export default function AddressSection({
                   ? String(selectedAddress.addressId)
                   : null
               }
-              onSelectAddressId={(id) => {
+              onSelectAddressId={id => {
                 const found =
-                  addresses.find((a) => String(a.addressId) === id) ?? null;
+                  addresses.find(a => String(a.addressId) === id) ?? null;
                 onSelectAddress(found);
               }}
               onOpenAdd={() => {
@@ -107,9 +107,9 @@ export default function AddressSection({
                 ? String(selectedAddress.addressId)
                 : null
             }
-            onSelectAddressId={(id) => {
+            onSelectAddressId={id => {
               const found =
-                addresses.find((a) => String(a.addressId) === id) ?? null;
+                addresses.find(a => String(a.addressId) === id) ?? null;
               onSelectAddress(found);
             }}
           />

@@ -14,6 +14,7 @@ import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
+import productReturnReducer from "./slices/product-return";
 
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
@@ -22,6 +23,7 @@ import authReducer from "./slices/auth";
 import authLogoutListener from "~/middlewares/authLogoutListener";
 export const store = configureStore({
   reducer: {
+    productReturn: productReturnReducer,
     cart: cartReducer,
     productMeta: productFormMetaReducer,
     productList: productListDataReducer,
