@@ -47,12 +47,11 @@ export const getProductFormMeta = async () => {
   }
 };
 
-export const getProductByCategorySlug = async (
-  categorySlug: string,
-  filters: FilterState
-) => {
+export const getProductCatelog = async (filters: FilterState) => {
   try {
     const params = {
+      CategorySlug: filters.categorySlug,
+      Search: filters.search,
       ColorIds: filters.colorIds,
       MaterialIds: filters.materialIds,
       ProductGroupIds: filters.productGroupIds,
@@ -65,7 +64,7 @@ export const getProductByCategorySlug = async (
       PageSize: filters.pageSize,
     };
 
-    const response = await instance.get(`/products/category/${categorySlug}`, {
+    const response = await instance.get(`/products/catelog`, {
       params,
       paramsSerializer: (params) =>
         qs.stringify(params, { arrayFormat: "repeat" }),
@@ -84,6 +83,17 @@ export const getProductDetailBySlug = async (slug: string) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching product detail by slug:", error);
+    throw error;
+  }
+};
+export const get5ProductsSuggestBySearch = async (search: string) => {
+  try {
+    const response = await instance.get(`/products/search`, {
+      params: { search },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching suggested products:", error);
     throw error;
   }
 };

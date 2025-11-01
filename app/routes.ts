@@ -3,7 +3,10 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 export default [
   route("", "./layouts/customer-layout.tsx", [
     index("features/clients/home/index.tsx"),
-    route("/categories/:slug", "features/clients/categories/index.tsx"),
+    route("/categories/:slug", "features/clients/categories/index.tsx", {
+      id: "category-slug",
+    }),
+    route("/search", "features/clients/categories/index.tsx", { id: "search" }),
     route("/payments", "features/clients/payment/index.tsx"),
     route("/products/:slug", "features/clients/product-detail/index.tsx"),
     route("/profile", "features/clients/user-profile/index.tsx"),
@@ -13,6 +16,7 @@ export default [
       "/payment/online",
       "features/clients/payment/components/payment-handle.tsx"
     ),
+
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout
@@ -52,4 +56,8 @@ export default [
   route("forgot-password", "features/clients/auth/forgot.tsx"),
   route("reset-password", "features/clients/auth/reset.tsx"),
   route("verify-successful", "features/clients/auth/verifySuccessful.tsx"),
+  route(
+    "/payment/success",
+    "features/clients/payment/components/payment-success.tsx"
+  ),
 ] satisfies RouteConfig;

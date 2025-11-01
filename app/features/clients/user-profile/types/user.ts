@@ -1,3 +1,4 @@
+// export type OrderStatus = "Chờ xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
 export type OrderStatus = "Chờ xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
 
 export type OrderItem = {
@@ -13,7 +14,7 @@ export type OrderItem = {
     image: string;
     variant?: string;
   }[];
-}
+};
 
 export type UserAddress = {
   id: string;
@@ -23,14 +24,14 @@ export type UserAddress = {
   district: string;
   city: string;
   isDefault: boolean;
-}
+};
 
 export type UserOrder = {
   id: string;
   orderNumber: string;
   date: string;
   totalAmount: number;
-  status: 'processing' | 'delivered' | 'canceled';
+  status: "processing" | "delivered" | "canceled";
   items: {
     productId: string;
     productName: string;
@@ -38,7 +39,7 @@ export type UserOrder = {
     price: number;
     imageUrl: string;
   }[];
-}
+};
 
 export type UserProfile = {
   id: string;
@@ -47,4 +48,4 @@ export type UserProfile = {
   phone: string;
   addresses: UserAddress[];
   orders: UserOrder[];
-}
+};

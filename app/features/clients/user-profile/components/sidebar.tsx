@@ -15,7 +15,7 @@ export default function Sidebar({
     { id: "dia-chi", label: "Địa chỉ giao hàng", icon: MapPin },
     { id: "don-hang", label: "Đơn hàng của tôi", icon: ShoppingCart },
     { id: "doi-mat-khau", label: "Đổi mật khẩu", icon: KeyRound },
-    { id: "thanh-toan", label: "Phương thức thanh toán", icon: CreditCard },
+    // { id: "thanh-toan", label: "Phương thức thanh toán", icon: CreditCard },
   ];
 
   return (

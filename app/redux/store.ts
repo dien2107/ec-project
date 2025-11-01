@@ -14,6 +14,7 @@ import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
+import productReturnReducer from "./slices/product-return";
 import colorsReducer from "./slices/colors";
 import discountReducer from "./slices/discount";
 import sizeReducer from "./slices/sizes";
@@ -32,6 +33,7 @@ import paymentDestinationListDataReducer from "./slices/payment-destinations";
 
 export const store = configureStore({
   reducer: {
+    productReturn: productReturnReducer,
     cart: cartReducer,
     productMeta: productFormMetaReducer,
     productList: productListDataReducer,

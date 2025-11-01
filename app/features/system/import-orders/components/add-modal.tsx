@@ -37,11 +37,8 @@ export function AddImportOrderModal({
   onAdd,
 }: AddImportOrderModalProps) {
   const dispatch = useAppDispatch();
-  const {
-    statuses,
-    isLoading: isStatusesLoading,
-    isError: statusesError,
-  } = useAppSelector((s) => s.statuses);
+  const isStatusesLoading = useAppSelector((state) => state.statuses.isLoading);
+  const statusesError = useAppSelector((state) => state.statuses.isError);
   const {
     productList,
     isLoading: isProductListLoading,
@@ -102,9 +99,9 @@ export function AddImportOrderModal({
         dispatch(fetchStatuses({ entityType: ENTITY_TYPE.PRODUCT })).unwrap(),
       ]);
       setActiveStatusId({
-        supplier: sup.find((s) => s.name === "Active")?.statusId,
-        product: prod.find(
-          (s) => s.name === "Active" || s.name === "OutOfStock"
+        supplier: sup.statuses.find((s: any) => s.name === "Active")?.statusId,
+        product: prod.statuses.find(
+          (s: any) => s.name === "Active" || s.name === "OutOfStock"
         )?.statusId,
       });
     };
@@ -263,9 +260,8 @@ export function AddImportOrderModal({
       return alert("Nhập giá nhập cho mọi biến thể!");
     const now = new Date();
     const selectedSupplier = suppliers.find(
-      (s) => (s as any).name === supplier
+      (s) => (s as any).supplierId === supplier
     );
-    console.log(now);
     if (!selectedSupplier) return alert("Không tìm thấy nhà cung cấp!");
     const payload = {
       supplierId: (selectedSupplier as any).supplierId,

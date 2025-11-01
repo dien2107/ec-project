@@ -60,7 +60,8 @@ export default function Home() {
   return (
     <main className="bg-white">
       <Banner />
-      <CategorySection />
+      {homeData?.bestSellingCategories &&
+        homeData.bestSellingCategories.length > 0 && <CategorySection />}
       {homeData?.bestSellingProducts &&
         homeData.bestSellingProducts.length > 0 && (
           <FeaturedProducts products={homeData.bestSellingProducts} />

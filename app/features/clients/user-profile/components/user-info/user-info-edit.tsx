@@ -19,6 +19,9 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { updateUserById } from "~/services/customers";
+import { useAppDispatch } from "~/redux/store";
+import { fetchCurrentUser } from "~/redux/slices/auth";
+import toast from "react-hot-toast";
 
 interface UserInfoEditProps {
   user: {
@@ -30,7 +33,12 @@ interface UserInfoEditProps {
     dateOfBirth: string | null;
     imageUrl?: string;
     isVerified: boolean;
-    status: { displayName: string; entityType: string; name: string; statusId: number };
+    status: {
+      displayName: string;
+      entityType: string;
+      name: string;
+      statusId: number;
+    };
     roles: number[];
     gender: string;
   };
@@ -45,6 +53,7 @@ export default function UserInfoEdit({
   onClose,
   onSuccess,
 }: UserInfoEditProps) {
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -81,11 +90,14 @@ export default function UserInfoEdit({
 
     try {
       await updateUserById(user.userId, payload);
+      toast.success("Cập nhật thông tin thành công!");
+      // Reload user data
+      await dispatch(fetchCurrentUser());
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Cập nhật thất bại!");
+      toast.error(err?.response?.data?.message || "Cập nhật thất bại!");
     }
   };
 
@@ -129,7 +141,9 @@ export default function UserInfoEdit({
               name="dateOfBirth"
               type="date"
               value={form.dateOfBirth}
-              onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, dateOfBirth: e.target.value })
+              }
             />
           </div>
 
@@ -154,7 +168,9 @@ export default function UserInfoEdit({
             <Button type="button" variant="outline" onClick={onClose}>
               Hủy
             </Button>
-            <Button type="submit">Lưu thay đổi</Button>
+            <Button variant="add" type="submit">
+              Lưu thay đổi
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -67,9 +67,9 @@ export default function ShoppingCart() {
     );
   }, [selectedItems]);
 
-  const discount = subtotal * 0.1; // 10% discount
+  const discount = subtotal; // 10% discount
   const shippingFee = 0; // Free shipping
-  const total = subtotal - discount + shippingFee;
+  const total = subtotal + shippingFee;
 
   const handleSelectAll = (checked: boolean) => {
     setLocalItems(items => items.map(item => ({ ...item, selected: checked })));

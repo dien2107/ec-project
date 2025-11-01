@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +12,7 @@ import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { createOrder } from "~/services/order";
 import { clearCart } from "~/redux/slices/cartSlice";
 import { createPayment, type CreatePaymentPayload } from "~/services/payment";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const paymentSchema = z.object({
   paymentMethod: z.enum(["bank", "cod"]),
@@ -30,6 +30,10 @@ export default function Payment() {
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
+    null
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 
@@ -93,10 +97,16 @@ export default function Payment() {
   const shippingFee = subtotal >= 300000 ? 0 : 30000;
   const total = subtotal + shippingFee;
 
+  const handleAddAddress = (address: Address) => {
+    // add to local addresses list and select it
+    setAddresses(prev => [...prev, address]);
+    setSelectedAddress(address);
+    setSelectedAddressId(address.addressId);
+  };
+
   const dispatch = useAppDispatch();
 
   const handlePlaceOrder = async () => {
-    // use selectedAddress from local state (set via AddressSection)
     if (!selectedAddress) {
       toast.error("Vui lòng chọn địa chỉ giao hàng!");
       return;
@@ -137,25 +147,22 @@ export default function Payment() {
         const paymentPayload: CreatePaymentPayload = {
           orderId: orderId,
           amount: total,
-          description: orderId + "",
+          description: `ORD${orderId}`,
         };
 
         const paymentResponse = await createPayment(paymentPayload);
         console.log(paymentResponse);
-        if (!paymentResponse.data.isSuccess) {
+        if (!paymentResponse.isSuccess) {
           toast.error("Không thể tạo đơn thanh toán!");
           return;
         }
-
-        // wait a short moment then navigate once
-        setTimeout(() => {
-          navigate("/payment/online", {
-            state: {
-              paymentInfo: paymentResponse.data,
-              paymentPayload,
-            },
-          });
-        }, 500);
+        console.log(`${paymentResponse.qrCodeUrl}`);
+        navigate("/payment/online", {
+          state: {
+            paymentInfo: paymentResponse,
+            paymentPayload,
+          },
+        });
       } else {
         // 3️⃣ COD (thanh toán khi nhận hàng)
         toast.success("Đặt hàng thành công!");
