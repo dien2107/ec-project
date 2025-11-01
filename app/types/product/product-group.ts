@@ -5,8 +5,7 @@ export interface ProductGroup {
   name: string;
 }
 
-export interface ProductGroupDetail extends ProductGroup {
-  description: string;
+export interface ProductGroupDetailDto extends ProductGroup {
   status: Status;
   createdAt: Date;
   updatedAt: Date;

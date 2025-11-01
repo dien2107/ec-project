@@ -23,7 +23,10 @@ export default function Payment() {
   const navigate = useNavigate();
 
   // Lấy cartItems từ Redux store
-  const cartItems = useAppSelector(state => state.cart.items);
+  const cartItems = useAppSelector((state) => state.cart.items);
+  // get logged in user
+  const authUser = useAppSelector((state) => state.auth.user);
+  const userId = authUser?.data?.userId;
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -58,7 +61,7 @@ export default function Payment() {
     } else {
       // Mặc định chọn tất cả items
       setSelectedItems(
-        cartItems.map(item =>
+        cartItems.map((item) =>
           String(
             item.ProductVariant.productVariantId ??
               (item.ProductVariant as any).id
@@ -71,7 +74,7 @@ export default function Payment() {
   // Tính toán các items được chọn
   const selectedCartItems = useMemo(
     () =>
-      cartItems.filter(item =>
+      cartItems.filter((item) =>
         selectedItems.includes(
           String(
             item.ProductVariant.productVariantId ??
@@ -110,14 +113,14 @@ export default function Payment() {
     }
 
     const payload = {
-      userId: 3,
+      userId,
       discountId: null,
       shipId: null,
       paymentMethod,
       addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
       isFreeShip: shippingFee === 0,
       shippingFee,
-      items: selectedCartItems.map(i => ({
+      items: selectedCartItems.map((i) => ({
         productVariantId: Number(
           i.ProductVariant.productVariantId ?? (i.ProductVariant as any).id
         ),
@@ -235,7 +238,7 @@ export default function Payment() {
               </h2>
             </div>
             <div className="p-6 space-y-4">
-              {selectedCartItems.map(item => (
+              {selectedCartItems.map((item) => (
                 <div
                   key={String(
                     item.ProductVariant.productVariantId ??

@@ -40,7 +40,12 @@ export default [
     route("/system/material", "features/system/material/index.tsx"),
     route("/system/colors", "features/system/colors/index.tsx"),
     route("/system/sizes", "features/system/sizes/index.tsx"),
+    route("/system/product-group", "features/system/product-group/index.tsx"),
+    route("/system/user", "features/system/user-information-detail/index.tsx"),
   ]),
+
+  // system login should not use the admin layout — register it as a top-level route
+  route("/system/login", "features/system/login/index.tsx"),
 
   // separate auth pages (each page has its own url)
   route("login", "features/clients/auth/login.tsx"),

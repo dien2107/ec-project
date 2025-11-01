@@ -47,7 +47,6 @@ const AddAddressForm = ({
   setIsOpen: (open: boolean) => void;
   onUpdated: () => void;
   selectedAddress: Address;
-  // optional callback when user cancels the edit form (e.g., reopen the view-addresses dialog)
   onCancel?: () => void;
 }) => {
   const dispatch = useAppDispatch();
@@ -134,7 +133,7 @@ const AddAddressForm = ({
       const isValid = await trigger();
       if (!isValid) return;
 
-      await updateAddress(1, selectedAddress.addressId, data);
+      await updateAddress(selectedAddress.addressId, data);
       toast.success("Cập nhật địa chỉ thành công!");
       onUpdated();
       setIsOpen(false);

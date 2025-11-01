@@ -15,12 +15,22 @@ import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
 import cartReducer from "./slices/cartSlice";
 import productReturnReducer from "./slices/product-return";
+import colorsReducer from "./slices/colors";
+import discountReducer from "./slices/discount";
+import sizeReducer from "./slices/sizes";
+import CategoryReducer from "./slices/categories";
+import materialReducer from "./slices/materials";
+import productGroupListDataReducer from "./slices/product-groups";
+import homePageReducer from "./slices/home-page";
 
 import permissionListDataReducer from "./slices/permissions";
 import roleListDataReducer from "./slices/roles";
 import customerListDataReducer from "./slices/customers";
 import authReducer from "./slices/auth";
 import authLogoutListener from "~/middlewares/authLogoutListener";
+import shipListDataReducer from "./slices/ships";
+import paymentDestinationListDataReducer from "./slices/payment-destinations";
+
 export const store = configureStore({
   reducer: {
     productReturn: productReturnReducer,
@@ -41,10 +51,18 @@ export const store = configureStore({
     roleList: roleListDataReducer,
     customerList: customerListDataReducer,
     auth: authReducer,
+    shipList: shipListDataReducer,
+    paymentDestinationList: paymentDestinationListDataReducer,
+    colorList: colorsReducer,
+    discountList: discountReducer,
+    sizeList: sizeReducer,
+    categoryList: CategoryReducer,
+    materialList: materialReducer,
+    productGroupList: productGroupListDataReducer,
+    homePage: homePageReducer,
   },
-  middleware: getDefaultMiddleware =>
+  middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
-  //     .prepend(authStorageListener.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>;

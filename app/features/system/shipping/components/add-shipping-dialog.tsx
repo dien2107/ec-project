@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Plus, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -7,44 +7,80 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { type ShippingMethod } from "../types";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import type { Ship } from "~/types/ship";
+import { ENTITY_TYPE } from "~/constants/entity-types";
+import { useAppSelector } from "~/redux/store";
+import { createShipping } from "~/services/ships";
+import type { ShippingFormData } from "../types/shipping-form-data";
 
-interface AddShippingDialogProps {
-  onSave: (data: Partial<ShippingMethod>) => void;
-}
-
-export default function AddShippingDialog({ onSave }: AddShippingDialogProps) {
+export default function AddShippingDialog({
+  onAdded,
+}: {
+  onAdded: () => void;
+}) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<ShippingMethod>>({
-    corpName: "",
-    description: "",
-    baseCost: 0,
-    estimatedDays: 3,
-    status: "active",
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const statuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
+  );
+  const inactiveStatus = statuses.find((s: any) => s.name === "Inactive");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-    setOpen(false);
-    setFormData({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+    trigger,
+  } = useForm<ShippingFormData>({
+    defaultValues: {
       corpName: "",
       description: "",
       baseCost: 0,
-      estimatedDays: 3,
-      status: "active",
-    });
+      estimatedDays: 1,
+    },
+  });
+
+  useEffect(() => {
+    if (open) {
+      const defaults = {
+        corpName: "",
+        description: "",
+        baseCost: 0,
+        estimatedDays: 1,
+      };
+      reset(defaults);
+      setIsLoading(false);
+    }
+  }, [open, reset, setValue, inactiveStatus]);
+
+  const onSubmit = async (data: ShippingFormData) => {
+    try {
+      setIsLoading(true);
+      const valid = await trigger();
+      if (!valid) return;
+
+      await createShipping(data);
+      toast.success("Thêm phương thức vận chuyển thành công!");
+      onAdded();
+      setOpen(false);
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi thêm địa chỉ!");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,27 +91,36 @@ export default function AddShippingDialog({ onSave }: AddShippingDialogProps) {
           Thêm phương thức vận chuyển
         </Button>
       </DialogTrigger>
+
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Thêm phương thức vận chuyển mới</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="corpName">
-                Đơn vị vận chuyển <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="corpName"
-                value={formData.corpName}
-                onChange={e =>
-                  setFormData({ ...formData, corpName: e.target.value })
-                }
-                placeholder="Nhập tên đơn vị vận chuyển"
-                required
-              />
-            </div>
 
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Dòng 1: Đơn vị vận chuyển (full width) */}
+          <div className="space-y-2">
+            <Label htmlFor="corpName">
+              Đơn vị vận chuyển <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="corpName"
+              placeholder="Nhập tên đơn vị vận chuyển"
+              disabled={isLoading}
+              {...register("corpName", {
+                required: "Tên đơn vị vận chuyển không được để trống",
+                minLength: { value: 3, message: "Tên phải có ít nhất 3 ký tự" },
+              })}
+            />
+            {errors.corpName && (
+              <span className="text-red-500 text-xs">
+                {errors.corpName.message}
+              </span>
+            )}
+          </div>
+
+          {/* Dòng 2: Phí vận chuyển | Thời gian giao hàng */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="baseCost">
                 Phí vận chuyển (VNĐ) <span className="text-red-500">*</span>
@@ -83,21 +128,22 @@ export default function AddShippingDialog({ onSave }: AddShippingDialogProps) {
               <Input
                 id="baseCost"
                 type="number"
-                min="0"
-                value={formData.baseCost}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    baseCost: Number(e.target.value),
-                  })
-                }
+                min={0}
                 placeholder="Nhập phí vận chuyển"
-                required
+                disabled={isLoading}
+                {...register("baseCost", {
+                  required: "Phí vận chuyển bắt buộc",
+                  min: { value: 0, message: "Phí phải >= 0" },
+                  valueAsNumber: true,
+                })}
               />
+              {errors.baseCost && (
+                <span className="text-red-500 text-xs">
+                  {errors.baseCost.message}
+                </span>
+              )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="estimatedDays">
                 Thời gian giao hàng (ngày){" "}
@@ -106,68 +152,55 @@ export default function AddShippingDialog({ onSave }: AddShippingDialogProps) {
               <Input
                 id="estimatedDays"
                 type="number"
-                min="1"
-                value={formData.estimatedDays}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    estimatedDays: Number(e.target.value),
-                  })
-                }
+                min={1}
                 placeholder="Nhập số ngày giao hàng"
-                required
+                disabled={isLoading}
+                {...register("estimatedDays", {
+                  required: "Thời gian giao hàng bắt buộc",
+                  min: { value: 1, message: "Phải lớn hơn hoặc bằng 1 ngày" },
+                  valueAsNumber: true,
+                })}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">
-                Trạng thái <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    status: value as "active" | "inactive",
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Hoạt động</SelectItem>
-                  <SelectItem value="inactive">Không hoạt động</SelectItem>
-                </SelectContent>
-              </Select>
+              {errors.estimatedDays && (
+                <span className="text-red-500 text-xs">
+                  {errors.estimatedDays.message}
+                </span>
+              )}
             </div>
           </div>
 
+          {/* Dòng 4: Mô tả (full width) */}
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả</Label>
             <Textarea
               id="description"
-              value={formData.description}
-              onChange={e =>
-                setFormData({ ...formData, description: e.target.value })
-              }
               placeholder="Nhập mô tả về phương thức vận chuyển"
               rows={3}
+              disabled={isLoading}
+              {...register("description")}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
-              Hủy
+          <DialogFooter>
+            {!isLoading && (
+              <DialogClose asChild>
+                <Button variant="outline">Hủy</Button>
+              </DialogClose>
+            )}
+            <Button type="submit" variant="add" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" size={16} />
+                  Đang thêm...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Thêm phương thức
+                </>
+              )}
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              Thêm phương thức
-            </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

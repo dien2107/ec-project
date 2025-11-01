@@ -1,139 +1,144 @@
-import React, { useState } from "react";
-import { Plus, Package } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchCategoryListData } from "~/redux/slices/categories";
+
+import type { CategoryDetailDto } from "~/types/product/category";
 import DataTable from "../components/data-table";
-import { mockCategories } from "./data/data";
-import { getColumns, type Category } from "./types";
-import AddCategoryDialog from "./components/add-category";
-import CategoryDetailDialog from "./components/category-detail";
-import EditCategoryDialog from "./components/edit-category";
-import DeleteCategoryDialog from "./components/delete-category";
+import { getColumns } from "./columns/category";
+
+import AddCategoryDialog from "./components/add-category-dialog";
+import EditCategoryDialog from "./components/edit-category-dialog";
+import DeleteCategoryDialog from "./components/delete-category-dialog";
+import CategoryFilter from "./components/category-filter";
 
 export default function CategoryManagement() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
-  const pageSize = 10;
+  const dispatch = useAppDispatch();
+  const { categoryList, isLoading: isCategoryLoading } = useAppSelector(
+    (state: any) => state.categoryList
+  );
 
-  // Filter categories based on status
-  const filteredCategories = categories.filter(category => {
-    if (statusFilter === "all") return true;
-    return category.status === statusFilter;
+  const PAGE_SIZE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    Search: "",
+    StatusName: "",
   });
 
-  const totalPages = Math.ceil(filteredCategories.length / pageSize);
-  const paginatedData = filteredCategories.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
-  );
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryDetailDto | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const handleView = (category: Category) => {
-    setSelectedCategory(category);
-    setIsDetailOpen(true);
-  };
+  // ✅ Gọi API load danh sách khi filter hoặc phân trang thay đổi
+  useEffect(() => {
+    dispatch(
+      fetchCategoryListData({
+        PageNumber: currentPage,
+        PageSize: PAGE_SIZE,
+        Search: filters.Search || undefined,
+        StatusName: filters.StatusName || undefined,
+      })
+    );
+  }, [dispatch, currentPage, filters]);
 
-  const handleEdit = (category: Category) => {
+  // ✅ Xử lý sự kiện CRUD
+  const handleEdit = useCallback((category: CategoryDetailDto) => {
     setSelectedCategory(category);
     setIsEditOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (category: Category) => {
+  const handleDelete = useCallback((category: CategoryDetailDto) => {
     setSelectedCategory(category);
     setIsDeleteOpen(true);
-  };
+  }, []);
 
-  const handleSaveCategory = (categoryData: Partial<Category>) => {
-    if (selectedCategory) {
-      // Update existing category
-      setCategories(prev =>
-        prev.map(cat =>
-          cat.id === selectedCategory.id ? { ...cat, ...categoryData } : cat
-        )
-      );
-    } else {
-      // Add new category
-      const newCategory: Category = {
-        id: `CAT${String(categories.length + 1).padStart(3, "0")}`,
-        name: categoryData.name || "",
-        description: categoryData.description || "",
-        productCount: 0,
-        status: categoryData.status || "active",
-        createdDate: new Date().toLocaleDateString("vi-VN"),
-      };
-      setCategories(prev => [...prev, newCategory]);
-    }
-  };
+  // ✅ Xử lý thay đổi filter
+  const handleFilterChange = useCallback(
+    (updater: (prev: typeof filters) => typeof filters) => {
+      setFilters(updater);
+      setCurrentPage(1);
+    },
+    []
+  );
 
-  const handleDeleteCategory = (categoryId: string) => {
-    setCategories(prev => prev.filter(cat => cat.id !== categoryId));
-  };
+  const columns = useMemo(
+    () => getColumns(handleEdit, handleDelete),
+    [handleEdit, handleDelete]
+  );
 
-  const globalFilterFn = (
-    row: Category,
-    _columnId: string,
-    filterValue: string
-  ) => {
-    const searchableFields: (keyof Category)[] = ["id", "name", "description"];
-    return searchableFields.some(field =>
-      String(row[field]).toLowerCase().includes(filterValue.toLowerCase())
-    );
-  };
-
-  const columns = getColumns(handleView, handleEdit, handleDelete);
+  const data = categoryList?.data?.items ?? [];
 
   return (
-    <>
-      <div className="container">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-2xl font-bold">Quản lý danh mục</h3>
-          <AddCategoryDialog onSave={handleSaveCategory} />
-        </div>
-
-        <DataTable
-          columns={columns}
-          data={paginatedData}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          title="Danh sách danh mục"
-          filterPlaceholder="Tìm kiếm danh mục..."
-          showFilter
-          addButtonTitle="Thêm danh mục"
-          globalFilterFn={globalFilterFn}
+    <div className="container">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-2xl font-bold">Quản lý thể loại</h3>
+        <AddCategoryDialog
+          onAdded={() => {
+            dispatch(
+              fetchCategoryListData({
+                PageNumber: currentPage,
+                PageSize: PAGE_SIZE,
+                Search: filters.Search || undefined,
+                StatusName: filters.StatusName || undefined,
+              })
+            );
+          }}
         />
       </div>
 
-      {/* Detail Modal */}
-      <CategoryDetailDialog
-        open={isDetailOpen}
-        setIsOpen={setIsDetailOpen}
-        category={selectedCategory}
+      {/* Filter */}
+      <div className="flex items-center justify-between mb-4">
+        <CategoryFilter filters={filters} setFilters={handleFilterChange} />
+      </div>
+
+      {/* Table */}
+      <DataTable
+        columns={columns}
+        data={data}
+        currentPage={currentPage}
+        totalPages={categoryList?.data?.totalPages ?? 1}
+        onPageChange={setCurrentPage}
+        isLoading={isCategoryLoading}
       />
 
-      {/* Edit Modal */}
-      <EditCategoryDialog
-        open={isEditOpen}
-        setIsOpen={setIsEditOpen}
-        category={selectedCategory}
-        onSave={handleSaveCategory}
-      />
+      {/* Dialogs */}
+      {selectedCategory && (
+        <EditCategoryDialog
+          open={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          selectedCategory={selectedCategory}
+          allCategories={data}
+          onUpdated={() => {
+            dispatch(
+              fetchCategoryListData({
+                PageNumber: currentPage,
+                PageSize: PAGE_SIZE,
+                Search: filters.Search || undefined,
+                StatusName: filters.StatusName || undefined,
+              })
+            );
+          }}
+        />
+      )}
 
-      {/* Delete Modal */}
-      <DeleteCategoryDialog
-        open={isDeleteOpen}
-        setIsOpen={setIsDeleteOpen}
-        category={selectedCategory}
-        onDelete={handleDeleteCategory}
-      />
-    </>
+      {selectedCategory && (
+        <DeleteCategoryDialog
+          open={isDeleteOpen}
+          setIsOpen={setIsDeleteOpen}
+          selectedCategory={selectedCategory}
+          onDelete={() => {
+            dispatch(
+              fetchCategoryListData({
+                PageNumber: currentPage,
+                PageSize: PAGE_SIZE,
+                Search: filters.Search || undefined,
+                StatusName: filters.StatusName || undefined,
+              })
+            );
+          }}
+        />
+      )}
+    </div>
   );
 }

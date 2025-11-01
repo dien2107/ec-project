@@ -1,11 +1,20 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { Eye, X } from "lucide-react";
+import {
+  Eye,
+  X,
+  Package,
+  Clock,
+  CheckCircle,
+  XCircle,
+  TruckIcon,
+} from "lucide-react";
 import { type ColumnDef } from "@tanstack/react-table";
 import DataTable from "~/features/system/components/data-table";
 import { Button } from "~/components/ui/button";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchCustomerListData } from "~/redux/slices/customers";
 import { getUserById, updateUserById } from "~/services/customers";
+import { getOrderByUserId } from "~/services/order";
 import { fetchStatuses } from "~/redux/slices/statuses";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import toast, { Toaster } from "react-hot-toast";
@@ -13,8 +22,13 @@ import CustomerFilter from "./components/customer-filter";
 import SkeletonHeader from "~/components/ui/skeleton-header";
 import SkeletonFilter from "~/components/ui/skeleton-filter";
 import SkeletonTable from "~/components/ui/skeleton-table";
-import type { Customer, EntityStatus, UpdateCustomerData, Address, Role} from "./types";
-// ===== Modal Components =====
+import type {
+  Customer,
+  EntityStatus,
+  UpdateCustomerData,
+  Address,
+  Role,
+} from "./types";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -29,6 +43,10 @@ interface CustomerDetailModalProps {
   userStatuses: EntityStatus[];
   isStatusesLoading: boolean;
   reloadList: () => void;
+  orders: any[];
+  loadingOrders: boolean;
+  activeTab: "personal" | "orders";
+  setActiveTab: (tab: "personal" | "orders") => void;
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
@@ -42,6 +60,80 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   );
 };
 
+const OrderStatusBadge: React.FC<{ status: EntityStatus }> = ({ status }) => {
+  const getStatusStyle = (statusName?: string) => {
+    const name = statusName?.toLowerCase();
+    switch (name) {
+      case "pending": 
+        return {
+          bg: "bg-yellow-100",
+          text: "text-yellow-700",
+          icon: Clock,
+        };
+      case "confirmed": 
+        return {
+          bg: "bg-blue-100",
+          text: "text-blue-700",
+          icon: CheckCircle,
+        };
+      case "processing": 
+        return {
+          bg: "bg-purple-100",
+          text: "text-purple-700",
+          icon: Package,
+        };
+      case "packaging": 
+        return {
+          bg: "bg-indigo-100",
+          text: "text-indigo-700",
+          icon: Package,
+        };
+      case "shipping": 
+        return {
+          bg: "bg-cyan-100",
+          text: "text-cyan-700",
+          icon: TruckIcon,
+        };
+      case "delivered": 
+        return {
+          bg: "bg-green-100",
+          text: "text-green-700",
+          icon: CheckCircle,
+        };
+      case "cancelled": 
+        return {
+          bg: "bg-red-100",
+          text: "text-red-700",
+          icon: XCircle,
+        };
+      case "returned": 
+        return {
+          bg: "bg-orange-100",
+          text: "text-orange-700",
+          icon: XCircle,
+        };
+      default:
+        return {
+          bg: "bg-gray-100",
+          text: "text-gray-700",
+          icon: Package,
+        };
+    }
+  };
+
+  const style = getStatusStyle(status?.name);
+  const Icon = style.icon;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${style.bg} ${style.text}`}
+    >
+      <Icon className="w-4 h-4" />
+      {status?.displayName ?? status?.name ?? "Không xác định"}
+    </span>
+  );
+};
+
 const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   customer,
   isOpen,
@@ -50,9 +142,12 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   userStatuses,
   isStatusesLoading,
   reloadList,
+  orders,
+  loadingOrders,
+  activeTab,
+  setActiveTab,
 }) => {
   const [locking, setLocking] = useState(false);
-  const [activeTab, setActiveTab] = useState<"personal" | "orders">("personal");
   const [selectedStatus, setSelectedStatus] = useState<number | null>(null);
 
   useEffect(() => {
@@ -69,7 +164,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       currency: "VND",
     }).format(amount);
 
-  // helper component to render addresses with "show more"
+  
   const AddressesList: React.FC<{
     addresses?: Address[];
     fallback?: string | undefined;
@@ -128,7 +223,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       return;
     }
 
-    // ensure statuses loaded
+    
     if (!userStatuses.length) {
       toast.error("Danh sách trạng thái chưa sẵn sàng, vui lòng thử lại.");
       return;
@@ -147,7 +242,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         isVerified: customer.isVerified ?? false,
         statusId: targetStatus.statusId,
         roleIds: (customer.roles ?? []).map((r) => r.roleId),
-        // IMPORTANT: keep addresses array so backend doesn't lose them
+        
         addresses: customer.addresses ?? [],
       };
 
@@ -303,22 +398,97 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           </div>
         ) : (
           <div>
-            {customer?.orders && customer.orders.length > 0 ? (
-              customer.orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="grid grid-cols-4 gap-4 py-2 border-b text-sm"
-                >
-                  <div>{order.id}</div>
-                  <div>{order.date}</div>
-                  <div>{formatCurrency(order.amount)}</div>
-                  <div>{order.status}</div>
-                </div>
-              ))
+            {loadingOrders ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600">Đang tải đơn hàng...</span>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Package className="w-16 h-16 text-gray-300 mb-4" />
+                <p className="text-gray-500 text-lg font-medium">
+                  Chưa có đơn hàng nào
+                </p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Khách hàng chưa thực hiện đơn hàng nào
+                </p>
+              </div>
             ) : (
-              <p className="text-center text-gray-500 py-8">
-                Chưa có đơn hàng nào
-              </p>
+              <div className="space-y-3">
+                {orders.map((order) => (
+                  <div
+                    key={order.orderId}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                          <Package className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">
+                            Đơn hàng #{order.orderId}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleString("vi-VN")}
+                          </p>
+                        </div>
+                      </div>
+                      <OrderStatusBadge status={order.status} />
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500 block mb-1">
+                          Tổng tiền
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          {formatCurrency(order.totalPrice || 0)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block mb-1">
+                          Số sản phẩm
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          {order.orderItems?.length || 0} món
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block mb-1">
+                          Phí ship
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          {order.isFreeShip ? (
+                            <span className="text-green-600">Miễn phí</span>
+                          ) : (
+                            formatCurrency(order.shippingFee || 0)
+                          )}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block mb-1">
+                          Thanh toán
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          {order.paymentDestination?.name || "Chưa thanh toán"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {order.addressInfo && (
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex items-start gap-2 text-sm">
+                          <TruckIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-600">
+                            {order.addressInfo}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -337,7 +507,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   );
 };
 
-// ===== Main Component =====
+
 type FilterValues = {
   Search?: string;
   Phone?: string;
@@ -353,17 +523,14 @@ const CustomerManagement: React.FC = () => {
     (state: any) =>
       state.customerList ?? { customerList: null, isLoading: false }
   );
-  const { statuses, isLoading: isStatusesLoading } = useAppSelector(
-    (state: any) => state.statuses ?? { statuses: null, isLoading: false }
+
+  
+  const userStatuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.USER] ?? []
   );
+  const isStatusesLoading = useAppSelector((state) => state.statuses.isLoading);
 
-  const userStatuses = useMemo(() => {
-    if (Array.isArray(statuses)) return statuses;
-    if (Array.isArray(statuses?.data)) return statuses.data;
-    return [];
-  }, [statuses]);
-
-  // replace previous statusFilter with central filters state
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterValues>({});
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -371,17 +538,20 @@ const CustomerManagement: React.FC = () => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [activeTab, setActiveTab] = useState<"personal" | "orders">("personal");
 
-  // memoized reload so we can call it from modal and effect without duplicate dispatches
+  
   const reloadList = useCallback(
     (override?: { PageNumber?: number }) => {
       dispatch(
         fetchCustomerListData({
           PageNumber: override?.PageNumber ?? currentPage,
           PageSize: PAGE_SIZE,
-          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           ...(filters.Search ? { Search: filters.Search } : {}),
           ...(filters.Phone ? { Phone: filters.Phone } : {}),
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           HasRole: false,
         })
       );
@@ -393,17 +563,15 @@ const CustomerManagement: React.FC = () => {
     dispatch(fetchStatuses({ entityType: ENTITY_TYPE.USER }));
   }, [dispatch]);
 
-  // call reloadList whenever page or filters change (single fetch)
+  
   useEffect(() => {
     reloadList();
   }, [reloadList]);
 
-  const handleFilterChange = React.useCallback((next: FilterValues) => {
-    // only update local state here; effect will trigger fetch once
+  const handleFilterChange = useCallback((next: FilterValues) => {
     setFilters(next);
     setCurrentPage(1);
   }, []);
-
   const data = customerList?.data?.items ?? customerList?.data ?? [];
 
   const columns: ColumnDef<Customer>[] = [
@@ -449,14 +617,26 @@ const CustomerManagement: React.FC = () => {
     setDetailLoading(true);
     setIsModalOpen(true);
     setSelectedCustomer(null);
+    setOrders([]);
+    setLoadingOrders(true);
+
     try {
-      const data = await getUserById(Number(row.userId));
-      const d = data.data ?? data;
+      
+      const [userData, ordersData] = await Promise.all([
+        getUserById(Number(row.userId)),
+        getOrderByUserId(row.userId).catch(() => ({ data: [] })),
+      ]);
+
+      const d = userData.data ?? userData;
       setSelectedCustomer(d);
-    } catch {
+      setOrders(ordersData.data || []);
+    } catch (error) {
+      console.error("Error fetching customer details:", error);
       setSelectedCustomer(null);
+      toast.error("Không thể tải thông tin khách hàng");
     } finally {
       setDetailLoading(false);
+      setLoadingOrders(false);
     }
   };
 
@@ -494,10 +674,6 @@ const CustomerManagement: React.FC = () => {
             currentPage={currentPage}
             totalPages={customerList?.data?.totalPages ?? 1}
             onPageChange={setCurrentPage}
-            title=""
-            showGlobalFilter
-            globalFilterPlaceholder="Tìm khách hàng..."
-            isLoading={isCustomerLoading}
           />
         )}
 
@@ -507,11 +683,17 @@ const CustomerManagement: React.FC = () => {
           onClose={() => {
             setIsModalOpen(false);
             setSelectedCustomer(null);
+            setOrders([]);
+            setActiveTab("personal");
           }}
           loading={detailLoading}
           userStatuses={userStatuses}
           isStatusesLoading={isStatusesLoading}
           reloadList={() => reloadList()}
+          orders={orders}
+          loadingOrders={loadingOrders}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
         />
       </div>
     </div>

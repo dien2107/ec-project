@@ -24,15 +24,12 @@ export default function UserPermissionSystem() {
     (state: any) =>
       state.customerList ?? { customerList: null, isLoading: false }
   );
-  const { statuses, isLoading: isStatusesLoading } = useAppSelector(
-    (state: any) => state.statuses ?? { statuses: null, isLoading: false }
-  );
 
-  const userStatuses = useMemo(() => {
-    if (Array.isArray(statuses)) return statuses;
-    if (Array.isArray(statuses?.data)) return statuses.data;
-    return [];
-  }, [statuses]);
+  
+  const userStatuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.USER] ?? []
+  );
+  const isStatusesLoading = useAppSelector((state) => state.statuses.isLoading);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<{
@@ -43,16 +40,16 @@ export default function UserPermissionSystem() {
   const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // memoized reload so effect / modal can call without duplicate dispatches
+  
   const reloadList = useCallback(
     (override?: { PageNumber?: number }) => {
       dispatch(
         fetchCustomerListData({
           PageNumber: override?.PageNumber ?? currentPage,
           PageSize: PAGE_SIZE,
-          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           ...(filters.Search ? { Search: filters.Search } : {}),
           ...(filters.Phone ? { Phone: filters.Phone } : {}),
+          ...(filters.StatusName ? { StatusName: filters.StatusName } : {}),
           HasRole: true,
         })
       );
@@ -64,7 +61,6 @@ export default function UserPermissionSystem() {
     dispatch(fetchStatuses({ entityType: ENTITY_TYPE.USER }));
   }, [dispatch]);
 
-  // load list whenever page or filters change
   useEffect(() => {
     reloadList();
   }, [reloadList]);
@@ -147,7 +143,6 @@ export default function UserPermissionSystem() {
       ),
     },
   ];
-
   return (
     <div className="p-4">
       {/* Header + filter: show skeletons while statuses load */}
@@ -186,10 +181,6 @@ export default function UserPermissionSystem() {
           currentPage={currentPage}
           totalPages={customerList?.data?.totalPages ?? 1}
           onPageChange={setCurrentPage}
-          title="Danh sách người dùng"
-          showGlobalFilter
-          globalFilterPlaceholder="Tìm người dùng..."
-          isLoading={isCustomerLoading}
         />
       )}
 

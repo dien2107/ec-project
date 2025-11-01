@@ -24,11 +24,12 @@ export default function AddressSection({
   const [deletingAddress, setDeletingAddress] = useState<Address | null>(null);
   const [reopenViewAfterEdit, setReopenViewAfterEdit] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
+  const { user } = useAppSelector((state) => state.auth);
 
   // Fetch địa chỉ nếu chưa có
   useEffect(() => {
     if ((addresses?.length ?? 0) === 0) {
-      dispatch(fetchAddressesByUserId(1));
+      dispatch(fetchAddressesByUserId(user.data.userId));
     }
   }, [dispatch, addresses.length]);
 
@@ -123,7 +124,7 @@ export default function AddressSection({
           setIsOpen={setIsEditOpen}
           selectedAddress={editingAddress}
           onUpdated={() => {
-            dispatch(fetchAddressesByUserId(1));
+            dispatch(fetchAddressesByUserId(user.data.userId));
             setIsEditOpen(false);
             if (reopenViewAfterEdit) {
               setIsViewOpen(true);
@@ -147,7 +148,7 @@ export default function AddressSection({
           setIsOpen={setIsDeleteOpen}
           selectedAddress={deletingAddress}
           onDeleted={() => {
-            dispatch(fetchAddressesByUserId(1));
+            dispatch(fetchAddressesByUserId(user.data.userId));
             setIsDeleteOpen(false);
             if (reopenViewAfterEdit) {
               setIsViewOpen(true);
@@ -170,7 +171,7 @@ export default function AddressSection({
         setIsOpen={setIsAddOpen}
         showAddButton={false}
         onAdded={() => {
-          dispatch(fetchAddressesByUserId(1));
+          dispatch(fetchAddressesByUserId(user.data.userId));
           setIsAddOpen(false);
           if (reopenViewAfterEdit) {
             setIsViewOpen(true);

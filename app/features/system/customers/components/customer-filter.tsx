@@ -1,8 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
+// ~/features/system/customers/components/customer-filter.tsx
+
+import React, { useEffect, useState, useRef } from "react";
+import { useDebounce } from "~/hooks/use-debounce";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Button } from "~/components/ui/button";
+import { X } from "lucide-react";
+
 type FilterValues = {
   Search?: string;
   Phone?: string;
-  HasRole?: boolean;
   StatusName?: string | undefined;
 };
 
@@ -25,59 +37,51 @@ const CustomerFilter: React.FC<Props> = ({
     initial?.StatusName
   );
 
-  // keep last sent values to avoid duplicate fetches
-  const lastSentRef = useRef<FilterValues | null>(null);
+  const debouncedSearch = useDebounce(search, 500);
+  const debouncedPhone = useDebounce(phone, 500);
 
-  // sync local state when `initial` changes (but treat as already-sent so no extra fetch)
+  // So sánh filter cũ để tránh gọi onChange dư
+  const prevFiltersRef = useRef<FilterValues | null>(null);
+
+  // Đồng bộ khi initial thay đổi từ ngoài
   useEffect(() => {
     setSearch(initial?.Search ?? "");
     setPhone(initial?.Phone ?? "");
     setStatusName(initial?.StatusName);
-    lastSentRef.current = {
-      Search: initial?.Search ?? undefined,
-      Phone: initial?.Phone ?? undefined,
-      HasRole: initial?.HasRole ?? undefined,
-      StatusName: initial?.StatusName ?? undefined,
-    };
   }, [initial]);
 
-  // debounce + only call onChange when values actually changed
+  // Gọi onChange chỉ khi có thay đổi
   useEffect(() => {
-    const t = setTimeout(() => {
-      const next: FilterValues = {
-        Search: search || undefined,
-        Phone: phone || undefined,
-        StatusName: statusName || undefined,
-      };
+    const next: FilterValues = {
+      Search: debouncedSearch || undefined,
+      Phone: debouncedPhone || undefined,
+      StatusName: statusName || undefined,
+    };
 
-      const prev = lastSentRef.current;
-      const changed =
-        !prev ||
-        prev.Search !== next.Search ||
-        prev.Phone !== next.Phone ||
-        prev.HasRole !== next.HasRole ||
-        prev.StatusName !== next.StatusName;
+    const prev = prevFiltersRef.current;
+    const hasChanged =
+      !prev ||
+      prev.Search !== next.Search ||
+      prev.Phone !== next.Phone ||
+      prev.StatusName !== next.StatusName;
 
-      if (changed) {
-        lastSentRef.current = next;
-        onChange(next);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [search, phone, statusName, onChange]);
+    if (hasChanged) {
+      prevFiltersRef.current = next;
+      onChange(next);
+    }
+  }, [debouncedSearch, debouncedPhone, statusName, onChange]);
 
   const handleReset = () => {
     setSearch("");
     setPhone("");
     setStatusName(undefined);
-    lastSentRef.current = {};
+    prevFiltersRef.current = null;
     onChange({});
   };
 
   if (isLoading) {
-    // skeleton filter placeholder (match supplier style)
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 p-4 border rounded-lg bg-gray-50">
         <div className="w-60 h-10 bg-gray-200 rounded animate-pulse" />
         <div className="w-40 h-10 bg-gray-200 rounded animate-pulse" />
         <div className="w-48 h-10 bg-gray-200 rounded animate-pulse" />
@@ -87,39 +91,50 @@ const CustomerFilter: React.FC<Props> = ({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3 p-4 border rounded-lg bg-gray-50">
       <input
         type="text"
         placeholder="Tìm theo tên/email..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="border rounded-lg px-3 py-2 text-sm w-60"
+        className="border rounded-lg px-3 py-2 text-sm w-60 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+
       <input
         type="text"
         placeholder="Số điện thoại..."
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
-        className="border rounded-lg px-3 py-2 text-sm w-40"
+        className="border rounded-lg px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-      <select
-        value={statusName ?? ""}
-        onChange={(e) => setStatusName(e.target.value || undefined)}
-        className="border rounded-lg px-3 py-2 text-sm"
+
+      <Select
+        value={statusName || "all"}
+        onValueChange={(value) =>
+          setStatusName(value === "all" ? undefined : value)
+        }
       >
-        <option value="">Tất cả trạng thái</option>
-        {statuses.map((s) => (
-          <option key={s.statusId} value={s.name ?? s.displayName}>
-            {s.displayName ?? s.name}
-          </option>
-        ))}
-      </select>
-      <button
+        <SelectTrigger className="w-48">
+          <SelectValue placeholder="Tất cả trạng thái" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tất cả trạng thái</SelectItem>
+          {statuses.map((s) => (
+            <SelectItem key={s.statusId} value={s.name}>
+              {s.displayName ?? s.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Button
+        variant="ghost"
         onClick={handleReset}
-        className="text-sm text-gray-600 hover:underline px-2 py-1"
+        className="flex items-center gap-2 text-sm"
       >
-        Đặt lại
-      </button>
+        <X className="h-4 w-4" />
+        Xóa bộ lọc
+      </Button>
     </div>
   );
 };

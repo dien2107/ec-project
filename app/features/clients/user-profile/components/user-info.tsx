@@ -1,65 +1,39 @@
+// src/features/user-profile/user-info.tsx
 import React, { useState } from "react";
-import UserInfoView from "./user-info/user-info-view";
-import UserInfoEdit from "./user-info/user-info-edit";
-import type { UserDisplayInfo } from "../types/user-profile.types";
-
-const mockUser: UserDisplayInfo = {
-  username: "nguyenvana2024",
-  full_name: "Nguyễn Văn A",
-  email: "nguyenvana@example.com",
-  phone: "0912345678",
-  is_active: true,
-  is_verify: true,
-  created_at: "2024-01-15",
-};
+import { useSelector } from "react-redux";
+import UserInfoView from "../components/user-info/user-info-view";
+import UserInfoEdit from "../components/user-info/user-info-edit";
+import type { RootState } from "~/redux/store";
 
 export default function UserInfo() {
-  const [open, setOpen] = useState(false);
-  const [user, setUser] = useState(mockUser);
-  const [editUser, setEditUser] = useState(mockUser);
+  const load = useSelector((state: RootState) => state.auth.user);
+  const user = load?.data ?? null;
+  const [editOpen, setEditOpen] = useState(false);
+  console.log("UserInfo render with user:", user);
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <p className="text-gray-500">Đang tải thông tin người dùng...</p>
+      </div>
+    );
+  }
 
-  const handleEdit = () => {
-    setEditUser(user);
-    setOpen(true);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditUser({ ...editUser, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = () => {
-    setUser(editUser);
-    setOpen(false);
+  const handleEdit = () => setEditOpen(true);
+  const handleClose = () => setEditOpen(false);
+  const handleSuccess = () => {
+    setEditOpen(false);
   };
 
   return (
-    <div className="w-full">
-      <div className="flex gap-6 w-full">
-        <UserInfoView
-          username={user.username}
-          full_name={user.full_name}
-          email={user.email}
-          phone={user.phone}
-          is_active={user.is_active}
-          is_verify={user.is_verify}
-          created_at={user.created_at}
-          onEdit={handleEdit}
-        />
-      </div>
+    <>
+      <UserInfoView user={user} onEdit={handleEdit} />
 
       <UserInfoEdit
-        open={open}
-        username={editUser.username}
-        full_name={editUser.full_name}
-        email={editUser.email}
-        phone={editUser.phone}
-        is_active={editUser.is_active}
-        is_verify={editUser.is_verify}
-        created_at={editUser.created_at}
-        onChange={handleChange}
-        onSave={handleSave}
-        onClose={() => setOpen(false)}
+        user={user}
+        open={editOpen}
+        onClose={handleClose}
+        onSuccess={handleSuccess}
       />
-    </div>
+    </>
   );
 }
