@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Plus, Loader2, Upload, X } from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { Plus, Loader2, X } from "lucide-react";
 
 import { createCategory, getCategoryHierarchy } from "~/services/categories";
 import { Button } from "~/components/ui/button";
@@ -17,55 +18,52 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-
-interface AddCategoryDialogProps {
-  onAdded: () => void;
-}
+import Select from "react-select";
+import { reactSelectStyles } from "~/components/ui/react-select-styles";
 
 type CategoryForm = {
   name: string;
   slug: string;
   description?: string;
-  parentId: string;
+  parentId: number | null;
+  fileImage: File | null;
 };
 
-export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
+export default function AddCategoryDialog({
+  onAdded,
+}: {
+  onAdded: () => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
+    []
+  );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageError, setImageError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<
-    { id: number; name: string; slug?: string }[]
-  >([]);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [touched, setTouched] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    control,
     setValue,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<CategoryForm>({
     defaultValues: {
       name: "",
       slug: "",
       description: "",
-      parentId: "",
+      parentId: null,
+      fileImage: null,
     },
   });
 
   const nameValue = watch("name");
-  const parentValue = watch("parentId");
 
-  // Auto-generate slug from name
+  // Auto-generate slug
   useEffect(() => {
     if (nameValue) {
       const slug = nameValue
@@ -81,29 +79,17 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
     }
   }, [nameValue, setValue]);
 
-  // Reset form when opening
-  useEffect(() => {
-    if (open) {
-      reset();
-      setImageFile(null);
-      setImagePreview("");
-      setTouched(false);
-      loadParentCategories();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  // Load categories (API returns flat list)
+  // Load categories
   const loadParentCategories = async () => {
     try {
       const res = await getCategoryHierarchy();
       if (res?.isSuccess && Array.isArray(res.data)) {
-        const mapped = res.data.map((c: any) => ({
-          id: c.categoryId,
-          name: c.name,
-          slug: c.slug,
-        }));
-        setCategories(mapped);
+        setCategories(
+          res.data.map((c: any) => ({
+            id: c.categoryId,
+            name: c.name,
+          }))
+        );
       } else {
         setCategories([]);
       }
@@ -113,45 +99,73 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
     }
   };
 
-  // Image handlers
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Dropzone
+  const onDrop = (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước ảnh không được vượt quá 5MB");
+        setImageError("Kích thước ảnh không được vượt quá 5MB");
         return;
       }
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      setSelectedFile(file);
+      setValue("fileImage", file);
+      setImageError("");
     }
   };
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview("");
-  };
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: { "image/*": [] },
+  });
 
-  // Submit
+  // Reset form when open
+  useEffect(() => {
+    if (open) {
+      reset();
+      setSelectedFile(null);
+      setImageError("");
+      loadParentCategories();
+    }
+  }, [open, reset]);
+
   const handleSubmitClick = async (data: CategoryForm) => {
     try {
       setIsLoading(true);
-      setTouched(true);
 
-      // Frontend validation for required parentId
+      const isValid = await trigger();
+      if (!isValid) return;
+
       if (!data.parentId) {
-        toast.error("Vui lòng chọn thể loại cha (Parent).");
+        toast.error("Vui lòng chọn thể loại cha!");
         setIsLoading(false);
         return;
       }
 
       const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("slug", data.slug);
-      if (data.description) formData.append("description", data.description);
-      formData.append("parentId", data.parentId);
-      if (imageFile) formData.append("sizeDetail", imageFile);
+      formData.append("Name", data.name);
+      formData.append("Slug", data.slug);
+      if (data.description) formData.append("Description", data.description);
+      formData.append("ParentId", data.parentId.toString());
+
+      if (selectedFile) {
+        formData.append("FileImage", selectedFile);
+      }
+
+      // 🪵🪵🪵 LOG TOÀN BỘ FORM DATA TRƯỚC KHI GỬI
+      console.group("📦 [AddCategoryDialog] FormData gửi lên API:");
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: (File) ${value.name} - ${value.size} bytes`);
+        } else {
+          console.log(`${key}:`, value);
+        }
+      }
+      console.groupEnd();
+      // 🪵🪵🪵
 
       const res = await createCategory(formData);
+      console.log("📩 Response từ API:", res);
 
       if (res?.isSuccess) {
         toast.success(res?.message || "Thêm thể loại thành công!");
@@ -161,7 +175,15 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
         toast.error(res?.message || "Không thể thêm thể loại!");
       }
     } catch (error: any) {
-      console.error("Error creating category:", error);
+      console.error("❌ Lỗi khi gọi API tạo thể loại:", error);
+
+      // 🪵 Nếu có response từ server, in ra toàn bộ để xem lỗi
+      if (error?.response) {
+        console.error("📥 Response data:", error.response.data);
+        console.error("📥 Status:", error.response.status);
+        console.error("📥 Headers:", error.response.headers);
+      }
+
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.errors?.[0] ||
@@ -170,6 +192,12 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // ✅ Xóa ảnh đã chọn
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setValue("fileImage", null);
   };
 
   return (
@@ -219,7 +247,6 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
               disabled={isLoading}
               {...register("slug", {
                 required: "Vui lòng nhập slug",
-                maxLength: { value: 100, message: "Tối đa 100 ký tự" },
                 pattern: {
                   value: /^[a-z0-9-]+$/,
                   message: "Slug chỉ chứa chữ thường, số và dấu gạch ngang",
@@ -233,42 +260,39 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
             )}
           </div>
 
-          {/* Parent select — BẮT BUỘC */}
+          {/* Parent */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Thể loại cha</label>
-
-            <Select
-              value={parentValue ?? ""}
-              disabled={isLoading}
-              onValueChange={(value) => {
-                setValue("parentId", value);
-                setTouched(true);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn thể loại cha" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.length === 0 ? (
-                  <SelectItem value="0" disabled>
-                    Không có thể loại
-                  </SelectItem>
-                ) : (
-                  categories.map((cat) => (
-                    <SelectItem key={cat.id} value={String(cat.id)}>
-                      {cat.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-
-            {/* Show error only after user touched the field or submitted */}
-            {touched && !parentValue && (
-              <span className="text-red-500 text-xs">
-                Vui lòng chọn thể loại cha
-              </span>
-            )}
+            <Controller
+              name="parentId"
+              control={control}
+              rules={{ required: "Vui lòng chọn thể loại cha" }}
+              render={({ field, fieldState }) => (
+                <>
+                  <Select
+                    {...field}
+                    options={categories.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
+                    styles={reactSelectStyles}
+                    placeholder="Chọn thể loại cha"
+                    isDisabled={isLoading}
+                    onChange={(opt) => field.onChange(opt?.value ?? null)}
+                    value={
+                      categories
+                        .map((c) => ({ value: c.id, label: c.name }))
+                        .find((opt) => opt.value === field.value) || null
+                    }
+                  />
+                  {fieldState.error && (
+                    <span className="text-red-500 text-xs">
+                      {fieldState.error.message}
+                    </span>
+                  )}
+                </>
+              )}
+            />
           </div>
 
           {/* Description */}
@@ -282,63 +306,53 @@ export default function AddCategoryDialog({ onAdded }: AddCategoryDialogProps) {
                 maxLength: { value: 255, message: "Tối đa 255 ký tự" },
               })}
             />
-            {errors.description && (
-              <span className="text-red-500 text-xs">
-                {errors.description.message}
-              </span>
-            )}
           </div>
 
-          {/* Image */}
+          {/* Image Dropzone */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">
-              Ảnh chi tiết kích thước
+              Ảnh thể loại (tùy chọn)
             </label>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={() => document.getElementById("imageInput")?.click()}
-                className="flex items-center gap-2"
-              >
-                <Upload size={16} />
-                Chọn ảnh
-              </Button>
-              <input
-                id="imageInput"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-                disabled={isLoading}
-              />
-              {imageFile && (
-                <span className="text-sm text-gray-600">{imageFile.name}</span>
+            <div
+              {...getRootProps()}
+              className={`border-dashed min-h-48 border-2 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                selectedFile
+                  ? "border-gray-500 bg-blue-50"
+                  : "border-gray-300 hover:border-blue-400"
+              }`}
+            >
+              <input {...getInputProps()} disabled={isLoading} />
+              {!selectedFile ? (
+                <p className="text-gray-500">
+                  Kéo thả hoặc bấm để chọn ảnh thể loại (không bắt buộc)
+                </p>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    alt={selectedFile.name}
+                    className="w-32 h-32 object-cover rounded shadow"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="mt-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage();
+                    }}
+                  >
+                    <X className="w-4 h-4 mr-1" /> Xóa ảnh
+                  </Button>
+                </div>
               )}
             </div>
-            {imagePreview && (
-              <div className="relative w-32 h-32 mt-2">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded border"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-1 right-1 h-6 w-6 p-0"
-                  onClick={handleRemoveImage}
-                  disabled={isLoading}
-                >
-                  <X size={14} />
-                </Button>
-              </div>
+            {imageError && (
+              <span className="text-red-500 text-xs mt-2">{imageError}</span>
             )}
           </div>
 
-          {/* Footer */}
           <DialogFooter className="mt-4">
             {!isLoading && (
               <DialogClose asChild>

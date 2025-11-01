@@ -36,9 +36,9 @@ export const fetchMaterialListData = createAsyncThunk(
           params,
         }
       );
-      console.log("✅ Keyword:", params.Search);
-      console.log("✅ Status:", params.StatusName);
-      console.log("✅ API trả về:", response.data);
+      // console.log("✅ Keyword:", params.Search);
+      // console.log("✅ Status:", params.StatusName);
+      // console.log("✅ API trả về:", response.data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(

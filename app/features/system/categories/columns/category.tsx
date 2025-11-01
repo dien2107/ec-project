@@ -6,8 +6,7 @@ import type { CategoryDetailDto } from "../../../../types/product/category";
 
 export const getColumns = (
   handleEdit: (category: CategoryDetailDto) => void,
-  handleDelete: (category: CategoryDetailDto) => void,
-  categories: CategoryDetailDto[] = []
+  handleDelete: (category: CategoryDetailDto) => void
 ): ColumnDef<CategoryDetailDto>[] => [
   {
     accessorKey: "categoryId",

@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 
 interface AddPromotionDialogProps {
@@ -25,11 +26,14 @@ interface AddPromotionDialogProps {
 
 type PromotionForm = {
   promotionCode: string;
+  description?: string;
   discountType: string;
   promotionValue: string;
   promotionMaxValue: string;
   promotionMinOrder: string;
   promotionUsageLimit: string;
+  startAt: string;
+  endAt: string;
 };
 
 const discountTypeOptions = [
@@ -55,6 +59,7 @@ export default function AddPromotionDialog({
   } = useForm<PromotionForm>({
     defaultValues: {
       promotionCode: "",
+      description: "",
       discountType: "percentage",
       promotionValue: "",
       promotionMaxValue: "",
@@ -82,7 +87,7 @@ export default function AddPromotionDialog({
     if (discountType === "fixed" && promotionValue) {
       setValue("promotionMaxValue", promotionValue);
     }
-  }, [promotionValue, setValue]);
+  }, [promotionValue, discountType, setValue]);
 
   // Re-validate promotionMaxValue when promotionMinOrder changes
   useEffect(() => {
@@ -96,6 +101,7 @@ export default function AddPromotionDialog({
     if (open) {
       reset({
         promotionCode: "",
+        description: "",
         discountType: "percentage",
         promotionValue: "",
         promotionMaxValue: "",
@@ -111,6 +117,12 @@ export default function AddPromotionDialog({
 
       const formData = new FormData();
       formData.append("Code", data.promotionCode);
+
+      // 🆕 Thêm Description
+      if (data.description && data.description.trim() !== "") {
+        formData.append("Description", data.description);
+      }
+
       formData.append("DiscountType", data.discountType);
       formData.append("DiscountValue", data.promotionValue);
 
@@ -124,17 +136,29 @@ export default function AddPromotionDialog({
         formData.append("MinOrderAmount", "0");
       }
 
+      if (data.startAt) {
+        formData.append("StartAt", data.startAt);
+      }
+
+      if (data.endAt) {
+        formData.append("EndAt", data.endAt);
+      }
+
       if (data.promotionUsageLimit && data.promotionUsageLimit.trim() !== "") {
         formData.append("UsageLimit", data.promotionUsageLimit);
       }
 
-      console.log("Creating promotion with data:", data);
       const res = await createDiscount(formData);
 
       if (res?.isSuccess) {
-        toast.success(res?.message || "Thêm mã khuyến mãi thành công!");
-        onAdded?.();
+        // 🔹 Đợi reload data hoàn thành
+        await onAdded?.();
+
+        // 🔹 Đóng dialog
         setOpen(false);
+
+        // 🔹 Hiển thị toast sau khi đóng
+        toast.success(res?.message || "Thêm mã khuyến mãi thành công!");
       } else {
         toast.error(res?.message || "Không thể thêm mã khuyến mãi!");
       }
@@ -193,6 +217,52 @@ export default function AddPromotionDialog({
             )}
           </div>
 
+          {/* 🆕 Mô tả */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Mô tả</label>
+            <Textarea
+              rows={3}
+              placeholder="Nhập mô tả (tùy chọn)"
+              disabled={isLoading}
+              {...register("description")}
+            />
+          </div>
+
+          {/* Đơn tối thiểu */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">
+              Giá trị đơn hàng tối thiểu
+            </label>
+            <Input
+              type="number"
+              step="1"
+              placeholder="Nhập giá trị đơn tối thiểu"
+              disabled={isLoading}
+              {...register("promotionMinOrder", {
+                required: "Vui lòng nhập giá trị đơn hàng tối thiểu",
+                min: {
+                  value: 0,
+                  message:
+                    "Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0",
+                },
+                validate: (value) => {
+                  if (!value || !promotionMaxValue) return true;
+                  const minOrder = parseFloat(value);
+                  const maxDiscount = parseFloat(promotionMaxValue);
+                  if (minOrder < maxDiscount) {
+                    return "Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng giá trị giảm tối đa";
+                  }
+                  return true;
+                },
+              })}
+            />
+            {errors.promotionMinOrder && (
+              <span className="text-red-500 text-xs">
+                {errors.promotionMinOrder.message}
+              </span>
+            )}
+          </div>
+
           {/* Loại giảm giá */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Loại giảm giá</label>
@@ -231,7 +301,7 @@ export default function AddPromotionDialog({
             <label className="text-sm font-medium">Giá trị khuyến mãi</label>
             <Input
               type="number"
-              step="0.01"
+              step="1"
               placeholder={
                 discountType === "percentage"
                   ? "Nhập giá trị từ 0-100"
@@ -268,7 +338,7 @@ export default function AddPromotionDialog({
             <label className="text-sm font-medium">Giá trị giảm tối đa</label>
             <Input
               type="number"
-              step="0.01"
+              step="1"
               placeholder={
                 discountType === "fixed"
                   ? "Tự động điền bằng giá trị khuyến mãi"
@@ -299,39 +369,56 @@ export default function AddPromotionDialog({
             )}
           </div>
 
-          {/* Đơn tối thiểu */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">
-              Giá trị đơn hàng tối thiểu
-            </label>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="Nhập giá trị đơn tối thiểu"
-              disabled={isLoading}
-              {...register("promotionMinOrder", {
-                required: "Vui lòng nhập giá trị đơn hàng tối thiểu",
-                min: {
-                  value: 0,
-                  message:
-                    "Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0",
-                },
-                validate: (value) => {
-                  if (!value || !promotionMaxValue) return true;
-                  const minOrder = parseFloat(value);
-                  const maxDiscount = parseFloat(promotionMaxValue);
-                  if (minOrder < maxDiscount) {
-                    return "Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng giá trị giảm tối đa";
-                  }
-                  return true;
-                },
-              })}
-            />
-            {errors.promotionMinOrder && (
-              <span className="text-red-500 text-xs">
-                {errors.promotionMinOrder.message}
-              </span>
-            )}
+          {/* Ngày bắt đầu và ngày kết thúc */}
+          <div className="flex justify-between">
+            <div className="flex flex-col gap-1 w-[48%]">
+              <label className="text-sm font-medium">Ngày bắt đầu</label>
+              <Input
+                type="date"
+                disabled={isLoading}
+                {...register("startAt", {
+                  required: "Vui lòng chọn ngày bắt đầu",
+                  validate: (value) => {
+                    if (!value) return "Vui lòng chọn ngày bắt đầu";
+                    const selectedDate = new Date(value);
+                    const now = new Date();
+                    now.setHours(0, 0, 0, 0);
+                    if (selectedDate < now)
+                      return "Ngày bắt đầu phải bằng hoặc sau hôm nay";
+                    return true;
+                  },
+                })}
+              />
+              {errors.startAt && (
+                <span className="text-red-500 text-xs">
+                  {errors.startAt.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1 w-[48%]">
+              <label className="text-sm font-medium">Ngày kết thúc</label>
+              <Input
+                type="date"
+                disabled={isLoading}
+                {...register("endAt", {
+                  required: "Vui lòng chọn ngày kết thúc",
+                  validate: (value) => {
+                    if (!value) return "Vui lòng chọn ngày kết thúc";
+                    const endDate = new Date(value);
+                    const startDate = new Date(watch("startAt"));
+                    if (endDate < startDate)
+                      return "Ngày kết thúc phải bằng hoặc sau ngày bắt đầu";
+                    return true;
+                  },
+                })}
+              />
+              {errors.endAt && (
+                <span className="text-red-500 text-xs">
+                  {errors.endAt.message}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Giới hạn sử dụng */}
