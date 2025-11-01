@@ -137,22 +137,36 @@ export const heroSlides = [
   {
     id: 1,
     image:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop",
-    title: "MEYA",
-    subtitle: "Mang tới xu hướng thời trang mới",
+      "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=1600&auto=format&fit=crop",
+    title: "MEYA FASHION",
+    subtitle: "Phong cách thời trang nam hiện đại",
   },
   {
     id: 2,
     image:
-      "https://images.unsplash.com/photo-1558769132-cb1aea672c11?w=1600&auto=format&fit=crop",
-    title: "BỘ SƯU TẬP MỚI 2025",
-    subtitle: "Phong cách trẻ trung - Xu hướng hiện đại",
+      "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=1600&auto=format&fit=crop",
+    title: "BỘ SƯU TẬP MÙA ĐÔNG 2025",
+    subtitle: "Áo khoác - Hoodie - Sweater cao cấp",
   },
   {
     id: 3,
     image:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop",
+    title: "Áo thun oversize",
+    subtitle: "Phong cách đường phố năng động - cá tính",
+  },
+  {
+    id: 4,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&auto=format&fit=crop",
     title: "FLASH SALE 50%",
-    subtitle: "Ưu đãi giảm giá lên đến 50% toàn bộ sản phẩm",
+    subtitle: "Giảm giá sốc - Đồng giá 199K",
+  },
+  {
+    id: 5,
+    image:
+      "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=1600&auto=format&fit=crop",
+    title: "FORMAL WEAR",
+    subtitle: "Sơ mi - Quần tây lịch lãm cho phái mạnh",
   },
 ];

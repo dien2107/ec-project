@@ -10,7 +10,7 @@ const policies = [
 
 const Footer = () => {
   return (
-    <footer className="bg-[#363c41] w-full py-8 px-4 text-white">
+    <footer className="bg-gray-900 w-full py-8 px-4 text-white">
       <div className="main-container space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
           <div>
