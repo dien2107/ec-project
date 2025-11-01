@@ -1,13 +1,26 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, X, ArrowRight, TrendingUp } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useDebounce } from "~/hooks/use-debounce";
+import { get5ProductsSuggestBySearch } from "~/services/products";
 
 interface SearchSuggestion {
-  id: number;
+  productId: number;
   name: string;
-  image: string;
-  category: string;
-  price: number;
+  slug: string;
+  basePrice: number;
+  discountPercentage: number | null;
+  sellingPrice: number;
+  category: {
+    categoryId: number;
+    name: string;
+    slug: string;
+  };
+  primaryImage: {
+    productImageId: number;
+    imageUrl: string;
+    altText: string;
+  };
 }
 
 interface SearchBarProps {
@@ -16,6 +29,7 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,44 +42,8 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Mock data - Replace with actual API call
-  const mockSuggestions: SearchSuggestion[] = [
-    {
-      id: 1,
-      name: "Áo Thun Waffle Thoáng Mát Non Branded 01 Đen",
-      image: "/api/placeholder/80/80",
-      category: "Áo Thun",
-      price: 299000,
-    },
-    {
-      id: 2,
-      name: "Áo Polo Pique Thoáng Mát Non Branded 03 Đen",
-      image: "/api/placeholder/80/80",
-      category: "Áo Polo",
-      price: 399000,
-    },
-    {
-      id: 3,
-      name: "Áo Polo Pique Thoáng Mát Non Branded 03 Trắng",
-      image: "/api/placeholder/80/80",
-      category: "Áo Polo",
-      price: 399000,
-    },
-    {
-      id: 4,
-      name: "Áo Khoác Gió Trượt Nước Seventy Seven 40 Đen",
-      image: "/api/placeholder/80/80",
-      category: "Áo Khoác",
-      price: 599000,
-    },
-    {
-      id: 5,
-      name: "Áo Thun Waffle Thoáng Mát Non Branded 01 Trắng",
-      image: "/api/placeholder/80/80",
-      category: "Áo Thun",
-      price: 299000,
-    },
-  ];
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -95,27 +73,34 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
-      setIsLoading(true);
-      // Simulate API call
-      const timer = setTimeout(() => {
-        const filtered = mockSuggestions.filter((item) =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setSuggestions(filtered);
-        setIsLoading(false);
-      }, 300);
+    const fetchSuggestions = async () => {
+      if (debouncedSearchQuery.trim()) {
+        setIsLoading(true);
+        try {
+          const response = await get5ProductsSuggestBySearch(debouncedSearchQuery);
+          if (response.isSuccess) {
+            setSuggestions(response.data);
+          } else {
+            setSuggestions([]);
+          }
+        } catch (error) {
+          console.error("Error fetching product suggestions:", error);
+          setSuggestions([]);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    };
 
-      return () => clearTimeout(timer);
-    } else {
-      setSuggestions([]);
-    }
-  }, [searchQuery]);
+    fetchSuggestions();
+  }, [debouncedSearchQuery]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       // Navigate to search results page
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       onClose();
     }
   };
@@ -221,15 +206,15 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                     <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                       {suggestions.map((product) => (
                         <Link
-                          key={product.id}
-                          to={`/product/${product.id}`}
+                          key={product.productId}
+                          to={`/product/${product.slug}`}
                           onClick={onClose}
                           className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-200 hover:shadow-sm"
                         >
                           <div className="relative w-20 h-20 flex-shrink-0">
                             <img
-                              src={product.image}
-                              alt={product.name}
+                              src={product.primaryImage.imageUrl}
+                              alt={product.primaryImage.altText}
                               className="w-full h-full object-cover rounded-lg bg-gray-100"
                             />
                           </div>
@@ -238,10 +223,10 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                               {product.name}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {product.category}
+                              {product.category.name}
                             </p>
                             <p className="text-sm font-semibold text-blue-600 mt-1">
-                              {formatPrice(product.price)}
+                              {formatPrice(product.sellingPrice)}
                             </p>
                           </div>
                           <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0" />

@@ -220,13 +220,6 @@ function CategoryCard({
         <h3 className="text-center text-base font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
           {category.name}
         </h3>
-
-        {/* Subcategory Count */}
-        <div className="flex items-center justify-center">
-          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-            {subcategoryCount} loại
-          </span>
-        </div>
       </div>
     </Link>
   );
