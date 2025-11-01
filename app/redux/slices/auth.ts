@@ -73,7 +73,7 @@ const slice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(loginThunk.pending, (state) => {
+      .addCase(loginThunk.pending, state => {
         state.loading = true;
         state.error = null;
       })
@@ -81,7 +81,10 @@ const slice = createSlice({
         state.loading = false;
         state.error = null;
 
-        const token = action.payload?.data?.accessToken ?? action.payload?.data?.token ?? null;
+        const token =
+          action.payload?.data?.accessToken ??
+          action.payload?.data?.token ??
+          null;
         const refresh = action.payload?.data?.refreshToken ?? null;
         const user = action.payload?.data?.user ?? null;
 
@@ -126,7 +129,7 @@ const slice = createSlice({
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.user = action.payload ?? null;
       })
-      .addCase(fetchCurrentUser.rejected, (state) => {
+      .addCase(fetchCurrentUser.rejected, state => {
         state.user = null;
       });
   },

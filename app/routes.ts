@@ -13,6 +13,7 @@ export default [
       "/payment/online",
       "features/clients/payment/components/payment-handle.tsx"
     ),
+
     // route("products", "features/products/index.tsx"),
   ]),
   // Page custom riêng, không dùng default layout
@@ -52,4 +53,8 @@ export default [
   route("forgot-password", "features/clients/auth/forgot.tsx"),
   route("reset-password", "features/clients/auth/reset.tsx"),
   route("verify-successful", "features/clients/auth/verifySuccessful.tsx"),
+  route(
+    "/payment/success",
+    "features/clients/payment/components/payment-success.tsx"
+  ),
 ] satisfies RouteConfig;
