@@ -32,11 +32,11 @@ export const ImportOrderFilter: React.FC<ImportOrderFilterProps> = ({
 
   const dispatch = useAppDispatch();
 
-  const {
-    statuses,
-    isLoading: isStatusesLoading,
-    isError: statusesError,
-  } = useAppSelector((s) => s.statuses);
+  const statuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.PURCHASE_ORDER] ?? []
+  );
+  const isStatusesLoading = useAppSelector((state) => state.statuses.isLoading);
+  const statusesError = useAppSelector((state) => state.statuses.isError);
 
   const {
     supplierList,
@@ -87,11 +87,11 @@ export const ImportOrderFilter: React.FC<ImportOrderFilterProps> = ({
   if (isAnyLoading) {
     return <SkeletonFilter />;
   }
-  console.log(statuses);
-  console.log(supplierList?.data);
+
   return (
     <div className="bg-white p-4 rounded-md mb-6 shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* TÌM KIẾM */}
         {/* TÌM KIẾM */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -120,16 +120,11 @@ export const ImportOrderFilter: React.FC<ImportOrderFilterProps> = ({
             disabled={statusesError}
           >
             <option value="">Tất cả</option>
-            {statuses
-              .filter(
-                (status) =>
-                  status.name === "Pending" || status.name === "Approved"
-              )
-              .map((status) => (
-                <option key={status.statusId} value={status.statusId}>
-                  {status.displayName}
-                </option>
-              ))}
+            {statuses.map((status) => (
+              <option key={status.statusId} value={status.statusId}>
+                {status.displayName}
+              </option>
+            ))}
           </select>
           {statusesError && (
             <p className="mt-1 text-xs text-red-600">Lỗi tải trạng thái</p>

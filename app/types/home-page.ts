@@ -5,8 +5,8 @@ export type Category = {
   name: string;
   slug: string;
   description: string;
-  children: Category[]; 
-}
+  children: Category[];
+};
 export type Product = {
   productId: number;
   name: string;
@@ -21,6 +21,7 @@ export type HomeData = {
   categories: Category[];
   bestSellingProducts: Product[];
   onSaleProducts: Product[];
+  bestSellingCategories: Category[];
 };
 
 export type HomeResponse = ApiResponse<HomeData>;

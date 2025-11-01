@@ -62,3 +62,29 @@ export const getUserBySelf = async () => {
     throw error;
   }
 };
+export const uploadUserAvatar = async (FormData: FormData) => {
+  try {
+    const response = await instance.patch(
+      `/users/upload-avatar-image`,
+      FormData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading user avatar:", error);
+    throw error;
+  }
+};
+export const deleteUserAvatar = async () => {
+  try {
+    const response = await instance.delete(`/users/delete-avatar-image`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting user avatar:", error);
+    throw error;
+  }
+};
