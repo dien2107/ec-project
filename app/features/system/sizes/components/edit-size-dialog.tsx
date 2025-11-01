@@ -20,8 +20,7 @@ import { updateSize } from "~/services/sizes";
 import type { SizeDetailDto } from "../../../../types/product/size";
 
 // 🧩 Redux imports
-import { useAppDispatch, useAppSelector } from "~/redux/store";
-import { fetchStatuses } from "~/redux/slices/statuses";
+import { useAppSelector } from "~/redux/store";
 
 type SizeForm = {
   name: string;
@@ -40,19 +39,11 @@ export default function EditSizeDialog({
   onUpdated: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useAppDispatch();
 
   // 🧠 Lấy danh sách trạng thái từ Redux
   const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
     (state) => state.statuses
   );
-
-  // 🧩 Gọi API khi mở dialog
-  useEffect(() => {
-    if (open) {
-      dispatch(fetchStatuses({ entityType: "Size" }));
-    }
-  }, [open, dispatch]);
 
   const defaultValues: SizeForm = {
     name: selectedSize?.name ?? "",
@@ -114,12 +105,7 @@ export default function EditSizeDialog({
   const statuses =
     statusesData["Size"]?.map((s) => ({
       value: s.statusId,
-      label:
-        s.name === "Active"
-          ? "Hoạt động"
-          : s.name === "Inactive"
-            ? "Không hoạt động"
-            : s.name,
+      label: s.displayName || s.name,
     })) ?? [];
 
   return (
@@ -127,9 +113,7 @@ export default function EditSizeDialog({
       <DialogContent className="min-w-[500px] flex flex-col justify-start">
         <DialogHeader>
           <DialogTitle>Cập nhật kích thước</DialogTitle>
-          <DialogDescription>
-            Cập nhật thông tin kích thước sản phẩm
-          </DialogDescription>
+          <DialogDescription>Cập nhật thông tin kích thước</DialogDescription>
         </DialogHeader>
 
         <form

@@ -1,145 +1,109 @@
-import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { type Material } from "../types";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
+import { deleteMaterial } from "~/services/materials";
+import type { MaterialDetailDto } from "~/types/product/material";
 
 interface DeleteMaterialDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
-  material: Material | null;
-  onDelete: (materialId: string) => void;
+  selectedMaterial: MaterialDetailDto | null;
+  onDelete: () => void;
 }
-
-const getMaterialTypeLabel = (type: Material["type"]) => {
-  switch (type) {
-    case "cotton":
-      return "Cotton";
-    case "polyester":
-      return "Polyester";
-    case "silk":
-      return "Silk";
-    case "wool":
-      return "Wool";
-    case "linen":
-      return "Linen";
-    case "denim":
-      return "Denim";
-    case "leather":
-      return "Leather";
-    case "synthetic":
-      return "Synthetic";
-    default:
-      return type;
-  }
-};
-
-const getMaterialTypeColor = (type: Material["type"]) => {
-  switch (type) {
-    case "cotton":
-      return "bg-green-100 text-green-800 hover:bg-green-100";
-    case "polyester":
-      return "bg-blue-100 text-blue-800 hover:bg-blue-100";
-    case "silk":
-      return "bg-purple-100 text-purple-800 hover:bg-purple-100";
-    case "wool":
-      return "bg-orange-100 text-orange-800 hover:bg-orange-100";
-    case "linen":
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
-    case "denim":
-      return "bg-indigo-100 text-indigo-800 hover:bg-indigo-100";
-    case "leather":
-      return "bg-amber-100 text-amber-800 hover:bg-amber-100";
-    case "synthetic":
-      return "bg-gray-100 text-gray-800 hover:bg-gray-100";
-    default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-100";
-  }
-};
 
 export default function DeleteMaterialDialog({
   open,
   setIsOpen,
-  material,
+  selectedMaterial,
   onDelete,
 }: DeleteMaterialDialogProps) {
-  const handleDelete = () => {
-    if (material) {
-      onDelete(material.id);
-      setIsOpen(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDelete = async () => {
+    if (!selectedMaterial || !selectedMaterial.materialId) {
+      toast.error("Vui lòng chọn chất liệu cần xóa!");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await deleteMaterial(selectedMaterial.materialId);
+      toast.success("Xóa chất liệu thành công!");
+      onDelete();
+      setIsOpen(false); // ✅ Chỉ đóng dialog khi xóa thành công
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi xóa chất liệu!");
+      }
+      // ❌ Không đóng dialog ở đây
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (!material) return null;
+  if (!selectedMaterial) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
+    <AlertDialog open={open} onOpenChange={setIsOpen}>
+      <AlertDialogContent className="p-6 rounded-lg shadow-md bg-white">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-xl font-semibold text-gray-800">
             Xác nhận xóa chất liệu
-          </DialogTitle>
-        </DialogHeader>
-        <div className="py-4">
-          <p className="text-gray-600 mb-4">
-            Bạn có chắc chắn muốn xóa chất liệu này không?
-          </p>
-          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-            <div className="flex justify-between items-start">
-              <span className="font-medium text-gray-900">Tên chất liệu:</span>
-              <span className="text-gray-700 ml-2">{material.name}</span>
-            </div>
-            <div className="flex justify-between items-start">
-              <span className="font-medium text-gray-900">Mã chất liệu:</span>
-              <span className="text-gray-700 ml-2 font-mono">
-                {material.id}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium text-gray-900">Loại:</span>
-              <Badge
-                variant="secondary"
-                className={getMaterialTypeColor(material.type)}
-              >
-                {getMaterialTypeLabel(material.type)}
-              </Badge>
-            </div>
-            <div className="flex justify-between items-start">
-              <span className="font-medium text-gray-900">Thành phần:</span>
-              <span className="text-gray-700 ml-2 text-right max-w-xs">
-                {material.composition}
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 text-sm">
-              <strong>Cảnh báo:</strong> Việc xóa chất liệu này có thể ảnh hưởng
-              đến các sản phẩm đang sử dụng chất liệu này. Hãy chắc chắn rằng
-              không có sản phẩm nào đang sử dụng trước khi xóa.
-            </p>
-          </div>
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-600 mt-2">
+            Bạn có chắc chắn muốn xóa chất liệu{" "}
+            <span className="font-bold text-gray-900">
+              {selectedMaterial.name}
+            </span>{" "}
+            (Mã:{" "}
+            <span className="font-mono text-gray-700">
+              {selectedMaterial.materialId}
+            </span>
+            )? Hành động này không thể hoàn tác.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+          <strong>Cảnh báo:</strong> Việc xóa chất liệu này có thể ảnh hưởng đến
+          các sản phẩm đang sử dụng nó. Hãy chắc chắn rằng không có sản phẩm nào
+          đang dùng trước khi xóa.
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Hủy
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            className="bg-red-600 hover:bg-red-700"
+
+        <AlertDialogFooter className="flex justify-between mt-5">
+          <AlertDialogCancel
+            disabled={isLoading}
+            className="text-gray-500 hover:text-gray-700"
           >
-            Xóa chất liệu
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            Hủy
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-[#EF4444] text-white flex items-center gap-2 px-4 py-2 rounded hover:bg-red-600 transition duration-200"
+            onClick={handleDelete}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Đang xóa...
+              </>
+            ) : (
+              <>Xóa</>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

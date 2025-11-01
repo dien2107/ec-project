@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "~/components/ui/product-card";
-import { getProductByCategorySlug } from "~/services/products";
+import { getProductCatelog } from "~/services/products";
 import { Loader2 } from "lucide-react";
 import type { Product } from "~/types/product/product";
 
@@ -12,7 +12,7 @@ export default function ProductRelated({
   const { data, isLoading, isError } = useQuery({
     queryKey: ["related", categorySlug],
     queryFn: () =>
-      getProductByCategorySlug(categorySlug!, {
+      getProductCatelog(categorySlug!, {
         pageNumber: 1,
         pageSize: 10,
       } as any),

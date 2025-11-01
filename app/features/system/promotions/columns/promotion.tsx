@@ -22,7 +22,7 @@ export const getColumns = (
     accessorKey: "code",
     header: ({ column }) => (
       <div className="w-[180px] text-left">
-        <SortableHeader column={column} title="Mã & Mô tả" />
+        <div className="w-[200px] text-center">Mã & Mô tả</div>
       </div>
     ),
     cell: ({ row }) => (
@@ -41,7 +41,7 @@ export const getColumns = (
     header: ({ column }) => (
       // GIỮ NGUYÊN STYLE HEADER CŨ VỚI SortableHeader
       <div className="w-[130px] text-center">
-        <SortableHeader column={column} title="Loại" />
+        <div className="w-[130px] text-center">Loại</div>
       </div>
     ),
     cell: ({ row }) => {
@@ -154,9 +154,7 @@ export const getColumns = (
   {
     accessorKey: "status",
     header: ({ column }) => (
-      <div className="w-[120px] text-center">
-        <SortableHeader column={column} title="Trạng thái" />
-      </div>
+      <div className="w-[120px] text-center">Trạng thái</div>
     ),
     cell: ({ row }) => {
       // Giả định status.name theo kiểu dữ liệu bạn đã sử dụng trước đó
@@ -196,9 +194,7 @@ export const getColumns = (
   {
     id: "actions",
     header: ({ column }) => (
-      <div className="w-[110px] text-center">
-        <SortableHeader column={column} title="Thao tác" />
-      </div>
+      <div className="w-[110px] text-center">Thao tác</div>
     ),
     cell: ({ row }) => (
       <div className="flex gap-2 w-[80px] justify-center">

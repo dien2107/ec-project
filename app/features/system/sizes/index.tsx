@@ -60,6 +60,18 @@ export default function SizeManagement() {
     []
   );
 
+  // Reload danh sách sau khi thêm/sửa/xóa
+  const handleReload = useCallback(() => {
+    dispatch(
+      fetchSizeListData({
+        PageNumber: currentPage,
+        PageSize: PAGE_SIZE,
+        Search: filters.Search || undefined,
+        StatusName: filters.StatusName || undefined,
+      })
+    );
+  }, [dispatch, currentPage, filters]);
+
   const columns = useMemo(
     () => getColumns(handleEdit, handleDelete),
     [handleEdit, handleDelete]
@@ -72,18 +84,7 @@ export default function SizeManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-2xl font-bold">Quản lý kích thước</h3>
-        <AddSizeDialog
-          onAdded={() => {
-            dispatch(
-              fetchSizeListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
-        />
+        <AddSizeDialog onAdded={handleReload} />
       </div>
 
       {/* Filter */}
@@ -107,16 +108,7 @@ export default function SizeManagement() {
           open={isEditOpen}
           setIsOpen={setIsEditOpen}
           selectedSize={selectedSize}
-          onUpdated={() => {
-            dispatch(
-              fetchSizeListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
+          onUpdated={handleReload}
         />
       )}
       {selectedSize && (
@@ -124,16 +116,7 @@ export default function SizeManagement() {
           open={isDeleteOpen}
           setIsOpen={setIsDeleteOpen}
           selectedSize={selectedSize}
-          onDelete={() => {
-            dispatch(
-              fetchSizeListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
+          onDeleted={handleReload}
         />
       )}
     </div>

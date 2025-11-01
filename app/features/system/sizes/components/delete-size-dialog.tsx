@@ -56,6 +56,11 @@ export default function DeleteSizeDialog({
             tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+          <strong>Cảnh báo:</strong> Việc xóa chất liệu này có thể ảnh hưởng đến
+          các biến thể sản phẩm đang sử dụng nó. Hãy chắc chắn rằng không có sản
+          phẩm nào đang dùng trước khi xóa.
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Hủy</AlertDialogCancel>
           <AlertDialogAction

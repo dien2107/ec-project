@@ -66,6 +66,13 @@ export default function DeleteColorDialog({
             )? Hành động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+          <strong>Cảnh báo:</strong> Việc xóa chất liệu này có thể ảnh hưởng đến
+          các sản phẩm đang sử dụng nó. Hãy chắc chắn rằng không có sản phẩm nào
+          đang dùng trước khi xóa.
+        </div>
+
         <AlertDialogFooter className="flex justify-between mt-4">
           <AlertDialogCancel className="text-gray-500 hover:text-gray-700">
             Hủy

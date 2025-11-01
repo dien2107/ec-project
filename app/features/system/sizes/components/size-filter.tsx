@@ -5,6 +5,8 @@ import { Button } from "~/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { useDebounce } from "~/hooks/use-debounce";
+import { useAppSelector, useAppDispatch } from "~/redux/store";
+import { fetchStatuses } from "~/redux/slices/statuses";
 
 type FilterValues = {
   Search?: string;
@@ -16,18 +18,35 @@ type Props = {
   setFilters: (updater: (prev: FilterValues) => FilterValues) => void;
 };
 
-const statusOptions = [
-  { value: "", label: "Tất cả trạng thái" },
-  { value: "Active", label: "Đang hoạt động" },
-  { value: "Inactive", label: "Không hoạt động" },
-];
-
 const SizeFilter: React.FC<Props> = ({ filters, setFilters }) => {
-  // State nội bộ cho input tìm kiếm
+  const dispatch = useAppDispatch();
+
+  // Get status list from Redux
+  const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
+    (state) => state.statuses
+  );
+
+  // Fetch statuses for the specific entity type when the component mounts
+  React.useEffect(() => {
+    dispatch(fetchStatuses({ entityType: "Size" }));
+  }, [dispatch]);
+
+  // Create status options dynamically based on entity type
+  const statuses =
+    statusesData["Size"]?.map((s) => ({
+      value: s.name, // Use the name for filtering
+      label: s.displayName || s.name, // Use the displayName if available, otherwise fallback to name
+    })) ?? [];
+
+  // Add "All Statuses" option
+  const allStatusesOption = { value: "", label: "Tất cả trạng thái" }; // Option for all statuses
+  const statusOptions = [allStatusesOption, ...statuses]; // Combine with existing statuses
+
+  // Internal state for search input
   const [searchInput, setSearchInput] = React.useState(filters.Search ?? "");
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Khi debounce xong thì cập nhật filter cha
+  // Update parent filter on debounce completion
   React.useEffect(() => {
     setFilters((prev) => ({
       ...prev,
@@ -35,7 +54,7 @@ const SizeFilter: React.FC<Props> = ({ filters, setFilters }) => {
     }));
   }, [debouncedSearch, setFilters]);
 
-  // Nếu filter cha thay đổi (ví dụ khi reset), cập nhật lại input
+  // Update input when parent filter changes (e.g., reset)
   React.useEffect(() => {
     setSearchInput(filters.Search ?? "");
   }, [filters.Search]);
@@ -47,13 +66,12 @@ const SizeFilter: React.FC<Props> = ({ filters, setFilters }) => {
   const handleStatusChange = (option: any) => {
     setFilters((prev) => ({
       ...prev,
-      StatusName: option ? option.value : "",
+      StatusName: option ? option.value : "", // Use the status name for filtering
     }));
   };
 
   const handleReset = () => {
-    setFilters((prev) => ({
-      ...prev,
+    setFilters(() => ({
       Search: "",
       StatusName: "",
     }));
@@ -61,7 +79,7 @@ const SizeFilter: React.FC<Props> = ({ filters, setFilters }) => {
 
   return (
     <div className="flex flex-wrap items-end gap-4">
-      {/* Ô tìm kiếm */}
+      {/* Search input */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
         <Input
@@ -73,13 +91,13 @@ const SizeFilter: React.FC<Props> = ({ filters, setFilters }) => {
         />
       </div>
 
-      {/* Dropdown trạng thái */}
+      {/* Status dropdown */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Trạng thái</label>
         <Select
           instanceId="size-status-filter"
           placeholder="Tất cả trạng thái"
-          options={statusOptions}
+          options={statusOptions} // Use the combined options
           value={
             statusOptions.find((opt) => opt.value === filters.StatusName) ||
             statusOptions[0]
@@ -91,7 +109,7 @@ const SizeFilter: React.FC<Props> = ({ filters, setFilters }) => {
         />
       </div>
 
-      {/* Nút reset */}
+      {/* Reset button */}
       <Button
         variant="outline"
         className="text-sm flex items-center gap-2"

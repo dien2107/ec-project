@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchStatuses } from "~/redux/slices/statuses";
 import { fetchColorListData } from "~/redux/slices/colors";
 
 import type { ColorDetailDto } from "../../../types/product/color";
@@ -17,7 +18,7 @@ export default function ColorManagement() {
     (state: any) => state.colorList
   );
 
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     Search: "",
@@ -30,7 +31,12 @@ export default function ColorManagement() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  // Gọi API load danh sách khi filter hoặc phân trang thay đổi
+  // Fetch statuses on component mount
+  useEffect(() => {
+    dispatch(fetchStatuses({ entityType: "Color" }));
+  }, [dispatch]);
+
+  // Load color list when filters or pagination change
   useEffect(() => {
     dispatch(
       fetchColorListData({
@@ -42,18 +48,19 @@ export default function ColorManagement() {
     );
   }, [dispatch, currentPage, filters]);
 
-  // Xử lý sự kiện CRUD
+  // Handle opening edit dialog
   const handleEdit = useCallback((color: ColorDetailDto) => {
     setSelectedColor(color);
     setIsEditOpen(true);
   }, []);
 
+  // Handle opening delete dialog
   const handleDelete = useCallback((color: ColorDetailDto) => {
     setSelectedColor(color);
     setIsDeleteOpen(true);
   }, []);
 
-  // Xử lý thay đổi filter - nhận callback updater
+  // Update filters
   const handleFilterChange = useCallback(
     (updater: (prev: typeof filters) => typeof filters) => {
       setFilters(updater);
@@ -62,11 +69,25 @@ export default function ColorManagement() {
     []
   );
 
+  // Reload list after CRUD operations
+  const handleReload = useCallback(() => {
+    dispatch(
+      fetchColorListData({
+        PageNumber: currentPage,
+        PageSize: PAGE_SIZE,
+        Search: filters.Search || undefined,
+        StatusName: filters.StatusName || undefined,
+      })
+    );
+  }, [dispatch, currentPage, filters]);
+
+  // Define table columns
   const columns = useMemo(
     () => getColumns(handleEdit, handleDelete),
     [handleEdit, handleDelete]
   );
 
+  // Display data
   const data = colorList?.data?.items ?? [];
 
   return (
@@ -74,19 +95,7 @@ export default function ColorManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-2xl font-bold">Quản lý màu sắc</h3>
-        <AddColorDialog
-          onAdded={() => {
-            // Reload lại danh sách sau khi thêm
-            dispatch(
-              fetchColorListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
-        />
+        <AddColorDialog onAdded={handleReload} />
       </div>
 
       {/* Filter */}
@@ -94,7 +103,7 @@ export default function ColorManagement() {
         <ColorFilter filters={filters} setFilters={handleFilterChange} />
       </div>
 
-      {/* Table */}
+      {/* Data Table */}
       <DataTable
         columns={columns}
         data={data}
@@ -110,16 +119,7 @@ export default function ColorManagement() {
           open={isEditOpen}
           setIsOpen={setIsEditOpen}
           selectedColor={selectedColor}
-          onUpdated={() => {
-            dispatch(
-              fetchColorListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
+          onUpdated={handleReload}
         />
       )}
       {selectedColor && (
@@ -127,16 +127,7 @@ export default function ColorManagement() {
           open={isDeleteOpen}
           setIsOpen={setIsDeleteOpen}
           selectedColor={selectedColor}
-          onDelete={() => {
-            dispatch(
-              fetchColorListData({
-                PageNumber: currentPage,
-                PageSize: PAGE_SIZE,
-                Search: filters.Search || undefined,
-                StatusName: filters.StatusName || undefined,
-              })
-            );
-          }}
+          onDeleted={handleReload}
         />
       )}
     </div>

@@ -15,6 +15,7 @@ import {
   CreditCard,
   Shirt,
   Palette,
+  FolderOpen,
 } from "lucide-react";
 
 import {
@@ -41,6 +42,11 @@ const mainMangeItems = {
       title: "Sản phẩm",
       url: "/system/products",
       icon: ShoppingBag,
+    },
+    {
+      title: "Nhóm sản phẩm",
+      url: "/system/product-group",
+      icon: FolderOpen,
     },
     {
       title: "Chất liệu",

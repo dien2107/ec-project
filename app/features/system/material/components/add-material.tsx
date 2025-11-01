@@ -1,186 +1,159 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { createMaterial } from "~/services/materials";
+import toast from "react-hot-toast";
+import { Plus, Loader2 } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogTrigger,
+  DialogDescription,
 } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import type { Material } from "../types";
 
 interface AddMaterialDialogProps {
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  onSave: (materialData: Partial<Material> & { id: string }) => void;
+  onAdded: () => void;
 }
 
-const initialFormData = {
-  name: "",
-  type: "cotton" as Material["type"],
-  description: "",
-  composition: "",
-  careInstructions: "",
-  durability: 3,
-  breathability: 3,
-  comfort: 3,
-  status: "active" as "active" | "inactive",
+type MaterialForm = {
+  name: string;
+  description: string;
 };
 
-export default function AddMaterialDialog({
-  open,
-  setIsOpen,
-  onSave,
-}: AddMaterialDialogProps) {
-  const [formData, setFormData] = useState(initialFormData);
+export default function AddMaterialDialog({ onAdded }: AddMaterialDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<MaterialForm>({
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
   useEffect(() => {
-    if (open) setFormData(initialFormData);
-  }, [open]);
+    if (open) reset();
+  }, [open, reset]);
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const handleSubmitClick = async (data: MaterialForm) => {
+    try {
+      setIsLoading(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name && formData.composition) {
-      onSave({
-        ...formData,
-        id: `MAT-${Date.now().toString().slice(-3)}`,
-      });
-      setFormData(initialFormData);
-      setIsOpen(false);
+      const formData = new FormData();
+      formData.append("name", data.name.trim());
+      formData.append("description", data.description.trim() || "");
+
+      const res = await createMaterial(formData);
+      console.log("API res:", res);
+
+      if (res?.isSuccess) {
+        toast.success(res?.message || "Thêm chất liệu thành công!");
+        onAdded?.();
+        setOpen(false);
+      } else {
+        toast.error(res?.message || "Không thể thêm chất liệu!");
+      }
+    } catch (error: any) {
+      console.error("Error creating material:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.errors?.[0] ||
+        "Có lỗi xảy ra khi thêm chất liệu!";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="ml-auto bg-[#3770EC] text-white cursor-pointer">
+          <Plus />
+          Thêm chất liệu
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="min-w-[480px] max-h-[90vh] flex flex-col justify-start">
         <DialogHeader>
-          <DialogTitle>Thêm chất liệu mới</DialogTitle>
+          <DialogTitle>Thêm chất liệu</DialogTitle>
+          <DialogDescription>
+            Nhập tên chất liệu mới để thêm vào hệ thống
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6 py-4">
-            {/* Thông tin cơ bản */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Tên chất liệu *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Ví dụ: Cotton 100%"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="type">Loại chất liệu *</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value: Material["type"]) =>
-                    handleInputChange("type", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cotton">Cotton</SelectItem>
-                    <SelectItem value="polyester">Polyester</SelectItem>
-                    <SelectItem value="silk">Silk</SelectItem>
-                    <SelectItem value="wool">Wool</SelectItem>
-                    <SelectItem value="linen">Linen</SelectItem>
-                    <SelectItem value="denim">Denim</SelectItem>
-                    <SelectItem value="leather">Leather</SelectItem>
-                    <SelectItem value="synthetic">Synthetic</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="description">Mô tả</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  handleInputChange("description", e.target.value)
-                }
-                placeholder="Mô tả chi tiết về chất liệu"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="composition">Thành phần *</Label>
-              <Input
-                id="composition"
-                value={formData.composition}
-                onChange={(e) =>
-                  handleInputChange("composition", e.target.value)
-                }
-                placeholder="Ví dụ: 100% Cotton hoặc 65% Polyester, 35% Cotton"
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="careInstructions">Hướng dẫn chăm sóc</Label>
-              <Textarea
-                id="careInstructions"
-                value={formData.careInstructions}
-                onChange={(e) =>
-                  handleInputChange("careInstructions", e.target.value)
-                }
-                placeholder="Hướng dẫn giặt ủi và bảo quản"
-                rows={2}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="status">Trạng thái</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "active" | "inactive") =>
-                  handleInputChange("status", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Hoạt động</SelectItem>
-                  <SelectItem value="inactive">Không hoạt động</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <form
+          onSubmit={handleSubmit(handleSubmitClick)}
+          className="flex flex-col gap-4 py-1"
+        >
+          {/* Tên chất liệu */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Tên chất liệu</label>
+            <Input
+              type="text"
+              placeholder="VD: Cotton, Lụa, Denim..."
+              disabled={isLoading}
+              {...register("name", {
+                required: "Vui lòng nhập tên chất liệu",
+                maxLength: {
+                  value: 100,
+                  message: "Tên chất liệu không được vượt quá 100 ký tự",
+                },
+              })}
+            />
+            {errors.name && (
+              <span className="text-red-500 text-xs">
+                {errors.name.message}
+              </span>
+            )}
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              Hủy
-            </Button>
+          {/* Mô tả */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Mô tả</label>
+            <Textarea
+              placeholder="Mô tả ngắn gọn về chất liệu (tuỳ chọn)"
+              rows={2}
+              disabled={isLoading}
+              {...register("description")}
+            />
+          </div>
+
+          {/* Footer buttons */}
+          <DialogFooter className="mt-4">
+            {!isLoading && (
+              <DialogClose asChild>
+                <Button variant="outline">Hủy</Button>
+              </DialogClose>
+            )}
             <Button
               type="submit"
-              className="bg-[#3770EC] hover:bg-[#3770EC]/90"
+              className="bg-[#3770EC] text-white cursor-pointer"
+              disabled={isLoading}
             >
-              Thêm mới
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  Đang thêm...
+                </>
+              ) : (
+                <>
+                  <Plus />
+                  Thêm chất liệu
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>
