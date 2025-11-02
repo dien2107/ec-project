@@ -36,9 +36,9 @@ export const fetchProductGroupListData = createAsyncThunk(
           params,
         }
       );
-      console.log("✅ Keyword:", params.Search);
-      console.log("✅ Status:", params.StatusName);
-      console.log("✅ API response:", response.data);
+      // console.log("✅ Keyword:", params.Search);
+      // console.log("✅ Status:", params.StatusName);
+      // console.log("✅ API response:", response.data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(

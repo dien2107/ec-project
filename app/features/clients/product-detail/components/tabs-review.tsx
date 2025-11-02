@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Pagination from "~/components/common/pagination";
@@ -18,8 +19,6 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
   const [filters, setFilters] = useState<FilterState>({
     statusName: STATUS_VARIABLE.Approved,
     rating: "all",
-    // pageNumber: 1,
-    // pageSize: 5,
   });
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -44,8 +43,6 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
     enabled: !!productId,
   });
 
-  console.log(reviews);
-  console.log(filters);
   const handleTabChange = (value: string) => {
     let newRating;
     if (value === "all-stars") newRating = "all";
@@ -75,49 +72,105 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
   const renderContent = () => {
     if (isLoading)
       return (
-        <div
-          className="flex items-center justify-center gap-4 py-6"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex items-center justify-center gap-4 py-12"
           aria-live="polite"
         >
           <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
           <span className="text-gray-700">Đang tải đánh giá...</span>
-        </div>
+        </motion.div>
       );
+
     if (error)
       return (
-        <div
-          className="flex items-center justify-center gap-4 py-6"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex items-center justify-center gap-4 py-12"
           aria-live="polite"
         >
-          <p className="text-red-500">
-            Không thể tải đánh giá. Vui lòng thử lại.
-          </p>
-        </div>
+          <div className="text-center">
+            <p className="text-red-500 text-lg">
+              Không thể tải đánh giá. Vui lòng thử lại.
+            </p>
+          </div>
+        </motion.div>
       );
+
     if (reviewItems.length === 0)
       return (
-        <div
-          className="flex items-center justify-center gap-4 py-6"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex items-center justify-center gap-4 py-12"
           aria-live="polite"
         >
-          <p className="text-gray-500">Chưa có đánh giá nào.</p>
-        </div>
+          <div className="text-center">
+            <svg
+              className="w-16 h-16 mx-auto mb-4 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+            <p className="text-gray-500 text-lg">Chưa có đánh giá nào.</p>
+            <p className="text-gray-400 text-sm mt-2">
+              Hãy là người đầu tiên đánh giá sản phẩm này!
+            </p>
+          </div>
+        </motion.div>
       );
 
     return (
-      <div>
-        {reviewItems.map((review: Review) => (
-          <CardReview key={review.reviewId} review={review} />
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${filters.rating}-${pagination.currentPage}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ staggerChildren: 0.1 }}
+          className="space-y-4"
+        >
+          {reviewItems.map((review: Review, index: number) => (
+            <motion.div
+              key={review.reviewId}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+            >
+              <CardReview review={review} />
+            </motion.div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     );
   };
 
   const renderPagination = () => {
-    if (reviewItems.length === 0) return null;
+    if (reviewItems.length === 0 || pagination.totalPages <= 1) return null;
 
     return (
-      <div className="mt-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="mt-8"
+      >
         <Pagination
           currentPage={reviews?.data?.pageNumber}
           totalPages={reviews?.data?.totalPages}
@@ -128,64 +181,74 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
                 : { ...prev, currentPage: newPage }
             );
 
-            // Scroll to top
-            const headerOffset = 184;
-            const el = mainRef.current!;
-            const top =
-              el.getBoundingClientRect().top + window.scrollY - headerOffset;
-            window.scrollTo({ top, behavior: "smooth" });
+            // Smooth scroll to top
+            if (mainRef.current) {
+              const headerOffset = 184;
+              const top =
+                mainRef.current.getBoundingClientRect().top +
+                window.scrollY -
+                headerOffset;
+              window.scrollTo({ top, behavior: "smooth" });
+            }
           }}
         />
-      </div>
+      </motion.div>
     );
   };
 
   return (
     <div className="mt-6" ref={mainRef}>
       <Tabs defaultValue="all-stars" onValueChange={handleTabChange}>
-        <TabsList className="bg-transparent gap-1">
-          {/* All reviews */}
-          <TabsTrigger
-            value="all-stars"
-            className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-colors duration-200"
-          >
-            Tất cả ({product.reviewCount || 0})
-          </TabsTrigger>
-
-          {/* Star ratings */}
-          {[5, 4, 3, 2, 1].map((star) => (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <TabsList className="bg-transparent gap-1 mb-6">
+            {/* All reviews */}
             <TabsTrigger
-              key={star}
-              value={`${star}-star`}
-              className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-colors duration-200"
+              value="all-stars"
+              className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-all duration-200 hover:bg-gray-100"
             >
-              {star} sao ({product.reviewDetails?.[star] ?? 0})
+              Tất cả ({product.reviewCount || 0})
             </TabsTrigger>
-          ))}
 
-          {/* Has images */}
-          <TabsTrigger
-            value="has-images"
-            className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-colors duration-200"
-          >
-            Có hình ảnh ({product.hasImageCount ?? 0})
-          </TabsTrigger>
-        </TabsList>
-        <span className="border-b border-gray-200 mb-6"></span>
+            {/* Star ratings */}
+            {[5, 4, 3, 2, 1].map((star) => (
+              <TabsTrigger
+                key={star}
+                value={`${star}-star`}
+                className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-all duration-200 hover:bg-gray-100"
+              >
+                {star} sao ({product.reviewDetails?.[star] ?? 0})
+              </TabsTrigger>
+            ))}
 
-        <TabsContent value="all-stars">
+            {/* Has images */}
+            <TabsTrigger
+              value="has-images"
+              className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-all duration-200 hover:bg-gray-100"
+            >
+              Có hình ảnh ({product.hasImageCount ?? 0})
+            </TabsTrigger>
+          </TabsList>
+        </motion.div>
+
+        <div className="border-b border-gray-200 mb-6"></div>
+
+        <TabsContent value="all-stars" className="mt-0">
           {renderContent()}
           {renderPagination()}
         </TabsContent>
 
         {[5, 4, 3, 2, 1].map((star) => (
-          <TabsContent key={star} value={`${star}-star`}>
+          <TabsContent key={star} value={`${star}-star`} className="mt-0">
             {renderContent()}
             {renderPagination()}
           </TabsContent>
         ))}
 
-        <TabsContent value="has-images">
+        <TabsContent value="has-images" className="mt-0">
           {renderContent()}
           {renderPagination()}
         </TabsContent>

@@ -11,6 +11,7 @@ import { fetchStatuses } from "~/redux/slices/statuses";
 type FilterValues = {
   Search?: string;
   StatusName?: string;
+  DiscountType?: string; // 🔹 Thêm filter cho loại khuyến mãi
 };
 
 type Props = {
@@ -21,32 +22,33 @@ type Props = {
 const DiscountFilter: React.FC<Props> = ({ filters, setFilters }) => {
   const dispatch = useAppDispatch();
 
-  // Get status list from Redux
   const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
     (state) => state.statuses
   );
 
-  // Fetch statuses for the specific entity type when the component mounts
   React.useEffect(() => {
     dispatch(fetchStatuses({ entityType: "Discount" }));
   }, [dispatch]);
 
-  // Create status options dynamically based on entity type
   const statuses =
     statusesData["Discount"]?.map((s) => ({
-      value: s.name, // Use the name for filtering
-      label: s.displayName || s.name, // Use the displayName if available, otherwise fallback to name
+      value: s.name,
+      label: s.displayName || s.name,
     })) ?? [];
 
-  // Add "All Statuses" option
-  const allStatusesOption = { value: "", label: "Tất cả trạng thái" }; // Option for all statuses
-  const statusOptions = [allStatusesOption, ...statuses]; // Combine with existing statuses
+  const allStatusesOption = { value: "", label: "Tất cả trạng thái" };
+  const statusOptions = [allStatusesOption, ...statuses];
 
-  // Internal state for search input
+  // 🔹 Cứng cho loại khuyến mãi
+  const discountTypeOptions = [
+    { value: "", label: "Tất cả các loại khuyến mãi" },
+    { value: "percentage", label: "Phần trăm (%)" },
+    { value: "fixed", label: "Số tiền" },
+  ];
+
   const [searchInput, setSearchInput] = React.useState(filters.Search ?? "");
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Update parent filter on debounce completion
   React.useEffect(() => {
     setFilters((prev) => ({
       ...prev,
@@ -54,7 +56,6 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters }) => {
     }));
   }, [debouncedSearch, setFilters]);
 
-  // Update input when parent filter changes (e.g., reset)
   React.useEffect(() => {
     setSearchInput(filters.Search ?? "");
   }, [filters.Search]);
@@ -66,7 +67,14 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters }) => {
   const handleStatusChange = (option: any) => {
     setFilters((prev) => ({
       ...prev,
-      StatusName: option ? option.value : "", // Use the status name for filtering
+      StatusName: option ? option.value : "",
+    }));
+  };
+
+  const handleDiscountTypeChange = (option: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      DiscountType: option ? option.value : "",
     }));
   };
 
@@ -74,6 +82,7 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters }) => {
     setFilters(() => ({
       Search: "",
       StatusName: "",
+      DiscountType: "",
     }));
   };
 
@@ -91,13 +100,34 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters }) => {
         />
       </div>
 
+      {/* Discount Type dropdown */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">
+          Loại khuyến mãi
+        </label>
+        <Select
+          instanceId="discount-type-filter"
+          placeholder="Tất cả các loại khuyến mãi"
+          options={discountTypeOptions}
+          value={
+            discountTypeOptions.find(
+              (opt) => opt.value === filters.DiscountType
+            ) || discountTypeOptions[0]
+          }
+          onChange={handleDiscountTypeChange}
+          isSearchable={false}
+          styles={reactSelectStyles}
+          className="min-w-[180px]"
+        />
+      </div>
+
       {/* Status dropdown */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Trạng thái</label>
         <Select
           instanceId="discount-status-filter"
           placeholder="Tất cả trạng thái"
-          options={statusOptions} // Use the combined options
+          options={statusOptions}
           value={
             statusOptions.find((opt) => opt.value === filters.StatusName) ||
             statusOptions[0]

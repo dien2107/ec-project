@@ -7,10 +7,12 @@ import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { useDebounce } from "~/hooks/use-debounce";
 import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { fetchStatuses } from "~/redux/slices/statuses";
+import { getCategoryHierarchy } from "~/services/categories";
 
 type FilterValues = {
   Search?: string;
   StatusName?: string;
+  ParentId?: number;
 };
 
 type Props = {
@@ -20,6 +22,9 @@ type Props = {
 
 const CategoryFilter: React.FC<Props> = ({ filters, setFilters }) => {
   const dispatch = useAppDispatch();
+  const [parentCategories, setParentCategories] = React.useState<
+    { id: number; name: string; slug?: string }[]
+  >([]);
 
   // Get status list from Redux
   const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
@@ -29,18 +34,48 @@ const CategoryFilter: React.FC<Props> = ({ filters, setFilters }) => {
   // Fetch statuses for the specific entity type when the component mounts
   React.useEffect(() => {
     dispatch(fetchStatuses({ entityType: "Category" }));
+    loadParentCategories();
   }, [dispatch]);
+
+  // Load parent categories
+  const loadParentCategories = async () => {
+    try {
+      const res = await getCategoryHierarchy();
+      if (res?.isSuccess && Array.isArray(res.data)) {
+        const mapped = res.data.map((c: any) => ({
+          id: c.categoryId,
+          name: c.name,
+        }));
+        setParentCategories(mapped);
+      } else {
+        setParentCategories([]);
+      }
+    } catch (error) {
+      console.error("Error loading parent categories:", error);
+      setParentCategories([]);
+    }
+  };
 
   // Create status options dynamically based on entity type
   const statuses =
     statusesData["Category"]?.map((s) => ({
-      value: s.name, // Use the name for filtering
-      label: s.displayName || s.name, // Use the displayName if available, otherwise fallback to name
+      value: s.name,
+      label: s.displayName || s.name,
     })) ?? [];
 
   // Add "All Statuses" option
-  const allStatusesOption = { value: "", label: "Tất cả trạng thái" }; // Option for all statuses
-  const statusOptions = [allStatusesOption, ...statuses]; // Combine with existing statuses
+  const allStatusesOption = { value: "", label: "Tất cả trạng thái" };
+  const statusOptions = [allStatusesOption, ...statuses];
+
+  // Create parent category options
+  const allParentOption = { value: 0, label: "Tất cả thể loại cha" };
+  const parentOptions = [
+    allParentOption,
+    ...parentCategories.map((cat) => ({
+      value: cat.id,
+      label: cat.name,
+    })),
+  ];
 
   // Internal state for search input
   const [searchInput, setSearchInput] = React.useState(filters.Search ?? "");
@@ -66,7 +101,14 @@ const CategoryFilter: React.FC<Props> = ({ filters, setFilters }) => {
   const handleStatusChange = (option: any) => {
     setFilters((prev) => ({
       ...prev,
-      StatusName: option ? option.value : "", // Use the status name for filtering
+      StatusName: option ? option.value : "",
+    }));
+  };
+
+  const handleParentChange = (option: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      ParentId: option && option.value !== 0 ? option.value : undefined,
     }));
   };
 
@@ -74,6 +116,7 @@ const CategoryFilter: React.FC<Props> = ({ filters, setFilters }) => {
     setFilters(() => ({
       Search: "",
       StatusName: "",
+      ParentId: undefined,
     }));
   };
 
@@ -84,10 +127,30 @@ const CategoryFilter: React.FC<Props> = ({ filters, setFilters }) => {
         <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
         <Input
           type="text"
-          placeholder="Tìm thể loại..."
+          placeholder="Tìm theo tên hoặc slug..."
           value={searchInput}
           onChange={handleSearchChange}
           className="w-60"
+        />
+      </div>
+
+      {/* Parent category dropdown */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">
+          Thể loại cha
+        </label>
+        <Select
+          instanceId="category-parent-filter"
+          placeholder="Tất cả thể loại cha"
+          options={parentOptions}
+          value={
+            parentOptions.find((opt) => opt.value === filters.ParentId) ||
+            parentOptions[0]
+          }
+          onChange={handleParentChange}
+          isSearchable={false}
+          styles={reactSelectStyles}
+          className="min-w-[180px]"
         />
       </div>
 
@@ -97,7 +160,7 @@ const CategoryFilter: React.FC<Props> = ({ filters, setFilters }) => {
         <Select
           instanceId="category-status-filter"
           placeholder="Tất cả trạng thái"
-          options={statusOptions} // Use the combined options
+          options={statusOptions}
           value={
             statusOptions.find((opt) => opt.value === filters.StatusName) ||
             statusOptions[0]

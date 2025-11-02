@@ -22,6 +22,7 @@ export const fetchCategoryListData = createAsyncThunk(
     params: {
       Search?: string; // 🔍 Tìm theo tên hoặc mã danh mục
       StatusName?: string; // 🔘 Lọc trạng thái
+      ParentId?: number; // 🗂️ Lọc theo danh mục cha
       PageNumber?: number;
       PageSize?: number;
     },
@@ -34,9 +35,10 @@ export const fetchCategoryListData = createAsyncThunk(
           params,
         }
       );
-      console.log("✅ Keyword:", params.Search);
-      console.log("✅ Status:", params.StatusName);
-      console.log("✅ API trả về:", response.data);
+      // console.log("✅ Keyword:", params.Search);
+      // console.log("✅ Status:", params.StatusName);
+      // console.log("✅ Parent ID:", params.ParentId);
+      // console.log("✅ API trả về:", response.data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(

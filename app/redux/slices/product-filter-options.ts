@@ -11,15 +11,26 @@ interface ProductFilterOptionsState {
 
 const initialState: ProductFilterOptionsState = {
   productFilterOptions: null,
-  isLoading: true,
+  isLoading: false,
   isError: false,
 };
 
-export const fetchProductFilterOptionsByCategorySlug = createAsyncThunk(
-  "productFilters/fetchProductFilterOptionsByCategorySlug",
-  async (categorySlug: string) => {
+export const fetchProductCatelogFilterOptions = createAsyncThunk(
+  "productFilters/fetchProductCatelogFilterOptions",
+  async ({
+    categorySlug,
+    search,
+  }: {
+    categorySlug?: string;
+    search?: string;
+  }) => {
+    const params = {
+      CategorySlug: categorySlug,
+      Search: search,
+    };
     const response = await instance.get<ApiResponse<ProductFilterOptions>>(
-      `products/category/${categorySlug}/filter-options`
+      `products/catelog/filter-options`,
+      { params }
     );
 
     return response.data;
@@ -32,19 +43,16 @@ const productFilterOptionsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProductFilterOptionsByCategorySlug.pending, (state) => {
+      .addCase(fetchProductCatelogFilterOptions.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
       })
-      .addCase(
-        fetchProductFilterOptionsByCategorySlug.fulfilled,
-        (state, action) => {
-          state.isLoading = false;
-          state.isError = false;
-          state.productFilterOptions = action.payload;
-        }
-      )
-      .addCase(fetchProductFilterOptionsByCategorySlug.rejected, (state) => {
+      .addCase(fetchProductCatelogFilterOptions.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.productFilterOptions = action.payload;
+      })
+      .addCase(fetchProductCatelogFilterOptions.rejected, (state) => {
         state.isLoading = false;
         state.isError = true;
       });

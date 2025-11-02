@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import StarRatingRow from "./star-rating-row";
 import TabsReview from "./tabs-review";
@@ -29,8 +30,14 @@ export default function TabsInfo({ product }: { product: ProductDetail }) {
           </TabsTrigger>
         </TabsList>
         <span className="border-b border-gray-200"></span>
+
         <TabsContent value="product">
-          <div className="pt-4 mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="pt-4 mb-4"
+          >
             <h1 className="font-medium mb-2">Thông tin sản phẩm</h1>
             <ul className="list-disc ml-5">
               <li className="mb-1 text-md">
@@ -57,10 +64,16 @@ export default function TabsInfo({ product }: { product: ProductDetail }) {
                 Xuất xứ: <span className="text-gray-700">Việt Nam</span>
               </li>
             </ul>
-          </div>
+          </motion.div>
         </TabsContent>
+
         <TabsContent value="shipping">
-          <div className="pt-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="pt-4"
+          >
             <div className="mb-4">
               <h3 className="font-medium mb-2">Chính sách vận chuyển</h3>
               <p className="text-gray-700">
@@ -75,28 +88,45 @@ export default function TabsInfo({ product }: { product: ProductDetail }) {
                 hàng nếu sản phẩm còn nguyên tem mác, chưa qua sử dụng.
               </p>
             </div>
-          </div>
+          </motion.div>
         </TabsContent>
+
         <TabsContent value="rating">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 ">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             {/* Left: overview */}
-            <div className="md:col-span-1 self-start">
+            <motion.div
+              className="md:col-span-1 self-start"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            >
               <div className="sticky top-24 p-6 border border-gray-200 rounded-lg shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="flex items-center gap-3 mb-2"
+                >
                   <span className="text-3xl font-bold text-black">
                     {product.rating?.toFixed?.(1) ?? "0.0"}
                   </span>
                   <div className="flex">{renderStars(product.rating ?? 0)}</div>
-                </div>
-                <div className="mb-4">
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                  className="mb-4"
+                >
                   <span className="text-sm text-gray-500">
                     {product.reviewCount ?? 0} đánh giá •{" "}
                     {product.soldQuantity ?? 0} đã bán
                   </span>
-                </div>
+                </motion.div>
 
                 <div className="w-full space-y-2">
-                  {([5, 4, 3, 2, 1] as const).map((star) => {
+                  {([5, 4, 3, 2, 1] as const).map((star, index) => {
                     const details = product.reviewDetails ?? {};
                     const count = Number(details[star] ?? 0);
                     const value =
@@ -104,22 +134,41 @@ export default function TabsInfo({ product }: { product: ProductDetail }) {
                         ? Math.round((count / product.reviewCount) * 100)
                         : 0;
                     return (
-                      <StarRatingRow
+                      <motion.div
                         key={star}
-                        stars={star}
-                        value={value}
-                        count={count}
-                      />
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          duration: 0.4,
+                          delay: 0.3 + index * 0.08,
+                          ease: [0.25, 0.1, 0.25, 1],
+                        }}
+                      >
+                        <StarRatingRow
+                          stars={star}
+                          value={value}
+                          count={count}
+                        />
+                      </motion.div>
                     );
                   })}
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Right: reviews list (takes 2 columns on md+) */}
-            <div className="md:col-span-2 ml-2">
+            {/* Right: reviews list */}
+            <motion.div
+              className="md:col-span-2 ml-2"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{
+                duration: 0.6,
+                delay: 0.2,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+            >
               <TabsReview product={product} />
-            </div>
+            </motion.div>
           </div>
         </TabsContent>
       </Tabs>

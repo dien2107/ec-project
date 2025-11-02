@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, FilePenLine, Trash2 } from "lucide-react";
 import { formatVND } from "~/libs";
 import type { Product as SharedProduct } from "~/types/product/product";
 
@@ -112,13 +112,33 @@ export interface AddImportOrderModalProps {
   onAdd: (order: any) => void;
 }
 export const statusMap: Record<string, { label: string; className: string }> = {
+  Draft: { label: "Bản nháp", className: "bg-gray-100 text-gray-800" },
   Pending: { label: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
   Approved: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
+  Ordered: { label: "Đã đặt hàng", className: "bg-indigo-100 text-indigo-800" },
+  Received: {
+    label: "Đã nhận hàng",
+    className: "bg-purple-100 text-purple-800",
+  },
+  Completed: { label: "Hoàn tất", className: "bg-green-100 text-green-800" },
+  Cancelled: { label: "Đã hủy", className: "bg-red-100 text-red-800" },
+};
+
+// Workflow transitions cho từng status
+export const STATUS_TRANSITIONS: Record<string, string[]> = {
+  Draft: ["Pending"],
+  Pending: ["Approved"],
+  Approved: ["Ordered"],
+  Ordered: ["Received"],
+  Received: ["Completed"],
+  Completed: [],
+  Cancelled: [],
 };
 
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
-  handleDelete: (order: ImportOrder) => void
+  handleDelete: (order: ImportOrder) => void,
+  handleChangeStatus: (order: ImportOrder) => void
 ): ColumnDef<ImportOrder>[] => [
   {
     accessorKey: "purchaseOrderId",
@@ -171,9 +191,10 @@ export const getImportOrderColumns = (
       />
     ),
     cell: ({ row }) => {
-      const status = row.original.status.name;
+      const order = row.original;
+      const status = order.status?.name || order.statusName || "Draft";
       const statusInfo = statusMap[status] || {
-        label: row.original.statusName,
+        label: order.statusName || status || "Không rõ",
         className: "bg-gray-100 text-gray-800",
       };
       return (
@@ -202,27 +223,54 @@ export const getImportOrderColumns = (
   {
     id: "actions",
     header: "Thao tác",
-    cell: ({ row }) => (
-      <div className="flex gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleEdit(row.original)}
-          className="h-8 w-8 p-0 hover:bg-green-100"
-          title="Chỉnh sửa"
-        >
-          <Edit className="h-4 w-4 text-green-600" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleDelete(row.original)}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          title="Xóa"
-        >
-          <Trash2 className="h-4 w-4 text-red-600" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const order = row.original;
+      const status = order.status?.name || order.statusName || "Draft";
+      const canEdit = status === "Draft" || status === "Pending";
+      const canDelete = status === "Draft";
+      const canChangeStatus = status !== "Cancelled" && status !== "Completed";
+
+      return (
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(order)}
+            className="h-8 w-8 p-0 hover:bg-green-100"
+            title={canEdit ? "Chỉnh sửa" : "Không thể chỉnh sửa"}
+            disabled={!canEdit}
+          >
+            <Edit
+              className={`h-4 w-4 ${canEdit ? "text-green-600" : "text-gray-400"}`}
+            />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(order)}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            title={canDelete ? "Xóa" : "Không thể xóa"}
+            disabled={!canDelete}
+          >
+            <Trash2
+              className={`h-4 w-4 ${canDelete ? "text-red-600" : "text-gray-400"}`}
+            />
+          </Button>
+          {canChangeStatus && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleChangeStatus(order)}
+              className="h-8 px-2 hover:bg-blue-100"
+              title="Đổi trạng thái"
+            >
+              <span className="text-xs text-blue-600">
+                <FilePenLine />
+              </span>
+            </Button>
+          )}
+        </div>
+      );
+    },
   },
 ];

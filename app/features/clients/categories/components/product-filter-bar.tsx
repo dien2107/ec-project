@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Select from "react-select";
 import {
   Popover,
@@ -11,11 +11,11 @@ import { Input } from "~/components/ui/input";
 import type { FilterState } from "../types/product-category-slug-filter-props";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 import { useDebounce } from "~/hooks/use-debounce";
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
-import { fetchProductFilterOptionsByCategorySlug } from "~/redux/slices/product-filter-options";
-import SkeletonFilter from "~/components/ui/skeleton-filter";
+import { fetchProductCatelogFilterOptions } from "~/redux/slices/product-filter-options";
 import ProductFilterBadge from "./product-filter-badge";
+import { motion, AnimatePresence } from "framer-motion";
 
 const filterOptions = [
   { label: "Màu", type: "multi", options: "colors" },
@@ -25,12 +25,12 @@ const filterOptions = [
 ];
 
 const sortOptions = [
+  { label: "Mới nhất", value: "date_newest" },
+  { label: "Cũ nhất", value: "date_oldest" },
   { label: "Thứ tự bảng chữ cái (A-Z)", value: "az" },
   { label: "Thứ tự bảng chữ cái (Z-A)", value: "za" },
   { label: "Giá tăng dần", value: "price_asc" },
   { label: "Giá giảm dần", value: "price_desc" },
-  { label: "Cũ nhất", value: "date_oldest" },
-  { label: "Mới nhất", value: "date_newest" },
 ];
 
 const selectInnerStyles = {
@@ -51,6 +51,9 @@ export default function ProductFilterBar({
   totalCount: number;
 }) {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("q");
+
   const dispatch = useAppDispatch();
   const { productFilterOptions, isLoading } = useAppSelector(
     (state) => state.productFilterOptions
@@ -63,9 +66,15 @@ export default function ProductFilterBar({
   const maxPriceDebounced = useDebounce(maxPrice, 800);
 
   useEffect(() => {
-    if (!slug) return;
-    dispatch(fetchProductFilterOptionsByCategorySlug(slug));
-  }, [dispatch, slug]);
+    if (!slug && !searchQuery) return;
+
+    dispatch(
+      fetchProductCatelogFilterOptions({
+        categorySlug: slug,
+        search: searchQuery || undefined,
+      })
+    );
+  }, [dispatch, slug, searchQuery]);
 
   useEffect(() => {
     const next =
@@ -196,102 +205,163 @@ export default function ProductFilterBar({
     [setFilters]
   );
 
-  if (isLoading) return <SkeletonFilter />;
+  if (isLoading) return null;
 
   return (
-    <div className="flex flex-col gap-3 border-b border-gray-200 py-3">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        {/* Bộ lọc */}
-        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-800">
-          <span className="text-sm text-gray-400">Bộ lọc:</span>
+    <AnimatePresence>
+      <motion.div
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        style={{ overflow: "visible" }}
+      >
+        <div className="flex flex-col gap-3 border-b border-gray-200 py-3">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            {/* Bộ lọc */}
+            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-800">
+              <span className="text-sm text-gray-400">Bộ lọc:</span>
 
-          {filterOptions.map((f) => (
-            <Popover key={f.label}>
-              <PopoverTrigger asChild>
-                <Button className="flex items-center gap-1 text-gray-700 hover:text-black hover:underline">
-                  {f.label}
-                  <ChevronDown size={14} />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="start"
-                className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible"
-              >
-                {f.type === "price" ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Chọn khoảng giá</span>
-                      <button
-                        className="cursor-pointer text-gray-500 hover:text-gray-800 hover:underline"
-                        onClick={() => {
-                          handleClearFilter(0, "price");
-                        }}
-                      >
-                        Đặt lại
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="relative">
-                        <span className="absolute left-2 top-2 text-gray-500 text-xs">
-                          ₫
-                        </span>
-                        <Input
-                          placeholder="Từ"
-                          className="pl-5 text-sm"
-                          value={minPrice}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (/^\d*$/.test(value)) {
-                              setMinPrice(value);
-                            }
+              {filterOptions.map((f) => (
+                <Popover key={f.label}>
+                  <PopoverTrigger asChild>
+                    <Button className="flex items-center gap-1 text-gray-700 hover:text-black hover:underline">
+                      {f.label}
+                      <ChevronDown size={14} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible"
+                  >
+                    {f.type === "price" ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>Chọn khoảng giá</span>
+                          <button
+                            className="cursor-pointer text-gray-500 hover:text-gray-800 hover:underline"
+                            onClick={() => {
+                              handleClearFilter(0, "price");
+                            }}
+                          >
+                            Đặt lại
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="relative">
+                            <span className="absolute left-2 top-2 text-gray-500 text-xs">
+                              ₫
+                            </span>
+                            <Input
+                              placeholder="Từ"
+                              className="pl-5 text-sm"
+                              value={minPrice}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                  setMinPrice(value);
+                                }
+                              }}
+                            />
+                          </div>
+                          <div className="relative">
+                            <span className="absolute left-2 top-2 text-gray-500 text-xs">
+                              ₫
+                            </span>
+                            <Input
+                              placeholder="Đến"
+                              className="pl-5 text-sm"
+                              value={maxPrice}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                  setMaxPrice(value);
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>Chọn {f.label.toLowerCase()}</span>
+                        </div>
+                        <Select
+                          isMulti={f.type === "multi"}
+                          options={
+                            f.options === "colors"
+                              ? colorOptions
+                              : f.options === "materials"
+                                ? materialOptions
+                                : f.options === "productGroups"
+                                  ? groupOptions
+                                  : []
+                          }
+                          value={
+                            f.options === "colors"
+                              ? selectedColors
+                              : f.options === "materials"
+                                ? selectedMaterials
+                                : f.options === "productGroups"
+                                  ? selectedProductGroups
+                                  : []
+                          }
+                          menuIsOpen={true}
+                          placeholder={`Tìm ${f.label.toLowerCase()}...`}
+                          classNamePrefix="react-select"
+                          styles={selectInnerStyles}
+                          menuPortalTarget={
+                            typeof document !== "undefined"
+                              ? document.body
+                              : undefined
+                          }
+                          menuPosition="fixed"
+                          onChange={(selected) => {
+                            const selectedArray = Array.isArray(selected)
+                              ? selected
+                              : selected
+                                ? [selected]
+                                : [];
+                            const values = selectedArray.map((x) => x.value);
+                            setFilters((prev) => {
+                              if (f.options === "colors") {
+                                return { ...prev, colorIds: values };
+                              } else if (f.options === "materials") {
+                                return { ...prev, materialIds: values };
+                              } else if (f.options === "productGroups") {
+                                return { ...prev, productGroupIds: values };
+                              }
+                              return prev;
+                            });
                           }}
                         />
                       </div>
-                      <div className="relative">
-                        <span className="absolute left-2 top-2 text-gray-500 text-xs">
-                          ₫
-                        </span>
-                        <Input
-                          placeholder="Đến"
-                          className="pl-5 text-sm"
-                          value={maxPrice}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (/^\d*$/.test(value)) {
-                              setMaxPrice(value);
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
+                    )}
+                  </PopoverContent>
+                </Popover>
+              ))}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button className="flex items-center gap-1 text-gray-700 hover:text-black hover:underline">
+                    Còn hàng
+                    <ChevronDown size={14} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible"
+                >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Chọn {f.label.toLowerCase()}</span>
+                      <span>Chọn trạng thái hàng</span>
                     </div>
-                    <Select
-                      isMulti={f.type === "multi"}
-                      options={
-                        f.options === "colors"
-                          ? colorOptions
-                          : f.options === "materials"
-                            ? materialOptions
-                            : f.options === "productGroups"
-                              ? groupOptions
-                              : []
-                      }
-                      value={
-                        f.options === "colors"
-                          ? selectedColors
-                          : f.options === "materials"
-                            ? selectedMaterials
-                            : f.options === "productGroups"
-                              ? selectedProductGroups
-                              : []
-                      }
+                    <Select<{ label: string; value: boolean }, true>
+                      isMulti={true}
                       menuIsOpen={true}
-                      placeholder={`Tìm ${f.label.toLowerCase()}...`}
+                      value={selectedStockStatuses}
+                      options={stockStatusOptions}
+                      placeholder="Chọn trạng thái..."
                       classNamePrefix="react-select"
                       styles={selectInnerStyles}
                       menuPortalTarget={
@@ -301,100 +371,56 @@ export default function ProductFilterBar({
                       }
                       menuPosition="fixed"
                       onChange={(selected) => {
-                        const selectedArray = Array.isArray(selected)
-                          ? selected
-                          : selected
-                            ? [selected]
-                            : [];
-                        const values = selectedArray.map((x) => x.value);
-                        setFilters((prev) => {
-                          if (f.options === "colors") {
-                            return { ...prev, colorIds: values };
-                          } else if (f.options === "materials") {
-                            return { ...prev, materialIds: values };
-                          } else if (f.options === "productGroups") {
-                            return { ...prev, productGroupIds: values };
-                          }
-                          return prev;
-                        });
+                        const values = selected?.map((x) => x.value) ?? [];
+                        setFilters((prev) => ({
+                          ...prev,
+                          inStock: values.includes(true),
+                          outOfStock: values.includes(false),
+                        }));
                       }}
                     />
                   </div>
-                )}
-              </PopoverContent>
-            </Popover>
-          ))}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button className="flex items-center gap-1 text-gray-700 hover:text-black hover:underline">
-                Còn hàng
-                <ChevronDown size={14} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible"
-            >
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Chọn trạng thái hàng</span>
-                </div>
-                <Select<{ label: string; value: boolean }, true>
-                  isMulti={true}
-                  menuIsOpen={true}
-                  value={selectedStockStatuses}
-                  options={stockStatusOptions}
-                  placeholder="Chọn trạng thái..."
-                  classNamePrefix="react-select"
-                  styles={selectInnerStyles}
-                  menuPortalTarget={
-                    typeof document !== "undefined" ? document.body : undefined
-                  }
-                  menuPosition="fixed"
-                  onChange={(selected) => {
-                    const values = selected?.map((x) => x.value) ?? [];
-                    setFilters((prev) => ({
-                      ...prev,
-                      inStock: values.includes(true),
-                      outOfStock: values.includes(false),
-                    }));
-                  }}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+                </PopoverContent>
+              </Popover>
+            </div>
 
-        {/* Sort */}
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-400">Sắp xếp theo:</span>
-          <Select
-            options={sortOptions}
-            value={sortOptions.find((o) => o.value === filters.orderBy) ?? null}
-            onChange={(option: any) =>
-              setFilters((prev) => ({ ...prev, orderBy: option?.value ?? "" }))
-            }
-            isSearchable={false}
-            className="min-w-[240px]"
-            classNamePrefix="react-select"
-            styles={reactSelectStyles}
+            {/* Sort */}
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-400">Sắp xếp theo:</span>
+              <Select
+                options={sortOptions}
+                value={
+                  sortOptions.find((o) => o.value === filters.orderBy) ?? null
+                }
+                onChange={(option: any) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    orderBy: option?.value ?? "",
+                  }))
+                }
+                isSearchable={false}
+                className="min-w-[240px]"
+                classNamePrefix="react-select"
+                styles={reactSelectStyles}
+              />
+              <span className="text-sm text-gray-400">
+                Có {totalCount} sản phẩm
+              </span>
+            </div>
+          </div>
+
+          {/* Filter badges */}
+          <ProductFilterBadge
+            filters={filters}
+            setFilters={setFilters}
+            selectedColors={selectedColors}
+            selectedMaterials={selectedMaterials}
+            selectedProductGroups={selectedProductGroups}
+            selectedStockStatuses={selectedStockStatuses}
+            handleClearFilter={handleClearFilter}
           />
-          <span className="text-sm text-gray-400">
-            Có {totalCount} sản phẩm
-          </span>
         </div>
-      </div>
-
-      {/* Filter badges */}
-      <ProductFilterBadge
-        filters={filters}
-        setFilters={setFilters}
-        selectedColors={selectedColors}
-        selectedMaterials={selectedMaterials}
-        selectedProductGroups={selectedProductGroups}
-        selectedStockStatuses={selectedStockStatuses}
-        handleClearFilter={handleClearFilter}
-      />
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -24,6 +24,7 @@ export const fetchDiscountListData = createAsyncThunk(
     params: {
       Search?: string; // 🔍 Tìm theo mã hoặc tên giảm giá
       StatusName?: string; // 🔘 Lọc trạng thái
+      DiscoyntType?: string; // 🔘 Lọc loại giảm giá
       PageNumber?: number;
       PageSize?: number;
     },
@@ -34,8 +35,8 @@ export const fetchDiscountListData = createAsyncThunk(
         "/discounts",
         { params }
       );
-      console.log("✅ Keyword:", params);
-      console.log("✅ Status:", params.StatusName);
+      // console.log("✅ Keyword:", params);
+      // console.log("✅ Status:", params.StatusName);
       console.log("✅ API trả về:", response.data);
       return response.data;
     } catch (error: any) {

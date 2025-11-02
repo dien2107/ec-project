@@ -16,7 +16,7 @@ import ReviewDetail from "./components/review-detail";
 import ReviewFilter from "./components/review-filter";
 import type { Status } from "~/types/status";
 import { ENTITY_TYPE } from "~/constants/entity-types";
-import SkeletonTable from "../../../components/ui/skeleton-table";
+import { fetchStatuses } from "~/redux/slices/statuses";
 
 export default function ReviewDialog({
   open,
@@ -31,7 +31,9 @@ export default function ReviewDialog({
   const { reviewList, isLoading } = useAppSelector(
     (state: RootState) => state.reviewList
   );
-  const { statuses } = useAppSelector((state: RootState) => state.statuses);
+  const statuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.REVIEW] ?? []
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
@@ -41,17 +43,11 @@ export default function ReviewDialog({
     search: undefined as string | undefined,
     rating: undefined as number | undefined,
   });
-  const [metaStatus, setMetaStatus] = useState<Status[]>([]);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
   useEffect(() => {
-    if (statuses && statuses.length > 0) {
-      const reviewStatuses = statuses.filter(
-        (s) => s.entityType === ENTITY_TYPE.REVIEW
-      );
-      setMetaStatus(reviewStatuses);
-    }
-  }, [statuses]);
+    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.REVIEW }));
+  }, [dispatch]);
 
   useEffect(() => {
     if (selectedProduct?.productId) {
@@ -87,21 +83,17 @@ export default function ReviewDialog({
               <ReviewFilter
                 filters={filters}
                 setFilters={setFilters}
-                meta={{ statuses: metaStatus }}
+                meta={{ statuses }}
               />
               <div className="flex-1 overflow-y-auto mt-2">
-                {isLoading ? (
-                  <SkeletonTable />
-                ) : (
-                  <DataTable
-                    className="shadow-none border-none"
-                    columns={columns}
-                    data={reviewList?.data?.items.flat() ?? []}
-                    currentPage={currentPage}
-                    totalPages={reviewList?.data?.totalPages ?? 1}
-                    onPageChange={setCurrentPage}
-                  />
-                )}
+                <DataTable
+                  className="shadow-none border-none"
+                  columns={columns}
+                  data={reviewList?.data?.items.flat() ?? []}
+                  currentPage={currentPage}
+                  totalPages={reviewList?.data?.totalPages ?? 1}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             </div>
             <div className="col-span-1 h-full flex flex-col">

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
 import toast from "react-hot-toast";
-import { Loader2, Save, Upload, X } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -18,10 +19,7 @@ import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { reactSelectStyles } from "~/components/ui/react-select-styles";
 
-// 🧩 Redux imports
 import { useAppSelector } from "~/redux/store";
-
-// 🧩 Service
 import { getCategoryHierarchy, updateCategory } from "~/services/categories";
 import type { CategoryDetailDto } from "~/types/product/category";
 
@@ -30,7 +28,7 @@ type CategoryForm = {
   slug: string;
   description?: string;
   parentId: string;
-  sizeDetail?: File | null;
+  fileImage: File | null;
   statusId: number | null;
 };
 
@@ -49,30 +47,27 @@ export default function EditCategoryDialog({
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
     []
   );
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [imageError, setImageError] = useState("");
+  const [isImageDeleted, setIsImageDeleted] = useState(false); // 🆕 Theo dõi trạng thái xóa ảnh
 
-  // 🧠 Lấy danh sách trạng thái từ Redux
   const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
     (state) => state.statuses
   );
 
-  // 🧩 Load parent categories khi mở
+  // 🧩 Load parent categories
   useEffect(() => {
-    if (open) {
-      loadParentCategories();
-    }
+    if (open) loadParentCategories();
   }, [open]);
 
   const loadParentCategories = async () => {
     try {
       const res = await getCategoryHierarchy();
       if (res?.isSuccess && Array.isArray(res.data)) {
-        const mapped = res.data.map((c: any) => ({
-          id: c.categoryId,
-          name: c.name,
-        }));
-        setCategories(mapped);
+        setCategories(
+          res.data.map((c: any) => ({ id: c.categoryId, name: c.name }))
+        );
       } else setCategories([]);
     } catch {
       setCategories([]);
@@ -84,7 +79,7 @@ export default function EditCategoryDialog({
     slug: selectedCategory?.slug ?? "",
     description: selectedCategory?.description ?? "",
     parentId: selectedCategory?.parentId?.toString() ?? "",
-    sizeDetail: null,
+    fileImage: null,
     statusId: selectedCategory?.status?.statusId ?? null,
   };
 
@@ -101,23 +96,18 @@ export default function EditCategoryDialog({
     defaultValues,
   });
 
-  // 🧠 Reset form khi mở dialog hoặc thay đổi selectedCategory
+  // 🧠 Reset form khi mở
   useEffect(() => {
     if (open && selectedCategory) {
-      reset({
-        name: selectedCategory.name,
-        slug: selectedCategory.slug,
-        description: selectedCategory.description ?? "",
-        parentId: selectedCategory.parentId?.toString() ?? "",
-        sizeDetail: null,
-        statusId: selectedCategory.status?.statusId ?? null,
-      });
-      setImagePreview(selectedCategory.sizeDetail ?? "");
-      setImageFile(null);
+      reset(defaultValues);
+      setPreviewUrl(selectedCategory.sizeDetail ?? "");
+      setSelectedFile(null);
+      setImageError("");
+      setIsImageDeleted(false); // 🆕 Reset trạng thái xóa
     }
   }, [open, selectedCategory, reset]);
 
-  // 🧩 Slug tự động theo tên
+  // 🧩 Slug auto
   const nameValue = watch("name");
   useEffect(() => {
     if (nameValue) {
@@ -134,24 +124,35 @@ export default function EditCategoryDialog({
     }
   }, [nameValue, setValue]);
 
-  // 🧩 Chọn ảnh
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // 🧩 Dropzone xử lý ảnh
+  const onDrop = (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (!file) return;
-
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ảnh không được vượt quá 5MB");
+      setImageError("Ảnh không được vượt quá 5MB");
       return;
     }
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setValue("fileImage", file);
+    setImageError("");
+    setIsImageDeleted(false); // 🆕 Reset flag khi upload ảnh mới
   };
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: { "image/*": [] },
+  });
 
   const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview("");
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setValue("fileImage", null);
+    setIsImageDeleted(true); // 🆕 Đánh dấu là người dùng muốn xóa ảnh
   };
 
+  // 🧩 Submit cập nhật
   const handleSubmitClick = async (data: CategoryForm) => {
     try {
       setIsLoading(true);
@@ -163,21 +164,34 @@ export default function EditCategoryDialog({
       formData.append("slug", data.slug);
       if (data.description) formData.append("description", data.description);
       if (data.parentId) formData.append("parentId", data.parentId);
-      if (imageFile) formData.append("sizeDetail", imageFile);
       if (data.statusId) formData.append("statusId", data.statusId.toString());
 
-      console.log("Updating category with data:", data);
+      // 🆕 Logic xử lý ảnh
+      if (selectedFile) {
+        // Trường hợp 1: Upload ảnh mới
+        formData.append("fileImage", selectedFile);
+      } else if (isImageDeleted) {
+        // Trường hợp 2: Xóa ảnh (gửi flag hoặc empty string)
+        formData.append("removeImage", "true"); // Hoặc BE có thể nhận "deleteImage": "true"
+      }
+      // Trường hợp 3: Không làm gì (giữ ảnh cũ) -> không gửi field fileImage
+
+      // console.group("📦 [EditCategoryDialog] FormData gửi lên:");
+      // for (const [key, value] of formData.entries()) {
+      //   if (value instanceof File) console.log(`${key}: (File) ${value.name}`);
+      //   else console.log(`${key}:`, value);
+      // }
+      // console.groupEnd();
+
       const res = await updateCategory(selectedCategory!.categoryId, formData);
 
       if (res?.isSuccess) {
         toast.success("Cập nhật thể loại thành công!");
         onUpdated();
         setIsOpen(false);
-      } else {
-        toast.error(res?.message || "Không thể cập nhật thể loại!");
-      }
+      } else toast.error(res?.message || "Không thể cập nhật thể loại!");
     } catch (error: any) {
-      console.error("Error updating category:", error);
+      console.error("❌ Lỗi cập nhật thể loại:", error);
       const message =
         error?.response?.data?.message ||
         "Có lỗi xảy ra khi cập nhật thể loại!";
@@ -187,7 +201,6 @@ export default function EditCategoryDialog({
     }
   };
 
-  // 🧩 Tạo danh sách trạng thái từ Redux
   const statuses =
     statusesData["Category"]?.map((s) => ({
       value: s.statusId,
@@ -199,7 +212,7 @@ export default function EditCategoryDialog({
       <DialogContent className="min-w-[650px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cập nhật thể loại</DialogTitle>
-          <DialogDescription>Cập nhật thông tin thể loại</DialogDescription>
+          <DialogDescription>Chỉnh sửa thông tin thể loại</DialogDescription>
         </DialogHeader>
 
         <form
@@ -214,13 +227,7 @@ export default function EditCategoryDialog({
             <Input
               placeholder="Nhập tên thể loại"
               disabled={isLoading}
-              {...register("name", {
-                required: "Vui lòng nhập tên thể loại",
-                maxLength: {
-                  value: 100,
-                  message: "Tên thể loại không được vượt quá 100 ký tự",
-                },
-              })}
+              {...register("name", { required: "Vui lòng nhập tên thể loại" })}
             />
             {errors.name && (
               <span className="text-red-500 text-xs">
@@ -229,9 +236,8 @@ export default function EditCategoryDialog({
             )}
           </div>
 
-          {/* Slug and Parent */}
+          {/* Slug + Parent */}
           <div className="flex gap-4">
-            {/* Slug */}
             <div className="flex-2">
               <label className="text-sm font-medium mb-1 block">Slug</label>
               <Input
@@ -241,7 +247,7 @@ export default function EditCategoryDialog({
                   required: "Vui lòng nhập slug",
                   pattern: {
                     value: /^[a-z0-9-]+$/,
-                    message: "Slug chỉ chứa chữ thường, số và dấu -",
+                    message: "Slug không hợp lệ",
                   },
                 })}
               />
@@ -252,7 +258,6 @@ export default function EditCategoryDialog({
               )}
             </div>
 
-            {/* Parent */}
             <div className="flex-1">
               <label className="text-sm font-medium mb-1 block">
                 Thể loại cha
@@ -268,17 +273,12 @@ export default function EditCategoryDialog({
                       label: c.name,
                     }))}
                     placeholder="Chọn thể loại cha"
-                    isClearable
-                    isSearchable={false}
                     styles={reactSelectStyles}
                     isDisabled={isLoading}
                     onChange={(opt) => field.onChange(opt?.value ?? "")}
                     value={
                       categories
-                        .map((c) => ({
-                          value: c.id.toString(),
-                          label: c.name,
-                        }))
+                        .map((c) => ({ value: c.id.toString(), label: c.name }))
                         .find((opt) => opt.value === field.value) || null
                     }
                   />
@@ -287,119 +287,82 @@ export default function EditCategoryDialog({
             </div>
           </div>
 
-          {/* Description */}
+          {/* Mô tả */}
           <div>
             <label className="text-sm font-medium mb-1 block">Mô tả</label>
             <Textarea
               rows={3}
-              placeholder="Nhập mô tả (tùy chọn)"
+              placeholder="Nhập mô tả"
               disabled={isLoading}
-              {...register("description", {
-                maxLength: {
-                  value: 255,
-                  message: "Mô tả không được vượt quá 255 ký tự",
-                },
-              })}
+              {...register("description")}
             />
-            {errors.description && (
-              <span className="text-red-500 text-xs">
-                {errors.description.message}
-              </span>
-            )}
           </div>
 
-          {/* Image upload and Status */}
-          <div className="flex gap-4">
-            {/* Image upload */}
-            <div className="flex-2">
-              <label className="text-sm font-medium mb-1 block">
-                Ảnh chi tiết kích thước
-              </label>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    document.getElementById("categoryImageInput")?.click()
-                  }
-                  disabled={isLoading}
-                >
-                  <Upload size={16} />
-                  Chọn ảnh
-                </Button>
-                <input
-                  id="categoryImageInput"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                  disabled={isLoading}
-                />
-                {imageFile && (
-                  <span className="text-sm text-gray-600">
-                    {imageFile.name}
-                  </span>
-                )}
-              </div>
-
-              {imagePreview && (
-                <div className="relative w-32 h-32 mt-2">
+          {/* Dropzone Upload */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">
+              Ảnh thể loại
+            </label>
+            <div
+              {...getRootProps()}
+              className={`border-dashed min-h-48 border-2 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                previewUrl
+                  ? "border-gray-500 bg-blue-50"
+                  : "border-gray-300 hover:border-blue-400"
+              }`}
+            >
+              <input {...getInputProps()} disabled={isLoading} />
+              {!previewUrl ? (
+                <p className="text-gray-500">
+                  Kéo thả hoặc bấm để chọn ảnh (không bắt buộc)
+                </p>
+              ) : (
+                <div className="flex flex-col items-center">
                   <img
-                    src={imagePreview}
+                    src={previewUrl}
                     alt="Preview"
-                    className="w-full h-full object-cover rounded border"
+                    className="w-32 h-32 object-cover rounded shadow"
                   />
                   <Button
                     type="button"
-                    size="sm"
                     variant="destructive"
-                    className="absolute top-1 right-1 h-6 w-6 p-0"
-                    onClick={handleRemoveImage}
-                    disabled={isLoading}
+                    size="sm"
+                    className="mt-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage();
+                    }}
                   >
-                    <X size={14} />
+                    <X className="w-4 h-4 mr-1" /> Xóa ảnh
                   </Button>
                 </div>
               )}
             </div>
+            {imageError && (
+              <span className="text-red-500 text-xs mt-2">{imageError}</span>
+            )}
+          </div>
 
-            {/* Status */}
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-1 block">
-                Trạng thái
-              </label>
-              <Controller
-                name="statusId"
-                control={control}
-                rules={{ required: "Vui lòng chọn trạng thái" }}
-                render={({ field, fieldState }) => (
-                  <>
-                    <Select
-                      {...field}
-                      options={statuses}
-                      placeholder={
-                        isStatusesLoading ? "Đang tải..." : "Chọn trạng thái"
-                      }
-                      isSearchable={false}
-                      styles={reactSelectStyles}
-                      isDisabled={isLoading || isStatusesLoading}
-                      value={
-                        statuses.find((opt) => opt.value === field.value) ||
-                        null
-                      }
-                      onChange={(option) =>
-                        field.onChange(option?.value ?? null)
-                      }
-                    />
-                    {fieldState.error && (
-                      <span className="text-red-500 text-xs">
-                        {fieldState.error.message}
-                      </span>
-                    )}
-                  </>
-                )}
-              />
-            </div>
+          {/* Trạng thái */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">Trạng thái</label>
+            <Controller
+              name="statusId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={statuses}
+                  placeholder="Chọn trạng thái"
+                  styles={reactSelectStyles}
+                  isDisabled={isLoading || isStatusesLoading}
+                  onChange={(opt) => field.onChange(opt?.value ?? null)}
+                  value={
+                    statuses.find((opt) => opt.value === field.value) || null
+                  }
+                />
+              )}
+            />
           </div>
 
           {/* Footer */}
