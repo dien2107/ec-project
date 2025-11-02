@@ -24,7 +24,7 @@ type MenuItem = {
 const convertCategoryToMenuItem = (category: Category): MenuItem => {
   const menuItem: MenuItem = {
     name: category.name,
-    path: `/category/${category.slug}`,
+    path: `/categories/${category.slug}`,
   };
 
   // Nếu có children (cấp 2), thêm vào dropdown
@@ -32,14 +32,14 @@ const convertCategoryToMenuItem = (category: Category): MenuItem => {
     menuItem.dropdown = category.children.map((child) => {
       const childItem: MenuItem = {
         name: child.name,
-        path: `/category/${child.slug}`,
+        path: `/categories/${child.slug}`,
       };
 
       // Nếu child có children (cấp 3), thêm vào dropdown của child
       if (child.children && child.children.length > 0) {
         childItem.dropdown = child.children.map((grandChild) => ({
           name: grandChild.name,
-          path: `/category/${grandChild.slug}`,
+          path: `/categories/${grandChild.slug}`,
         }));
       }
 
@@ -78,7 +78,7 @@ const Header = () => {
     return parentCats.map((parent) => {
       const menuItem: MenuItem = {
         name: parent.name,
-        path: `/category/${parent.slug}`,
+        path: `/categories/${parent.slug}`,
       };
 
       // Tìm các category cấp 2 thuộc về parent này
