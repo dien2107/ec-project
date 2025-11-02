@@ -3,7 +3,7 @@ import ProductImageGallery from "./components/product-image-gallery";
 import ProductDetail from "./components/product-detail";
 import TabsInfo from "./components/tabs-info";
 import ProductRelated from "./components/product-related";
-import { useQuery } from "@tanstack/react-query";
+import { dataTagSymbol, useQuery } from "@tanstack/react-query";
 import type { Product } from "~/types/product/product";
 import { getProductDetailBySlug } from "~/services/products";
 import { Loader2 } from "lucide-react";
@@ -20,6 +20,8 @@ export default function Product() {
     queryFn: () => getProductDetailBySlug(slug!),
     enabled: !!slug,
   });
+
+  console.log(product);
 
   if (isLoading)
     return (
@@ -91,7 +93,10 @@ export default function Product() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <ProductRelated categorySlug={product.data.category.slug} />
+        <ProductRelated
+          categoryId={product.data.category.categoryId}
+          productId={product.data.productId}
+        />
       </motion.div>
     </div>
   );
