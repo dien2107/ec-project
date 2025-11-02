@@ -33,6 +33,7 @@ export default function UserProfilePage() {
   const [listOrder, setListOrder] = useState<OrderItem[]>([]);
   // 🔹 Lấy danh sách đơn hàng khi load trang
   console.log(user);
+  console.log(listOrder);
   useEffect(() => {
     if (user?.data?.userId) {
       dispatch(fetchOrderListDataByUserId(user.data.userId));
@@ -44,7 +45,7 @@ export default function UserProfilePage() {
     if (!orderList?.data) return;
 
     const formattedList: OrderItem[] = orderList.data.map(order => ({
-      id: order.orderId.toString(),
+      id: order.orderId,
       status:
         order.status.name === "Pending"
           ? "Chờ xác nhận"
@@ -57,13 +58,20 @@ export default function UserProfilePage() {
                 : "Chờ xác nhận",
       date: order.createdAt.toString(),
       total: order.totalAmount,
+      address: order.addressInfo,
+      user: {
+        userId: order.user.userId,
+        fullName: order.user.fullName,
+        phone: order.user.phone,
+      },
       items: order.items.map(item => ({
-        id: item.sku, // hoặc item.productVariantId nếu có
+        orderItemId: item.orderItemId,
+        productVariantId: item.productVariantId, // hoặc item.productVariantId nếu có
         name: item.productName,
         price: item.price,
         quantity: item.quantity,
         image: item.productImage,
-        variant: item.size,
+        size: item.size,
       })),
     }));
 

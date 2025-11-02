@@ -13,7 +13,7 @@ import purchaseOrderListDataReducer from "./slices/purchase-orders";
 import addressesReducer from "./slices/addresses";
 import provincesReducer from "./slices/provinces";
 import orderListDataReducer from "./slices/orders";
-import cartReducer from "./slices/cartSlice";
+import cartReducer from "./slices/cartSliceold";
 import productReturnReducer from "./slices/product-return";
 import colorsReducer from "./slices/colors";
 import discountReducer from "./slices/discount";
@@ -61,7 +61,7 @@ export const store = configureStore({
     productGroupList: productGroupListDataReducer,
     homePage: homePageReducer,
   },
-  middleware: (getDefaultMiddleware) =>
+  middleware: getDefaultMiddleware =>
     getDefaultMiddleware().prepend(authLogoutListener.middleware),
 });
 
