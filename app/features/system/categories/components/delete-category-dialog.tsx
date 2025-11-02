@@ -11,14 +11,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { deleteCategory } from "~/services/categories"; // ⚡ Import API service
+import { deleteCategory } from "~/services/categories";
 import type { CategoryDetailDto } from "~/types/product/category";
 
 interface DeleteCategoryDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
   selectedCategory: CategoryDetailDto;
-  onDelete: () => void; // callback reload list sau khi xóa
+  onDelete: () => void;
+  currentPage?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export default function DeleteCategoryDialog({
@@ -26,16 +30,38 @@ export default function DeleteCategoryDialog({
   setIsOpen,
   selectedCategory,
   onDelete,
+  currentPage = 1,
+  totalItems = 0,
+  pageSize = 6,
+  onPageChange,
 }: DeleteCategoryDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteCategory(selectedCategory.categoryId); // ⚡ Gọi API xóa
-      toast.success("Xóa danh mục thành công!");
-      onDelete(); // Reload list
+
+      // 🔹 Bước 1: Gọi API xóa
+      await deleteCategory(selectedCategory.categoryId);
+
+      // 🔹 Bước 2: Logic kiểm tra và chuyển trang
+      const itemsInCurrentPage = totalItems - (currentPage - 1) * pageSize;
+      const isLastItemInPage = itemsInCurrentPage === 1;
+      const hasMultiplePages = currentPage > 1;
+
+      // Nếu đang ở trang cuối và xóa item cuối cùng, quay về trang trước
+      if (isLastItemInPage && hasMultiplePages && onPageChange) {
+        onPageChange(currentPage - 1);
+      }
+
+      // 🔹 Bước 3: Reload list (đợi hoàn thành)
+      await onDelete();
+
+      // 🔹 Bước 4: Đóng dialog
       setIsOpen(false);
+
+      // 🔹 Bước 5: Hiển thị toast (sau khi đóng dialog)
+      toast.success("Xóa danh mục thành công!");
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -74,7 +100,10 @@ export default function DeleteCategoryDialog({
         </div>
 
         <AlertDialogFooter className="flex justify-between mt-4">
-          <AlertDialogCancel className="text-gray-500 hover:text-gray-700">
+          <AlertDialogCancel
+            className="text-gray-500 hover:text-gray-700"
+            disabled={isLoading}
+          >
             Hủy
           </AlertDialogCancel>
           <AlertDialogAction

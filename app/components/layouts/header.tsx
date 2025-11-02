@@ -24,7 +24,7 @@ type MenuItem = {
 const convertCategoryToMenuItem = (category: Category): MenuItem => {
   const menuItem: MenuItem = {
     name: category.name,
-    path: `/category/${category.slug}`,
+    path: `/categories/${category.slug}`,
   };
 
   // Nếu có children (cấp 2), thêm vào dropdown
@@ -32,14 +32,14 @@ const convertCategoryToMenuItem = (category: Category): MenuItem => {
     menuItem.dropdown = category.children.map((child) => {
       const childItem: MenuItem = {
         name: child.name,
-        path: `/category/${child.slug}`,
+        path: `/categories/${child.slug}`,
       };
 
       // Nếu child có children (cấp 3), thêm vào dropdown của child
       if (child.children && child.children.length > 0) {
         childItem.dropdown = child.children.map((grandChild) => ({
           name: grandChild.name,
-          path: `/category/${grandChild.slug}`,
+          path: `/categories/${grandChild.slug}`,
         }));
       }
 
@@ -61,38 +61,10 @@ const Header = () => {
   );
 
   // Chuyển đổi categories từ API thành menuItems
-  // Theo cấu trúc API:
-  // - categoryId 1, 2: "Áo", "Quần" (cấp 1 - không có children trong API)
-  // - categoryId 3+: "Áo thun", "Áo polo", "Quần jeans"... (cấp 2 - có children)
-  //
-  // Logic: Hiển thị "Áo" và "Quần" trên header, dropdown là các category liên quan
+  // Cấu trúc API: Level 1 (Áo, Quần) -> Level 2 (Áo thun, Áo polo...) -> Level 3 (Áo ba lỗ, Polo tay dài...)
+  // API đã trả về đúng cấu trúc phân cấp, chỉ cần map trực tiếp
   const menuItems = useMemo(() => {
-    // Tách categories thành 2 nhóm
-    const parentCats = categories.filter(
-      (cat) => !cat.children || cat.children.length === 0
-    );
-    const childCats = categories.filter(
-      (cat) => cat.children && cat.children.length > 0
-    );
-
-    return parentCats.map((parent) => {
-      const menuItem: MenuItem = {
-        name: parent.name,
-        path: `/category/${parent.slug}`,
-      };
-
-      // Tìm các category cấp 2 thuộc về parent này
-      // VD: "Áo thun", "Áo polo" thuộc "Áo"
-      const relatedChildren = childCats.filter((cat) =>
-        cat.name.toLowerCase().includes(parent.name.toLowerCase())
-      );
-
-      if (relatedChildren.length > 0) {
-        menuItem.dropdown = relatedChildren.map(convertCategoryToMenuItem);
-      }
-
-      return menuItem;
-    });
+    return categories.map(convertCategoryToMenuItem);
   }, [categories]);
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -121,12 +93,18 @@ const Header = () => {
         >
           {item.dropdown?.map((subItem, index) => (
             <div key={subItem.path} className="space-y-2">
-              <Link
-                to={subItem.path}
-                className="block font-semibold text-gray-900 hover:text-blue-600 transition-colors text-sm py-1"
-              >
-                {subItem.name}
-              </Link>
+              {subItem.dropdown && subItem.dropdown.length > 0 ? (
+                <div className="font-semibold text-gray-900 text-sm py-1 cursor-default">
+                  {subItem.name}
+                </div>
+              ) : (
+                <Link
+                  to={subItem.path}
+                  className="block font-semibold text-gray-900 hover:text-blue-600 transition-colors text-sm py-1"
+                >
+                  {subItem.name}
+                </Link>
+              )}
               {subItem.dropdown && subItem.dropdown.length > 0 && (
                 <div className="pl-3 space-y-1 border-l-2 border-gray-200">
                   {subItem.dropdown.map((nestedItem) => (
@@ -197,9 +175,11 @@ const Header = () => {
             >
               <Search className="h-5 w-5 text-gray-700" />
             </Button>
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <User className="h-5 w-5 text-gray-700" />
-            </Button>
+            <Link to="/profile">
+              <Button variant="ghost" size="icon" className="hidden sm:flex">
+                <User className="h-5 w-5 text-gray-700" />
+              </Button>
+            </Link>
             <Link to="/cart">
               <Button
                 variant="ghost"
@@ -278,16 +258,20 @@ const Header = () => {
                           {item.dropdown.map((subItem) => (
                             <div key={subItem.path} className="space-y-1">
                               <div className="flex items-center justify-between">
-                                <Link
-                                  to={subItem.path}
-                                  className="block text-sm font-medium text-gray-700 hover:text-gray-900 flex-1"
-                                  onClick={() =>
-                                    !subItem.dropdown &&
-                                    setIsMobileMenuOpen(false)
-                                  }
-                                >
-                                  {subItem.name}
-                                </Link>
+                                {subItem.dropdown &&
+                                subItem.dropdown.length > 0 ? (
+                                  <div className="block text-sm font-medium text-gray-700 flex-1 cursor-default">
+                                    {subItem.name}
+                                  </div>
+                                ) : (
+                                  <Link
+                                    to={subItem.path}
+                                    className="block text-sm font-medium text-gray-700 hover:text-gray-900 flex-1"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                  >
+                                    {subItem.name}
+                                  </Link>
+                                )}
                                 {subItem.dropdown && (
                                   <ChevronRight className="h-3 w-3 text-gray-400" />
                                 )}
@@ -314,28 +298,6 @@ const Header = () => {
                       )}
                     </div>
                   ))}
-
-                  {/* Mobile Bottom Actions */}
-                  <div className="pt-4 border-t space-y-3">
-                    <Link
-                      to="/profile"
-                      className="flex items-center space-x-3 text-gray-700 hover:text-gray-900"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <User className="h-5 w-5" />
-                      <span className="text-sm font-medium">Tài khoản</span>
-                    </Link>
-                    <Link
-                      to="/cart"
-                      className="flex items-center space-x-3 text-gray-700 hover:text-gray-900"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <ShoppingBag className="h-5 w-5" />
-                      <span className="text-sm font-medium">
-                        Giỏ hàng ({cartCount})
-                      </span>
-                    </Link>
-                  </div>
                 </div>
               </SheetContent>
             </Sheet>
