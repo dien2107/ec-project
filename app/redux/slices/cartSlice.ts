@@ -10,7 +10,7 @@ export interface CartItem {
   image: SelectedProductProps["image"];
 }
 
-type VariantId = ProductVariant extends { id: infer ID } ? ID : string | number;
+type VariantId = number;
 
 interface CartState {
   items: CartItem[];
@@ -20,38 +20,62 @@ const initialState: CartState = {
   items: [],
 };
 
+const normalizeId = (id: any) => Number(id);
+
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
     addToCart: (state, action: PayloadAction<CartItem>) => {
-      if (!action.payload.ProductVariant) {
+      const item = action.payload;
+      const variantId = normalizeId(
+        (item.ProductVariant as any).productVariantId
+      );
+
+      if (!variantId) {
         toast.error("Vui lòng chọn size!");
         return;
       }
-      const item = action.payload;
-      const itemId = (item.ProductVariant as any).id as VariantId;
+
       const existing = state.items.find(
         i =>
-          (i.ProductVariant as any).id === itemId &&
-          i.ProductVariant.size.sizeId === item.ProductVariant.size.sizeId
+          normalizeId((i.ProductVariant as any).productVariantId) === variantId
       );
+
       if (existing) {
         existing.quantity += item.quantity;
       } else {
-        state.items = [...state.items, item];
+        state.items.push(item);
       }
     },
+
     removeFromCart: (state, action: PayloadAction<VariantId>) => {
+      const id = normalizeId(action.payload);
       state.items = state.items.filter(
-        i => (i.ProductVariant as any).id !== action.payload
+        i => normalizeId((i.ProductVariant as any).productVariantId) !== id
       );
     },
+
+    updateQuantity: (
+      state,
+      action: PayloadAction<{ variantId: VariantId; quantity: number }>
+    ) => {
+      const { variantId, quantity } = action.payload;
+      const id = normalizeId(variantId);
+      const existing = state.items.find(
+        i => normalizeId((i.ProductVariant as any).productVariantId) === id
+      );
+      if (existing) {
+        existing.quantity = quantity;
+      }
+    },
+
     clearCart: state => {
       state.items = [];
     },
   },
 });
 
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart } =
+  cartSlice.actions;
 export default cartSlice.reducer;

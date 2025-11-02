@@ -29,7 +29,7 @@ const convertCategoryToMenuItem = (category: Category): MenuItem => {
 
   // Nếu có children (cấp 2), thêm vào dropdown
   if (category.children && category.children.length > 0) {
-    menuItem.dropdown = category.children.map((child) => {
+    menuItem.dropdown = category.children.map(child => {
       const childItem: MenuItem = {
         name: child.name,
         path: `/category/${child.slug}`,
@@ -37,7 +37,7 @@ const convertCategoryToMenuItem = (category: Category): MenuItem => {
 
       // Nếu child có children (cấp 3), thêm vào dropdown của child
       if (child.children && child.children.length > 0) {
-        childItem.dropdown = child.children.map((grandChild) => ({
+        childItem.dropdown = child.children.map(grandChild => ({
           name: grandChild.name,
           path: `/category/${grandChild.slug}`,
         }));
@@ -69,13 +69,13 @@ const Header = () => {
   const menuItems = useMemo(() => {
     // Tách categories thành 2 nhóm
     const parentCats = categories.filter(
-      (cat) => !cat.children || cat.children.length === 0
+      cat => !cat.children || cat.children.length === 0
     );
     const childCats = categories.filter(
-      (cat) => cat.children && cat.children.length > 0
+      cat => cat.children && cat.children.length > 0
     );
 
-    return parentCats.map((parent) => {
+    return parentCats.map(parent => {
       const menuItem: MenuItem = {
         name: parent.name,
         path: `/category/${parent.slug}`,
@@ -83,7 +83,7 @@ const Header = () => {
 
       // Tìm các category cấp 2 thuộc về parent này
       // VD: "Áo thun", "Áo polo" thuộc "Áo"
-      const relatedChildren = childCats.filter((cat) =>
+      const relatedChildren = childCats.filter(cat =>
         cat.name.toLowerCase().includes(parent.name.toLowerCase())
       );
 
@@ -109,7 +109,7 @@ const Header = () => {
   }, []);
 
   const MegaMenuDropdown = ({ item }: { item: MenuItem }) => {
-    const hasNestedDropdown = item.dropdown?.some((sub) => sub.dropdown);
+    const hasNestedDropdown = item.dropdown?.some(sub => sub.dropdown);
 
     return (
       <div
@@ -129,7 +129,7 @@ const Header = () => {
               </Link>
               {subItem.dropdown && subItem.dropdown.length > 0 && (
                 <div className="pl-3 space-y-1 border-l-2 border-gray-200">
-                  {subItem.dropdown.map((nestedItem) => (
+                  {subItem.dropdown.map(nestedItem => (
                     <Link
                       key={nestedItem.path}
                       to={nestedItem.path}
@@ -166,7 +166,7 @@ const Header = () => {
 
           {/* Desktop Menu - Center */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {menuItems.map((item) =>
+            {menuItems.map(item =>
               item.dropdown ? (
                 <div key={item.name} className="relative group">
                   <button className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors flex items-center gap-1">
@@ -242,7 +242,7 @@ const Header = () => {
                   </button>
 
                   {/* Mobile Menu Items */}
-                  {menuItems.map((item) => (
+                  {menuItems.map(item => (
                     <div key={item.name} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Link
@@ -275,7 +275,7 @@ const Header = () => {
                       {/* Level 1 Dropdown */}
                       {item.dropdown && openDropdown === item.name && (
                         <div className="pl-4 space-y-2 border-l-2 border-gray-200">
-                          {item.dropdown.map((subItem) => (
+                          {item.dropdown.map(subItem => (
                             <div key={subItem.path} className="space-y-1">
                               <div className="flex items-center justify-between">
                                 <Link
@@ -296,7 +296,7 @@ const Header = () => {
                               {/* Level 2 Dropdown */}
                               {subItem.dropdown && (
                                 <div className="pl-3 space-y-1">
-                                  {subItem.dropdown.map((nestedItem) => (
+                                  {subItem.dropdown.map(nestedItem => (
                                     <Link
                                       key={nestedItem.path}
                                       to={nestedItem.path}

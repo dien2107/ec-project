@@ -1,194 +1,206 @@
-import { useState, useMemo, useEffect } from "react";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Input } from "~/components/ui/input";
-import CartItem from "./components/cart-item";
-import type { CartItemData } from "./types";
-import { useAppDispatch, useAppSelector } from "~/redux/store";
 import {
   addToCart,
   removeFromCart,
-  type CartItem as CartSliceItem,
+  updateQuantity,
 } from "~/redux/slices/cartSlice";
-import type { ProductVariant } from "~/types/product/product-variant";
-import { Link } from "react-router";
+import CartHeader from "./components/cart-header";
+import CartItem from "./components/cart-item";
+import OrderSummary from "./components/order-summary";
+import { useEffect, useMemo, useState } from "react";
+import type { CartItemData } from "./types";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { useNavigate } from "react-router";
+import { fakeDiscounts } from "./types/fakeDiscountData";
+import { toast } from "react-hot-toast";
 
+export const getDiscountByCode = (code: string) => {
+  return fakeDiscounts.find(
+    d => d.code.toLowerCase() === code.trim().toLowerCase()
+  );
+};
+
+// Main ShoppingCart Component - DÙNG REDUX
 export default function ShoppingCart() {
+  // redux
   const cartItems = useAppSelector(state => state.cart.items);
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const [localItems, setLocalItems] = useState<CartItemData[]>([]);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<null | ReturnType<
+    typeof getDiscountByCode
+  >>(null);
+  const [discountError, setDiscountError] = useState("");
 
+  const handleApplyDiscount = () => {
+    const discount = getDiscountByCode(discountCode);
+
+    if (!discount) {
+      setAppliedDiscount(null);
+      setDiscountError("Mã giảm giá không hợp lệ");
+      toast.error("Mã giảm giá không hợp lệ");
+      return;
+    }
+
+    if (subtotal < discount.min_order_amount) {
+      setAppliedDiscount(null);
+      setDiscountError(
+        `Đơn hàng tối thiểu ${discount.min_order_amount.toLocaleString()}₫`
+      );
+      toast.error(
+        `Đơn hàng phải từ ${discount.min_order_amount.toLocaleString()}₫`
+      );
+      return;
+    }
+
+    // Nếu hợp lệ
+    setDiscountError("");
+    setAppliedDiscount(discount);
+    toast.success(`Áp dụng mã ${discount.code} thành công 🎉`);
+  };
+  // Sync Redux -> Local state
   useEffect(() => {
     setLocalItems(prev => {
-      const prevMap = new Map(prev.map(p => [String(p.id), p.selected]));
-      return cartItems.map((ci): CartItemData => {
-        const sliceItem = ci as CartSliceItem;
-        const variant = sliceItem.ProductVariant as ProductVariant;
-        const id = variant.productVariantId;
-        const price = (sliceItem as any).price ?? 0;
-        const quantity = sliceItem.quantity ?? 1;
-        const selected = prevMap.has(String(id))
-          ? !!prevMap.get(String(id))
-          : true;
+      const prevMap = new Map(prev.map(p => [p.id, p.selected]));
 
-        const name =
-          (variant && variant.sku) || (sliceItem as any).name || "Sản phẩm";
-        const image =
-          (sliceItem as any).image?.imageUrl ?? (sliceItem as any).image ?? "";
-        const size = variant?.size?.name ?? "";
-        const color = variant?.color?.name ?? "";
+      return cartItems.map(ci => {
+        const variant = ci.ProductVariant;
+        const variantId = Number(
+          variant.productVariantId ?? (variant as any).id
+        );
+        const id = String(variantId);
 
         return {
-          id: String(id),
-          name,
-          image,
-          size,
-          color,
-          price,
-          quantity,
-          selected,
+          id,
+          variantId,
+          name: (variant as any).sku ?? (ci as any).name ?? "Sản phẩm",
+          image: String(ci?.image?.imageUrl ?? ci?.image ?? ""),
+          size: (variant as any).size?.name ?? "",
+          color: (variant as any).color?.name ?? "",
+          price: ci.price || 0,
+          quantity: ci.quantity || 1,
+          selected: prevMap.has(id) ? (prevMap.get(id) as boolean) : true,
         } as CartItemData;
       });
     });
-  }, [cartItems]);
+  }, [dispatch, cartItems]);
 
-  const [discountCode, setDiscountCode] = useState("");
-
-  const selectedItems = localItems.filter(item => item.selected);
+  const selectedItems = useMemo(
+    () => localItems.filter(item => item.selected),
+    [localItems]
+  );
   const selectedCount = selectedItems.length;
   const isAllSelected =
     localItems.length > 0 && selectedItems.length === localItems.length;
 
+  // total quantity across all cart line items (used for header display)
+  const itemsCount = useMemo(
+    () => localItems.reduce((sum, it) => sum + (it.quantity || 0), 0),
+    [localItems]
+  );
+
   const subtotal = useMemo(() => {
     return selectedItems.reduce(
-      (sum, item) => sum + (item.price || 0) * item.quantity,
+      (sum, item) => sum + item.price * item.quantity,
       0
     );
   }, [selectedItems]);
 
-  const discount = subtotal; // 10% discount
-  const shippingFee = 0; // Free shipping
-  const total = subtotal + shippingFee;
+  const discountAmount = useMemo(() => {
+    if (!appliedDiscount) return 0;
+
+    if (appliedDiscount.discount_type === "fixed") {
+      return Math.min(
+        appliedDiscount.discount_value,
+        appliedDiscount.max_discount_amount
+      );
+    }
+
+    if (appliedDiscount.discount_type === "percentage") {
+      const amount = (subtotal * appliedDiscount.discount_value) / 100;
+      return Math.min(amount, appliedDiscount.max_discount_amount);
+    }
+
+    return 0;
+  }, [appliedDiscount, subtotal]);
+  const shippingFee = 0;
+  const total = subtotal - discountAmount + shippingFee;
 
   const handleSelectAll = (checked: boolean) => {
-    setLocalItems(items => items.map(item => ({ ...item, selected: checked })));
+    setLocalItems(prev => prev.map(item => ({ ...item, selected: checked })));
   };
 
   const handleSelectItem = (id: string, checked: boolean) => {
-    setLocalItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, selected: checked } : item
-      )
+    setLocalItems(prev =>
+      prev.map(item => (item.id === id ? { ...item, selected: checked } : item))
     );
   };
 
+  // FIX: Logic tăng giảm số lượng đơn giản hơn
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
     const item = localItems.find(i => i.id === id);
     if (!item) return;
 
-    setLocalItems(items =>
-      items.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
+    // Cập nhật local
+    setLocalItems(prev =>
+      prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
     );
 
-    // Update store: replace existing quantity by removing then adding with newQuantity
-    const variant = (item as any).variant;
-    if (variant) {
-      const removeId = variant.id ?? variant.productVariantId;
-      if (removeId != null) {
-        dispatch(removeFromCart(removeId));
-      }
-
-      // Find original slice item to reuse its image object (slice stores image shape)
-      const original = cartItems.find(ci => {
-        const pv = (ci as any).ProductVariant;
-        const pid = pv?.id ?? pv?.productVariantId;
-        return String(pid) === String(variant.id ?? variant.productVariantId);
-      }) as CartSliceItem | undefined;
-
-      dispatch(
-        addToCart({
-          ProductVariant: variant,
-          quantity: newQuantity,
-          price: item.price,
-          image: original ? (original as any).image : null,
-        })
-      );
-    }
+    // Cập nhật Redux
+    dispatch(
+      updateQuantity({
+        variantId: Number(item.variantId),
+        quantity: newQuantity,
+      })
+    );
   };
 
   const handleRemoveItem = (id: string) => {
     const item = localItems.find(i => i.id === id);
-    if (!item) return;
-    const variant = (item as any).variant;
-    if (variant) {
-      const removeId = variant.id ?? variant.productVariantId;
-      if (removeId != null) dispatch(removeFromCart(removeId));
+    if (item) {
+      dispatch(removeFromCart(item.variantId));
+      setLocalItems(prev => prev.filter(i => i.id !== id));
     }
-    setLocalItems(items => items.filter(i => i.id !== id));
   };
 
   const handleClearSelected = () => {
-    const toRemove = localItems.filter(i => i.selected);
-    toRemove.forEach(i => {
-      const variant = (i as any).variant;
-      if (variant) {
-        const removeId = variant.id ?? variant.productVariantId;
-        if (removeId != null) dispatch(removeFromCart(removeId));
-      }
+    selectedItems.forEach(item => {
+      dispatch(removeFromCart(item.variantId));
     });
-    setLocalItems(items => items.filter(i => !i.selected));
+    setLocalItems(prev => prev.filter(item => !item.selected));
   };
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString("vi-VN") + "₫";
+  const handleCheckout = () => {
+    // Navigate to payment page
+    navigate("/payments", { state: { appliedDiscount } });
   };
 
   return (
     <div className="max-w-[1280px] mx-auto p-4 md:p-6 mt-10 mb-20">
       <h1 className="text-xl font-bold mb-6">Giỏ hàng</h1>
+
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Cart Items Section */}
         <div className="flex-1">
           <div className="bg-white rounded-lg shadow-sm border">
-            {/* Header */}
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={isAllSelected}
-                    onCheckedChange={handleSelectAll}
-                    className="border-gray-400"
-                  />
-                  <span className="text-sm">
-                    Chọn tất cả ({localItems.length})
-                  </span>
-                </div>
+            <CartHeader
+              itemsCount={itemsCount}
+              isAllSelected={isAllSelected}
+              onSelectAll={handleSelectAll}
+              onClearSelected={handleClearSelected}
+              selectedCount={selectedCount}
+            />
 
-                {/* Nút xóa được đẩy sang phải */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:text-red-600"
-                  onClick={handleClearSelected}
-                  disabled={selectedCount === 0}
-                >
-                  Xóa
-                </Button>
-              </div>
-            </div>
-
-            {/* Cart Items */}
             <div className="divide-y">
               {localItems.map(item => (
                 <CartItem
                   key={item.id}
                   item={item}
-                  onSelectItem={handleSelectItem}
+                  onSelect={handleSelectItem}
                   onQuantityChange={handleQuantityChange}
-                  onRemoveItem={handleRemoveItem}
+                  onRemove={handleRemoveItem}
                 />
               ))}
 
@@ -202,77 +214,20 @@ export default function ShoppingCart() {
           </div>
         </div>
 
-        {/* Order Summary Section */}
         <div className="w-full lg:w-80">
-          <div className="bg-white rounded-lg shadow-sm border sticky top-4">
-            <div className="p-4">
-              <h2 className="font-semibold text-lg mb-4">Tóm tắt đơn hàng</h2>
-
-              {/* Discount Code */}
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Mã giảm giá"
-                    value={discountCode}
-                    onChange={e => setDiscountCode(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    className="px-4 bg-gray-800 text-white hover:bg-gray-700"
-                  >
-                    Áp dụng
-                  </Button>
-                </div>
-              </div>
-
-              {/* Order Details */}
-              <div className="space-y-3 py-4 border-t">
-                <div className="flex justify-between text-sm">
-                  <span>Tạm tính</span>
-                  <span>{formatPrice(subtotal)}</span>
-                </div>
-
-                {discount > 0 && (
-                  <div className="flex justify-between text-sm text-red-500">
-                    <span>Giảm giá (10%)</span>
-                    <span>-{formatPrice(discount)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between text-sm">
-                  <span>Phí vận chuyển</span>
-                  <span className="text-green-500">
-                    {shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Total */}
-              <div className="border-t pt-3">
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Tổng cộng</span>
-                  <span className="text-red-500">{formatPrice(total)}</span>
-                </div>
-              </div>
-
-              {/* Checkout Button */}
-              <Link to="/payments">
-                <Button
-                  className="w-full mt-4 bg-gray-800 hover:bg-gray-700 text-white py-3"
-                  disabled={selectedCount === 0}
-                >
-                  Đến trang thanh toán
-                </Button>
-              </Link>
-
-              {selectedCount > 0 && (
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  Đã chọn {selectedCount} sản phẩm
-                </p>
-              )}
-            </div>
-          </div>
+          <OrderSummary
+            subtotal={subtotal}
+            discount={discountAmount}
+            shippingFee={shippingFee}
+            total={total}
+            selectedCount={selectedCount}
+            onApplyDiscount={handleApplyDiscount}
+            appliedDiscount={appliedDiscount}
+            discountError={discountError}
+            discountCode={discountCode}
+            onDiscountChange={setDiscountCode}
+            onCheckout={handleCheckout}
+          />
         </div>
       </div>
     </div>
