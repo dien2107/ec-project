@@ -1,18 +1,23 @@
+import type { User } from "~/features/system/orders/types";
+
 // export type OrderStatus = "Chờ xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
 export type OrderStatus = "Chờ xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
 
 export type OrderItem = {
-  id: string;
+  id: number;
   status: OrderStatus;
   date: string;
   total: number;
+  address: string;
+  user: User;
   items: {
-    id: string;
+    orderItemId: number;
+    productVariantId: number;
     name: string;
     price: number;
     quantity: number;
     image: string;
-    variant?: string;
+    size: string;
   }[];
 };
 

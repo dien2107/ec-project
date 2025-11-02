@@ -98,7 +98,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                 <ProductCard
                   id={product.productId}
                   title={product.name}
-                  slug={`${product.productId}`}
+                  slug={`${product.slug}`}
                   price={product.salePrice || product.price}
                   oldPrice={product.price}
                   discount={product.discountPercentage}

@@ -1,7 +1,25 @@
-import { X, Clock, Truck, CheckCircle2, XCircle, Star, Camera, Video, Send } from "lucide-react";
+import {
+  X,
+  Clock,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  Star,
+  Camera,
+  Video,
+  Send,
+  Package,
+  MapPin,
+  User,
+  Phone,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
-import type { OrderItem, OrderStatus } from "~/features/clients/user-profile/types/user";
+import type {
+  OrderItem,
+  OrderStatus,
+} from "~/features/clients/user-profile/types/user";
+import ReviewForm from "./review-form";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -23,228 +41,23 @@ const statusBadgeClass = (status: OrderStatus) => {
   }
 };
 
-function ReviewForm({ 
-  productName, 
-  productImage, 
-  onClose, 
-  onSubmit 
-}: { 
-  productName: string;
-  productImage: string;
-  onClose: () => void;
-  onSubmit: (review: any) => void;
-}) {
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
-  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
-  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
+const getOrderSteps = (status: OrderStatus) => {
+  const steps = [
+    { label: "Đơn hàng đã đặt", status: "Chờ xác nhận" },
+    { label: "Đã xác nhận", status: "Đang giao" },
+    { label: "Đang giao hàng", status: "Đang giao" },
+    { label: "Đã giao", status: "Đã giao" },
+  ];
 
-  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + mediaFiles.length > 5) {
-      alert("Tối đa 5 ảnh/video");
-      return;
-    }
+  const statusOrder = ["Chờ xác nhận", "Đang giao", "Đã giao", "Đã hủy"];
+  const currentIndex = statusOrder.indexOf(status);
 
-    setMediaFiles(prev => [...prev, ...files]);
-    
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setMediaPreviews(prev => [...prev, e.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeMedia = (index: number) => {
-    setMediaFiles(prev => prev.filter((_, i) => i !== index));
-    setMediaPreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = () => {
-    if (rating === 0) {
-      alert("Vui lòng chọn số sao");
-      return;
-    }
-    
-    onSubmit({
-      rating,
-      text: reviewText,
-      media: mediaFiles,
-      productName,
-      productImage
-    });
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 z-60 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/60" onClick={onClose} />
-      
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
-          {/* Header */}
-          <div className="relative p-6 border-b bg-gradient-to-r from-pink-500 to-purple-600 text-white">
-            <Button
-              onClick={onClose}
-              className="absolute right-4 top-4 p-2 hover:bg-white/20 rounded-full text-white"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-            <h2 className="text-xl font-bold">Đánh giá sản phẩm</h2>
-            <p className="text-pink-100 text-sm mt-1">Chia sẻ trải nghiệm của bạn</p>
-          </div>
-
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-            {/* Product Info */}
-            <div className="flex items-center space-x-3 mb-6 p-3 bg-gray-50 rounded-lg">
-              <img 
-                src={productImage} 
-                alt={productName}
-                className="w-12 h-12 rounded-lg object-cover"
-              />
-              <div>
-                <h3 className="font-medium text-gray-900">{productName}</h3>
-                <p className="text-sm text-gray-500">Sản phẩm đã mua</p>
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div className="mb-6 text-center">
-              <p className="text-gray-700 mb-3 font-medium">Bạn cảm thấy sản phẩm thế nào?</p>
-              <div className="flex justify-center space-x-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => setRating(star)}
-                    className="transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`h-8 w-8 ${
-                        star <= (hoverRating || rating)
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-              {rating > 0 && (
-                <p className="text-sm text-gray-600 mt-2">
-                  {rating === 1 && "Rất không hài lòng"}
-                  {rating === 2 && "Không hài lòng"}
-                  {rating === 3 && "Bình thường"}
-                  {rating === 4 && "Hài lòng"}
-                  {rating === 5 && "Rất hài lòng"}
-                </p>
-              )}
-            </div>
-
-            {/* Review Text */}
-            <div className="mb-6">
-              <textarea
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này... (tùy chọn)"
-                className="w-full h-24 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                maxLength={500}
-              />
-              <p className="text-xs text-gray-500 mt-1 text-right">
-                {reviewText.length}/500
-              </p>
-            </div>
-
-            {/* Media Upload */}
-            <div className="mb-6">
-              <p className="text-gray-700 mb-3 font-medium">Thêm ảnh/video (tùy chọn)</p>
-              
-              {/* Media Previews */}
-              {mediaPreviews.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  {mediaPreviews.map((preview, index) => (
-                    <div key={index} className="relative aspect-square">
-                      {mediaFiles[index]?.type.startsWith('video') ? (
-                        <video
-                          src={preview}
-                          className="w-full h-full object-cover rounded-lg"
-                          controls={false}
-                        />
-                      ) : (
-                        <img
-                          src={preview}
-                          alt={`Preview ${index}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      )}
-                      <button
-                        onClick={() => removeMedia(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                      {mediaFiles[index]?.type.startsWith('video') && (
-                        <Video className="absolute bottom-1 right-1 h-4 w-4 text-white" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Upload Buttons */}
-              <div className="flex space-x-2">
-                <label className="flex-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleMediaUpload}
-                    className="hidden"
-                  />
-                  <div className="flex items-center justify-center space-x-2 p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-pink-400 cursor-pointer transition-colors">
-                    <Camera className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm text-gray-600">Ảnh</span>
-                  </div>
-                </label>
-                
-                <label className="flex-1">
-                  <input
-                    type="file"
-                    accept="video/*"
-                    multiple
-                    onChange={handleMediaUpload}
-                    className="hidden"
-                  />
-                  <div className="flex items-center justify-center space-x-2 p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-pink-400 cursor-pointer transition-colors">
-                    <Video className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm text-gray-600">Video</span>
-                  </div>
-                </label>
-              </div>
-              
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Tối đa 5 ảnh/video • Dung lượng tối đa 10MB/file
-              </p>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              onClick={handleSubmit}
-              disabled={rating === 0}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-lg font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="h-5 w-5" />
-              <span>Gửi đánh giá</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+  return steps.map((step, index) => ({
+    ...step,
+    completed: index <= currentIndex && status !== "Đã hủy",
+    active: index === currentIndex && status !== "Đã hủy",
+  }));
+};
 
 export default function OrderDetailsModal({
   order,
@@ -256,139 +69,290 @@ export default function OrderDetailsModal({
   onClose: () => void;
 }) {
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewingProduct, setReviewingProduct] = useState<{name: string, image: string} | null>(null);
+  const [reviewingProduct, setReviewingProduct] = useState<{
+    orderItemId: number;
+    name: string;
+    image: string;
+  } | null>(null);
 
   if (!isOpen || !order) return null;
 
-  const handleReviewProduct = (productName: string, productImage: string) => {
-    setReviewingProduct({ name: productName, image: productImage });
+  const handleReviewProduct = (
+    orderItemId: number,
+    productName: string,
+    productImage: string
+  ) => {
+    setReviewingProduct({
+      orderItemId: orderItemId,
+      name: productName,
+      image: productImage,
+    });
     setShowReviewForm(true);
   };
 
-  const handleSubmitReview = (review: any) => {
-    console.log("Review submitted:", review);
-    // Handle review submission logic here
-    alert("Cảm ơn bạn đã đánh giá!");
-  };
+  const orderSteps = getOrderSteps(order.status);
 
   return (
     <>
-      <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div
-          className="fixed inset-0 bg-black/40"
-          onClick={onClose}
-        />
+      <div className="fixed inset-0 z-50 overflow-y-auto scrollbar-custom">
+        <div className="fixed inset-0 bg-black/50" onClick={onClose} />
 
         <div className="flex min-h-full items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b">
-              <div className="flex items-center space-x-3">
-                {statusIcons[order.status]}
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    Chi tiết đơn hàng #{order.id}
-                  </h2>
-                  <p className="text-sm text-gray-500">Ngày đặt: {order.date}</p>
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="border-b bg-white p-6 flex-shrink-0">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  {statusIcons[order.status]}
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Đơn hàng #{order.id}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Ngày đặt: {order.date}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(
+                      order.status
+                    )}`}
+                  >
+                    {statusIcons[order.status]}
+                    <span className="ml-2">{order.status}</span>
+                  </span>
+                  <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </button>
                 </div>
               </div>
-              <Button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+
+              {/* Order Progress Timeline */}
+              {order.status !== "Đã hủy" && (
+                <div className="flex items-center justify-between mt-6 relative">
+                  <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200">
+                    <div
+                      className="h-full bg-blue-600 transition-all duration-500"
+                      style={{
+                        width: `${
+                          (orderSteps.filter((s) => s.completed).length /
+                            orderSteps.length) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  {orderSteps.map((step, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col items-center relative z-10"
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
+                          step.completed
+                            ? "bg-blue-600 border-blue-600"
+                            : "bg-white border-gray-300"
+                        }`}
+                      >
+                        {step.completed ? (
+                          <CheckCircle2 className="h-5 w-5 text-white" />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full bg-gray-300" />
+                        )}
+                      </div>
+                      <p
+                        className={`text-xs mt-2 text-center max-w-[80px] ${
+                          step.completed
+                            ? "text-gray-900 font-medium"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {step.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] scrollbar-custom">
-              <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(
-                  order.status
-                )}`}
-              >
-                {order.status}
-              </span>
+            {/* Content - 2 Columns Layout */}
+            <div className="grid grid-cols-5 divide-x flex-1 overflow-hidden">
+              {/* Left Column - Products (3/5 width) - SCROLLABLE */}
+              <div className="col-span-3 p-6 overflow-y-auto scrollbar-custom">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <Package className="h-5 w-5 mr-2" />
+                  Sản phẩm đã đặt ({order.items.length})
+                </h3>
 
-              <div className="mt-6 space-y-4">
-                <h3 className="font-semibold text-lg">Sản phẩm đã đặt</h3>
-                {order.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="h-20 w-20 rounded-md object-cover border"
-                    />
-                    <div className="flex-1">
-                      <h4 className="font-medium text-lg">{item.name}</h4>
-                      {item.variant && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          {item.variant}
-                        </p>
-                      )}
-                      <p className="text-sm mt-2">
-                        {item.price.toLocaleString("vi-VN")}₫ × {item.quantity}
-                      </p>
-                      
-                      {/* Review Button - only show for delivered orders */}
-                      {order.status === "Đã giao" && (
-                        <Button
-                          onClick={() => handleReviewProduct(item.name, item.image)}
-                          className="mt-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-sm px-4 py-2 rounded-lg flex items-center space-x-2"
-                        >
-                          <Star className="h-4 w-4" />
-                          <span>Viết đánh giá</span>
-                        </Button>
-                      )}
+                <div className="space-y-4">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.orderItemId}
+                      className="border rounded-lg p-4 hover:border-gray-400 transition-colors"
+                    >
+                      <div className="flex items-start space-x-4">
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-20 w-20 rounded-md object-cover border"
+                          />
+                          <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">
+                            {item.quantity}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 line-clamp-2">
+                            {item.name}
+                          </h4>
+                          {item.variant && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {item.variant}
+                            </p>
+                          )}
+                          <div className="mt-2 flex items-center justify-between">
+                            <div className="flex items-center text-sm text-gray-600">
+                              <span>{item.price.toLocaleString("vi-VN")}₫</span>
+                              <span className="mx-2">×</span>
+                              <span>{item.quantity}</span>
+                            </div>
+                            <p className="font-semibold text-gray-900">
+                              {(item.price * item.quantity).toLocaleString(
+                                "vi-VN"
+                              )}
+                              ₫
+                            </p>
+                          </div>
+
+                          {order.status === "Đã giao" && (
+                            <Button
+                              onClick={() =>
+                                handleReviewProduct(
+                                  item.orderItemId,
+                                  item.name,
+                                  item.image
+                                )
+                              }
+                              className="mt-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm px-4 py-2 flex items-center space-x-2"
+                            >
+                              <Star className="h-4 w-4" />
+                              <span>Viết đánh giá</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg">
-                        {(item.price * item.quantity).toLocaleString("vi-VN")}₫
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              <div className="border-t pt-6 mt-6">
-                <h3 className="font-semibold text-lg mb-4">Tổng kết đơn hàng</h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tạm tính</span>
-                    <span>{order.total.toLocaleString("vi-VN")}₫</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Phí vận chuyển</span>
-                    <span className="text-green-600">Miễn phí</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Giảm giá</span>
-                    <span>0₫</span>
-                  </div>
-                  <div className="border-t pt-3 flex justify-between text-xl font-bold">
-                    <span>Tổng cộng</span>
-                    <span className="text-blue-600">
-                      {order.total.toLocaleString("vi-VN")}₫
-                    </span>
+              {/* Right Column - Summary & Info (2/5 width) - NO SCROLL */}
+              <div className="col-span-2 p-6 bg-gray-50 overflow-y-auto">
+                {/* Delivery Address */}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
+                    Địa chỉ nhận hàng
+                  </h3>
+                  <div className="bg-white border rounded-lg p-4 space-y-2.5 text-sm">
+                    <div className="flex items-start space-x-2">
+                      <User className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                      <span className="font-medium text-gray-900">
+                        Nguyễn Văn A
+                      </span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <Phone className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                      <span className="text-gray-600">0123 456 789</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                      <p className="text-gray-600 leading-relaxed">
+                        123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Payment Method */}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">
+                    Phương thức thanh toán
+                  </h3>
+                  <div className="bg-white border rounded-lg p-4 text-sm">
+                    <p className="text-gray-900 font-medium">
+                      Thanh toán khi nhận hàng
+                    </p>
+                  </div>
+                </div>
+
+                {/* Order Summary */}
+                <div className="bg-white border rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-4">
+                    Chi tiết thanh toán
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Tạm tính</span>
+                      <span className="text-gray-900">
+                        {order.total.toLocaleString("vi-VN")}₫
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Phí vận chuyển</span>
+                      <span className="text-green-600 font-medium">
+                        Miễn phí
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Giảm giá</span>
+                      <span className="text-gray-900">0₫</span>
+                    </div>
+
+                    <div className="pt-3 mt-3 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-900">
+                          Tổng cộng
+                        </span>
+                        <span className="font-bold text-xl text-blue-600">
+                          {order.total.toLocaleString("vi-VN")}₫
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                {order.status === "Chờ xác nhận" && (
+                  <div className="mt-4 space-y-2">
+                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                      Hủy đơn hàng
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Review Form Modal */}
       {showReviewForm && reviewingProduct && (
         <ReviewForm
+          orderItemId={reviewingProduct.orderItemId}
           productName={reviewingProduct.name}
           productImage={reviewingProduct.image}
           onClose={() => {
             setShowReviewForm(false);
             setReviewingProduct(null);
           }}
-          onSubmit={handleSubmitReview}
         />
       )}
     </>

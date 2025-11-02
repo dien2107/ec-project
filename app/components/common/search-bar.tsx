@@ -77,7 +77,8 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
       if (debouncedSearchQuery.trim()) {
         setIsLoading(true);
         try {
-          const response = await get5ProductsSuggestBySearch(debouncedSearchQuery);
+          const response =
+            await get5ProductsSuggestBySearch(debouncedSearchQuery);
           if (response.isSuccess) {
             setSuggestions(response.data);
           } else {
@@ -168,7 +169,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                 >
                   <X className="w-6 h-6" />
                 </button>
-              </div>            
+              </div>
               {/* Search Results */}
               {searchQuery && (
                 <div className="space-y-3">
@@ -207,7 +208,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                       {suggestions.map((product) => (
                         <Link
                           key={product.productId}
-                          to={`/product/${product.slug}`}
+                          to={`/products/${product.slug}`}
                           onClick={onClose}
                           className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-200 hover:shadow-sm"
                         >
@@ -225,9 +226,22 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                             <p className="text-xs text-gray-500 mt-1">
                               {product.category.name}
                             </p>
-                            <p className="text-sm font-semibold text-blue-600 mt-1">
-                              {formatPrice(product.sellingPrice)}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-sm font-semibold text-red-600">
+                                {formatPrice(product.sellingPrice)}
+                              </p>
+                              {product.discountPercentage &&
+                                product.discountPercentage > 0 && (
+                                  <>
+                                    <p className="text-xs text-gray-400 line-through">
+                                      {formatPrice(product.basePrice)}
+                                    </p>
+                                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
+                                      -{product.discountPercentage}%
+                                    </span>
+                                  </>
+                                )}
+                            </div>
                           </div>
                           <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all flex-shrink-0" />
                         </Link>

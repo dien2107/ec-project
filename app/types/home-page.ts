@@ -5,6 +5,7 @@ export type Category = {
   name: string;
   slug: string;
   description: string;
+  hasProduct: boolean;
   children: Category[];
 };
 export type Product = {
@@ -15,6 +16,7 @@ export type Product = {
   salePrice: number | null;
   soldQuantity: number;
   discountPercentage: number;
+  slug: string;
 };
 
 export type HomeData = {

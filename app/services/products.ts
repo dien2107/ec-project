@@ -97,3 +97,22 @@ export const get5ProductsSuggestBySearch = async (search: string) => {
     throw error;
   }
 };
+
+export const getTop10RelatedProducts = async (
+  categoryId: number,
+  productId: number
+) => {
+  try {
+    console.log("API getTop10RelatedProducts params:", {
+      categoryId,
+      productId,
+    });
+    const response = await instance.get(`/products/top-related`, {
+      params: { categoryId, productId },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    throw error;
+  }
+};
