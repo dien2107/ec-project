@@ -77,7 +77,8 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
       if (debouncedSearchQuery.trim()) {
         setIsLoading(true);
         try {
-          const response = await get5ProductsSuggestBySearch(debouncedSearchQuery);
+          const response =
+            await get5ProductsSuggestBySearch(debouncedSearchQuery);
           if (response.isSuccess) {
             setSuggestions(response.data);
           } else {
@@ -168,7 +169,7 @@ export default function SearchBar({ isOpen, onClose }: SearchBarProps) {
                 >
                   <X className="w-6 h-6" />
                 </button>
-              </div>            
+              </div>
               {/* Search Results */}
               {searchQuery && (
                 <div className="space-y-3">

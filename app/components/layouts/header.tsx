@@ -19,23 +19,54 @@ type MenuItem = {
   path: string;
   dropdown?: MenuItem[];
 };
+const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
+  const grandChildren = category.children
+    ?.flatMap(
+      (child) =>
+        child.children?.filter((grandChild) => grandChild.hasProduct) || []
+    )
+    .filter(Boolean);
 
-// Hàm chuyển đổi dữ liệu category từ API thành MenuItem
-const convertCategoryToMenuItem = (category: Category): MenuItem => {
+  const filteredChildren = category.children
+    ?.map((child) => {
+  
+      const childGrandChildren = child.children?.filter(
+        (grandChild) => grandChild.hasProduct
+      );
+
+  
+      if (
+        child.hasProduct ||
+        (childGrandChildren && childGrandChildren.length > 0)
+      ) {
+        return {
+          ...child,
+          children: childGrandChildren || [],
+        };
+      }
+      return null;
+    })
+    .filter(Boolean) as Category[];
+  if (
+    !category.hasProduct &&
+    (!filteredChildren || filteredChildren.length === 0)
+  ) {
+    return null;
+  }
+
   const menuItem: MenuItem = {
     name: category.name,
     path: `/categories/${category.slug}`,
   };
 
-  // Nếu có children (cấp 2), thêm vào dropdown
-  if (category.children && category.children.length > 0) {
-    menuItem.dropdown = category.children.map((child) => {
+  if (filteredChildren && filteredChildren.length > 0) {
+    menuItem.dropdown = filteredChildren.map((child) => {
       const childItem: MenuItem = {
         name: child.name,
         path: `/categories/${child.slug}`,
       };
 
-      // Nếu child có children (cấp 3), thêm vào dropdown của child
+  
       if (child.children && child.children.length > 0) {
         childItem.dropdown = child.children.map((grandChild) => ({
           name: grandChild.name,
@@ -55,16 +86,14 @@ const Header = () => {
     return state.cart.items.reduce((total, item) => total + item.quantity, 0);
   });
 
-  // Lấy categories từ Redux store
   const categories = useAppSelector(
     (state: RootState) => state.homePage.homeData?.categories || []
   );
 
-  // Chuyển đổi categories từ API thành menuItems
-  // Cấu trúc API: Level 1 (Áo, Quần) -> Level 2 (Áo thun, Áo polo...) -> Level 3 (Áo ba lỗ, Polo tay dài...)
-  // API đã trả về đúng cấu trúc phân cấp, chỉ cần map trực tiếp
   const menuItems = useMemo(() => {
-    return categories.map(convertCategoryToMenuItem);
+    return categories
+      .map(convertCategoryToMenuItem)
+      .filter((item): item is MenuItem => item !== null);
   }, [categories]);
 
   const [isScrolled, setIsScrolled] = useState(false);
