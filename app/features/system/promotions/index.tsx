@@ -23,7 +23,8 @@ export default function PromotionManagement() {
   const [filters, setFilters] = useState({
     Search: "",
     StatusName: "",
-    DiscoyntType: "",
+    DiscountType: "",
+    isActiveTime: undefined,
   });
 
   const [selectedDiscount, setSelectedDiscount] =
@@ -45,6 +46,7 @@ export default function PromotionManagement() {
         Search: filters.Search || undefined,
         StatusName: filters.StatusName || undefined,
         DiscountType: filters.DiscountType || undefined,
+        isActiveTime: filters.isActiveTime || undefined,
       })
     );
   }, [dispatch, currentPage, filters]);
