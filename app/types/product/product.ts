@@ -2,7 +2,7 @@ import type { Status } from "~/types/status";
 import type { Material } from "./material";
 import type { Category } from "./category";
 import type { Color } from "./color";
-import type { ProductGroup, ProductGroupDetail } from "./product-group";
+import type { ProductGroup } from "./product-group";
 import type { PrimaryImage } from "./product-image";
 import type { ProductVariant } from "./product-variant";
 

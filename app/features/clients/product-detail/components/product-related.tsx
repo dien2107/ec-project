@@ -1,25 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import ProductCard from "~/components/ui/product-card";
-import { getProductCatelog } from "~/services/products";
+import { getTop10RelatedProducts } from "~/services/products";
 import { Loader2 } from "lucide-react";
 import type { Product } from "~/types/product/product";
 
 export default function ProductRelated({
-  categorySlug,
+  categoryId,
+  productId,
 }: {
-  categorySlug?: string;
+  categoryId: number;
+  productId: number;
 }) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["related", categorySlug],
-    queryFn: () =>
-      getProductCatelog({
-        categorySlug,
-        pageNumber: 1,
-        pageSize: 10,
-      } as any),
-    enabled: !!categorySlug,
+    queryKey: ["related", categoryId, productId],
+    queryFn: () => getTop10RelatedProducts(categoryId, productId),
+    enabled: !!categoryId && !!productId,
   });
+
+  console.log(data);
 
   if (isLoading)
     return (
@@ -41,8 +40,9 @@ export default function ProductRelated({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="text-center py-12">
-          <p className="text-red-500 text-lg">
+        <div className="py-8">
+          <h2 className="text-xl font-bold mb-6">Sản phẩm liên quan</h2>
+          <p className="text-center text-black text-lg">
             Lỗi hoặc không tìm thấy sản phẩm liên quan
           </p>
         </div>
@@ -60,7 +60,10 @@ export default function ProductRelated({
         Sản phẩm liên quan
       </motion.h2>
       <div className="grid grid-cols-5 gap-x-4 gap-y-12">
-        {data.data.items.map((p: Product, index: number) => {
+        {data.data.map((p: Product, index: number) => {
+          const imageUrl =
+            p.primaryImage?.imageUrl || "/placeholder-product.png";
+
           return (
             <motion.div
               key={p.productId}
@@ -77,7 +80,7 @@ export default function ProductRelated({
                 id={p.productId}
                 title={p.name}
                 slug={p.slug}
-                image={p.primaryImage.imageUrl}
+                image={imageUrl}
                 price={p.sellingPrice}
                 oldPrice={p.basePrice}
                 discount={p.discountPercentage}

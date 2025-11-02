@@ -9,29 +9,33 @@ export default function ProductGrid({ products }: { products: Product[] }) {
 
   return (
     <div className={`grid gap-x-4 gap-y-20 grid-cols-2 md:grid-cols-4`}>
-      {products.map((p, index) => (
-        <motion.div
-          key={p.productId}
-          className="w-full"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.4,
-            delay: index * 0.05, 
-            ease: [0.25, 0.1, 0.25, 1],
-          }}
-        >
-          <ProductCard
-            id={p.productId}
-            title={p.name}
-            slug={p.slug}
-            image={p.primaryImage.imageUrl}
-            price={p.sellingPrice}
-            oldPrice={p.basePrice}
-            discount={p.discountPercentage}
-          />
-        </motion.div>
-      ))}
+      {products.map((p, index) => {
+        const imageUrl = p.primaryImage?.imageUrl || "/placeholder-product.png";
+
+        return (
+          <motion.div
+            key={p.productId}
+            className="w-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.4,
+              delay: index * 0.05,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
+          >
+            <ProductCard
+              id={p.productId}
+              title={p.name}
+              slug={p.slug}
+              image={imageUrl}
+              price={p.sellingPrice}
+              oldPrice={p.basePrice}
+              discount={p.discountPercentage}
+            />
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
