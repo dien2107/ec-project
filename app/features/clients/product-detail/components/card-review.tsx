@@ -101,14 +101,17 @@ export default function CardReview({ review }: { review: Review }) {
                 >
                   {review.reviewImages.map((img, idx) => (
                     <SwiperSlide key={idx}>
-                      <img src={img.imageUrl} className="w-full h-full object-fit " />
+                      <img
+                        src={img.imageUrl}
+                        className="w-full h-full object-fit "
+                      />
                     </SwiperSlide>
                   ))}
                 </Swiper>
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex justify-between mt-3 pt-2 ">
+          {/* <CardFooter className="flex justify-between mt-3 pt-2 ">
             <div className="flex items-center justify-start gap-4">
               <Button variant="ghost" className="cursor-pointer text-gray-400">
                 <ThumbsUp size={16} /> <span className="text-xs">0</span>
@@ -131,7 +134,7 @@ export default function CardReview({ review }: { review: Review }) {
                 <p>Báo cáo</p>
               </TooltipContent>
             </Tooltip>
-          </CardFooter>
+          </CardFooter> */}
         </div>
       </div>
     </div>

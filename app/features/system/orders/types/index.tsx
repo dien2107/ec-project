@@ -70,6 +70,7 @@ export type Status = {
 export type User = {
   userId: number;
   fullName: string;
+  phone: string;
 };
 
 export type Ship = {
@@ -78,6 +79,7 @@ export type Ship = {
 };
 
 export type OrderItem = {
+  orderItemId: number;
   productVariantId: number;
   productName: string;
   sku: string;

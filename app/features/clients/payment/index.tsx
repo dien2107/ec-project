@@ -10,9 +10,13 @@ import CartSummary from "~/features/clients/payment/components/cart-summary";
 import SuccessDialog from "~/features/clients/payment/components/success-dialog";
 import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { createOrder } from "~/services/order";
-import { clearCart } from "~/redux/slices/cartSlice";
+import { clearCart } from "~/redux/slices/cartSliceold";
 import { createPayment, type CreatePaymentPayload } from "~/services/payment";
 import { toast } from "sonner";
+import { ENTITY_TYPE } from "~/constants/entity-types";
+import { fetchShipListData } from "~/redux/slices/ships";
+import { fetchStatuses } from "~/redux/slices/statuses";
+import type { Ship } from "~/types/ship";
 
 const paymentSchema = z.object({
   paymentMethod: z.enum(["bank", "cod"]),
@@ -20,13 +24,17 @@ const paymentSchema = z.object({
 
 export default function Payment() {
   const { state } = useLocation();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  // Lấy cartItems từ Redux store
-  const cartItems = useAppSelector((state) => state.cart.items);
-  // get logged in user
-  const authUser = useAppSelector((state) => state.auth.user);
+  //Redux
+  const cartItems = useAppSelector(state => state.cart.items);
+  const authUser = useAppSelector(state => state.auth.user);
   const userId = authUser?.data?.userId;
+  const statuses = useAppSelector(
+    state => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
+  );
+  const { shipList } = useAppSelector(state => state.shipList);
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -34,6 +42,8 @@ export default function Payment() {
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
     null
   );
+
+  const [ship, setShip] = useState<Ship | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 
@@ -51,8 +61,25 @@ export default function Payment() {
   );
 
   useEffect(() => {
+    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.SHIP }));
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(
+      fetchShipListData({
+        statusId: statuses.find(s => s.name === "Active")?.statusId,
+      })
+    );
+    console.log(shipList);
+  }, [dispatch, statuses]);
+  useEffect(() => {
     setIsOnlinePayment(paymentMethod === "bank");
   }, [paymentMethod]);
+  useEffect(() => {
+    if (shipList?.isSuccess) {
+      setShip(shipList.data.items.at(0));
+    }
+  }, [shipList]);
 
   useEffect(() => {
     // Lấy selectedItems từ location state hoặc chọn tất cả items
@@ -61,7 +88,7 @@ export default function Payment() {
     } else {
       // Mặc định chọn tất cả items
       setSelectedItems(
-        cartItems.map((item) =>
+        cartItems.map(item =>
           String(
             item.ProductVariant.productVariantId ??
               (item.ProductVariant as any).id
@@ -74,7 +101,7 @@ export default function Payment() {
   // Tính toán các items được chọn
   const selectedCartItems = useMemo(
     () =>
-      cartItems.filter((item) =>
+      cartItems.filter(item =>
         selectedItems.includes(
           String(
             item.ProductVariant.productVariantId ??
@@ -94,8 +121,12 @@ export default function Payment() {
     [selectedCartItems]
   );
 
-  const shippingFee = subtotal >= 300000 ? 0 : 30000;
-  const total = subtotal + shippingFee;
+  const shippingFee = useMemo(() => {
+    if (!ship) return 0;
+    return ship.baseCost ?? 0;
+  }, [ship, subtotal]);
+
+  const total = useMemo(() => subtotal + shippingFee, [subtotal, shippingFee]);
 
   const handleAddAddress = (address: Address) => {
     // add to local addresses list and select it
@@ -103,8 +134,6 @@ export default function Payment() {
     setSelectedAddress(address);
     setSelectedAddressId(address.addressId);
   };
-
-  const dispatch = useAppDispatch();
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
@@ -114,13 +143,15 @@ export default function Payment() {
 
     const payload = {
       userId,
-      discountId: null,
-      shipId: null,
+      discountId: state?.appliedDiscount
+        ? state.appliedDiscount.discountId
+        : null,
+      shipId: ship ? ship.shipId : null,
       paymentMethod,
       addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
       isFreeShip: shippingFee === 0,
       shippingFee,
-      items: selectedCartItems.map((i) => ({
+      items: selectedCartItems.map(i => ({
         productVariantId: Number(
           i.ProductVariant.productVariantId ?? (i.ProductVariant as any).id
         ),
@@ -238,7 +269,7 @@ export default function Payment() {
               </h2>
             </div>
             <div className="p-6 space-y-4">
-              {selectedCartItems.map((item) => (
+              {selectedCartItems.map(item => (
                 <div
                   key={String(
                     item.ProductVariant.productVariantId ??
@@ -304,9 +335,10 @@ export default function Payment() {
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-24">
             <CartSummary
-              subtotal={subtotal}
+              subtotal={total}
               shippingFee={shippingFee}
               total={total}
+              ship={ship}
               disabled={isProcessing}
               onPlaceOrder={handlePlaceOrder}
             />
