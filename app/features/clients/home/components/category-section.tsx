@@ -200,7 +200,7 @@ function CategoryCard({
 
   return (
     <Link
-      to={`/category/${category.slug}`}
+      to={`/categories/${category.slug}`}
       className="flex-shrink-0 w-40 sm:w-44 opacity-0 animate-fadeInUp group"
       style={{
         animationDelay: `${index * 100}ms`,

@@ -36,3 +36,18 @@ export const getReviewsByProductId = async (
     throw error;
   }
 };
+
+export const createReview = async (orderItemId: number, formData: FormData) => {
+  try {
+    const response = await instance.post(`/reviews/${orderItemId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creating review:", error);
+    throw error;
+  }
+};
