@@ -68,7 +68,6 @@ export default function OrderDetailsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  console.log(order);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewingProduct, setReviewingProduct] = useState<{
     orderItemId: number;
@@ -192,7 +191,7 @@ export default function OrderDetailsModal({
                 <div className="space-y-4">
                   {order.items.map((item) => (
                     <div
-                      key={item.id}
+                      key={item.orderItemId}
                       className="border rounded-lg p-4 hover:border-gray-400 transition-colors"
                     >
                       <div className="flex items-start space-x-4">
@@ -234,7 +233,7 @@ export default function OrderDetailsModal({
                             <Button
                               onClick={() =>
                                 handleReviewProduct(
-                                  item.id, // Truyền string, sẽ convert trong function
+                                  item.orderItemId,
                                   item.name,
                                   item.image
                                 )

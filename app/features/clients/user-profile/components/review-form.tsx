@@ -2,7 +2,7 @@ import { X, Star, Camera, Video, Send, Image } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useState, useCallback, memo, useRef } from "react";
 import { createReview } from "~/services/reviews";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 
 // Tách Star Rating thành component riêng để tránh re-render
 const StarRating = memo(
@@ -117,7 +117,6 @@ export default function ReviewForm({
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Sử dụng useCallback để tránh tạo function mới mỗi lần render
   const handleMediaUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,13 +166,14 @@ export default function ReviewForm({
       }
 
       await createReview(orderItemId, formData);
-      toast.success("Gửi đánh giá thành công!");
       onClose();
+      toast.success("Đánh giá sản phẩm thành công!");
     } catch (error: any) {
-      console.error("Error submitting review:", error);
-      toast.error(
-        error?.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá"
-      );
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi thêm địa chỉ!");
+      }
     } finally {
       setIsSubmitting(false);
     }
