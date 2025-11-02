@@ -65,22 +65,27 @@ export default function OrderDetailsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  console.log(order);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewingProduct, setReviewingProduct] = useState<{
+    orderItemId: number;
     name: string;
     image: string;
   } | null>(null);
 
   if (!isOpen || !order) return null;
 
-  const handleReviewProduct = (productName: string, productImage: string) => {
-    setReviewingProduct({ name: productName, image: productImage });
+  const handleReviewProduct = (
+    orderItemId: number,
+    productName: string,
+    productImage: string
+  ) => {
+    setReviewingProduct({
+      orderItemId: orderItemId,
+      name: productName,
+      image: productImage,
+    });
     setShowReviewForm(true);
-  };
-
-  const handleSubmitReview = (review: any) => {
-    console.log("Review submitted:", review);
-    alert("Cảm ơn bạn đã đánh giá!");
   };
 
   const orderSteps = getOrderSteps(order.status);
@@ -225,7 +230,11 @@ export default function OrderDetailsModal({
                           {order.status === "Đã giao" && (
                             <Button
                               onClick={() =>
-                                handleReviewProduct(item.name, item.image)
+                                handleReviewProduct(
+                                  item.id, // Truyền string, sẽ convert trong function
+                                  item.name,
+                                  item.image
+                                )
                               }
                               className="mt-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm px-4 py-2 flex items-center space-x-2"
                             >
@@ -335,13 +344,13 @@ export default function OrderDetailsModal({
 
       {showReviewForm && reviewingProduct && (
         <ReviewForm
+          orderItemId={reviewingProduct.orderItemId}
           productName={reviewingProduct.name}
           productImage={reviewingProduct.image}
           onClose={() => {
             setShowReviewForm(false);
             setReviewingProduct(null);
           }}
-          onSubmit={handleSubmitReview}
         />
       )}
     </>
