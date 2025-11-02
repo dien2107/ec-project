@@ -24,7 +24,8 @@ export const fetchDiscountListData = createAsyncThunk(
     params: {
       Search?: string; // 🔍 Tìm theo mã hoặc tên giảm giá
       StatusName?: string; // 🔘 Lọc trạng thái
-      DiscoyntType?: string; // 🔘 Lọc loại giảm giá
+      DiscountType?: string; // 🔘 Lọc loại giảm giá
+      isActiveTime?: boolean; // ⏳ Lọc theo thời gian còn hiệu lực
       PageNumber?: number;
       PageSize?: number;
     },
