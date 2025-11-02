@@ -1,33 +1,8 @@
 import { Link } from "react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "~/redux/store";
-import { useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import type { Category } from "~/types/home-page";
-import {
-  Shirt,
-  ShoppingBag,
-  Wind,
-  Layers,
-  Shield,
-  Package,
-  Sparkles,
-  Tag,
-} from "lucide-react";
-
-const categoryIcons: Record<string, any> = {
-  "áo thun": Shirt,
-  "áo polo": Shield,
-  "áo sơ mi": Layers,
-  "áo sweater": Wind,
-  "áo hoodie": Wind,
-  "áo khoác": Package,
-  "quần jeans": ShoppingBag,
-  "quần kaki": ShoppingBag,
-  "quần jogger": ShoppingBag,
-  "quần cargo": ShoppingBag,
-  "quần short": ShoppingBag,
-  default: Tag,
-};
 
 const categoryColors = [
   "from-blue-500 to-indigo-600",
@@ -38,31 +13,41 @@ const categoryColors = [
   "from-pink-500 to-rose-600",
   "from-violet-500 to-purple-600",
   "from-amber-500 to-orange-600",
+  "from-emerald-500 to-teal-600",
+  "from-rose-500 to-pink-600",
+  "from-indigo-500 to-blue-600",
+  "from-fuchsia-500 to-purple-600",
 ];
 
-function getIconForCategory(categoryName: string) {
-  const lowerName = categoryName.toLowerCase();
-  for (const [key, Icon] of Object.entries(categoryIcons)) {
-    if (lowerName.includes(key)) {
-      return Icon;
-    }
-  }
-  return categoryIcons.default;
-}
+// Patterns đơn giản và đẹp mắt cho từng category
+const categoryPatterns = [
+  "🏷️", // Tag
+  "✨", // Sparkles
+  "🎯", // Target
+  "💎", // Diamond
+  "🌟", // Star
+  "🎨", // Art
+  "🔥", // Fire
+  "⚡", // Lightning
+  "🎪", // Tent (unique)
+  "🎭", // Theater masks
+  "🎨", // Palette
+  "💫", // Dizzy
+];
 
 export default function CategorySection() {
-  const categories = useAppSelector(
-    (state) => state.homePage.homeData?.categories || []
+  const bestSellingCategories = useAppSelector(
+    (state) => state.homePage.homeData?.bestSellingCategories || []
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Lấy các categories cấp 2 (có children)
-  const level2Categories = useMemo(() => {
-    return categories.filter((cat) => cat.children && cat.children.length > 0);
-  }, [categories]);
+  // Nếu không có bestSellingCategories thì ẩn section
+  if (bestSellingCategories.length === 0) {
+    return null;
+  }
 
   const checkScroll = useCallback(() => {
     if (!scrollRef.current) return;
@@ -107,10 +92,6 @@ export default function CategorySection() {
     setTimeout(checkScroll, 400);
   };
 
-  if (level2Categories.length === 0) {
-    return null;
-  }
-
   return (
     <section className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       {/* Header */}
@@ -149,7 +130,7 @@ export default function CategorySection() {
           className="overflow-x-auto scrollbar-hide scroll-smooth"
         >
           <div className="flex gap-4 md:gap-6">
-            {level2Categories.map((category, index) => (
+            {bestSellingCategories.map((category, index) => (
               <CategoryCard
                 key={category.categoryId}
                 category={category}
@@ -214,7 +195,8 @@ function CategoryCard({
   colorClass: string;
 }) {
   const subcategoryCount = category.children?.length || 0;
-  const Icon = getIconForCategory(category.name);
+  // Lấy pattern/emoji tương ứng với index
+  const pattern = categoryPatterns[index % categoryPatterns.length];
 
   return (
     <Link
@@ -225,12 +207,12 @@ function CategoryCard({
       }}
     >
       <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 h-full border border-gray-100 group-hover:scale-105">
-        {/* Icon */}
+        {/* Gradient Circle with Emoji Pattern */}
         <div className="flex items-center justify-center mb-4">
           <div
-            className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
+            className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}
           >
-            <Icon className="w-8 h-8 text-white" strokeWidth={2} />
+            <span className="text-3xl">{pattern}</span>
           </div>
         </div>
 
@@ -238,13 +220,6 @@ function CategoryCard({
         <h3 className="text-center text-base font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
           {category.name}
         </h3>
-
-        {/* Subcategory Count */}
-        <div className="flex items-center justify-center">
-          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-            {subcategoryCount} loại
-          </span>
-        </div>
       </div>
     </Link>
   );

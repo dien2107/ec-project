@@ -86,3 +86,14 @@ export const getProductDetailBySlug = async (slug: string) => {
     throw error;
   }
 };
+export const get5ProductsSuggestBySearch = async (search: string) => {
+  try {
+    const response = await instance.get(`/products/search`, {
+      params: { search },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching suggested products:", error);
+    throw error;
+  }
+};
