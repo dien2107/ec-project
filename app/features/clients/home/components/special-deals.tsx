@@ -1,79 +1,35 @@
-import React, { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { NavLink } from "react-router";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import ProductCard from "~/components/ui/product-card";
 import type { Product } from "~/types/home-page";
-
-function formatPrice(price: number) {
-  return price.toLocaleString("vi-VN") + "₫";
-}
 
 interface SpecialDealsProps {
   products: Product[];
 }
 
-function Countdown({ endTime }: { endTime: Date }) {
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = endTime.getTime() - now;
-
-      if (distance < 0) {
-        clearInterval(timer);
-        return;
-      }
-
-      setTimeLeft({
-        hours: Math.floor(
-          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        ),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000),
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [endTime]);
-
-  return (
-    <div className="flex items-center space-x-1 text-xs">
-      <Clock className="h-3 w-3" />
-      <span className="font-mono">
-        {String(timeLeft.hours).padStart(2, "0")}:
-        {String(timeLeft.minutes).padStart(2, "0")}:
-        {String(timeLeft.seconds).padStart(2, "0")}
-      </span>
-    </div>
-  );
-}
-
 export default function SpecialDeals({ products }: SpecialDealsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const flashSaleEnd = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  const checkScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    const atStart = scrollLeft <= 10;
+    const atEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+
+    setCanScrollLeft(!atStart);
+    setCanScrollRight(!atEnd);
+  }, []);
 
   useEffect(() => {
     checkScroll();
-    window.addEventListener("resize", checkScroll);
-    return () => window.removeEventListener("resize", checkScroll);
-  }, []);
+    const handleResize = () => checkScroll();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [checkScroll]);
+
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
 
@@ -81,12 +37,14 @@ export default function SpecialDeals({ products }: SpecialDealsProps) {
     const amount = 320;
 
     if (direction === "right") {
+      // Nếu gần cuối, quay về đầu
       if (scrollLeft >= scrollWidth - clientWidth - 50) {
         scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
       } else {
         scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
       }
     } else {
+      // Nếu ở đầu, nhảy về cuối
       if (scrollLeft <= 50) {
         scrollRef.current.scrollTo({
           left: scrollWidth - clientWidth,
@@ -117,14 +75,16 @@ export default function SpecialDeals({ products }: SpecialDealsProps) {
         >
           <button
             onClick={() => scroll("left")}
-            className={`hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-all duration-300 ${
-              isHovered ? "opacity-100 -translate-x-2" : "opacity-0"
-            }`}
-            aria-label="Scroll left"
+            className={`
+              hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
+              bg-white shadow-lg rounded-full p-3
+              hover:bg-gray-100 transition-all duration-300
+              ${isHovered ? "opacity-100 -translate-x-2" : "opacity-0"}
+            `}
+            aria-label="Cuộn trái"
           >
             <ChevronLeft className="h-6 w-6 text-gray-700" />
           </button>
-
           <div
             ref={scrollRef}
             onScroll={checkScroll}
@@ -134,81 +94,38 @@ export default function SpecialDeals({ products }: SpecialDealsProps) {
               {products.map((product, index) => (
                 <div
                   key={product.productId}
-                  className="flex-shrink-0 w-full sm:w-64 md:w-64"
+                  className="flex-shrink-0 w-full sm:w-64 md:w-64 opacity-0 animate-fadeInUp"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                  }}
                 >
-                  <NavLink
-                    to={`/products/${product.productId}`}
-                    className="block bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
-                  >
-                    <div className="relative aspect-[3/4] overflow-hidden">
-                      <img
-                        src={product.thumbnail}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                      {product.soldQuantity > 50 && (
-                        <Badge
-                          variant="default"
-                          className="absolute top-3 left-3 text-xs font-bold px-3 py-1"
-                        >
-                          Hot
-                        </Badge>
-                      )}
-                      {product.discountPercentage > 0 && (
-                        <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
-                          -{product.discountPercentage}%
-                        </div>
-                      )}
-                      {product.discountPercentage >= 25 && (
-                        <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 rounded-md backdrop-blur-sm">
-                          <Countdown endTime={flashSaleEnd} />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4">
-                      <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-2 group-hover:text-black transition-colors">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-red-500 font-bold text-base">
-                          {formatPrice(product.salePrice || product.price)}
-                        </span>
-                        {product.salePrice && (
-                          <span className="line-through text-gray-400 text-sm">
-                            {formatPrice(product.price)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </NavLink>
+                  <ProductCard
+                    id={product.productId}
+                    title={product.name}
+                    slug={`${product.slug}`}
+                    price={product.salePrice || product.price}
+                    oldPrice={product.price}
+                    discount={product.discountPercentage}
+                    image={product.thumbnail}
+                  />
                 </div>
               ))}
             </div>
           </div>
-
           <button
             onClick={() => scroll("right")}
-            className={`hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-all duration-300 ${
-              isHovered ? "opacity-100 translate-x-2" : "opacity-0"
-            }`}
-            aria-label="Scroll right"
+            className={`
+              hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
+              bg-white shadow-lg rounded-full p-3
+              hover:bg-gray-100 transition-all duration-300
+              ${isHovered ? "opacity-100 translate-x-2" : "opacity-0"}
+            `}
+            aria-label="Cuộn phải"
           >
             <ChevronRight className="h-6 w-6 text-gray-700" />
           </button>
         </div>
-        \{" "}
-        <div className="flex justify-center mt-12">
-          <Button
-            size="lg"
-            className="bg-gray-900 text-white hover:bg-gray-800 font-semibold px-8 py-6 text-base"
-          >
-            XEM THÊM
-          </Button>
-        </div>
       </div>
-
       <style>{`
         .scrollbar-hide {
           -ms-overflow-style: none;
@@ -216,6 +133,21 @@ export default function SpecialDeals({ products }: SpecialDealsProps) {
         }
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out forwards;
         }
       `}</style>
     </section>

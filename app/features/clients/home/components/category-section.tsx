@@ -1,5 +1,20 @@
 import { Link } from "react-router";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Shirt,
+  Sparkles,
+  Target,
+  Gem,
+  Star,
+  Palette,
+  Flame,
+  Zap,
+  ShoppingBag,
+  Award,
+  TrendingUp,
+  Heart,
+} from "lucide-react";
 import { useAppSelector } from "~/redux/store";
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { Category } from "~/types/home-page";
@@ -19,20 +34,19 @@ const categoryColors = [
   "from-fuchsia-500 to-purple-600",
 ];
 
-// Patterns đơn giản và đẹp mắt cho từng category
-const categoryPatterns = [
-  "🏷️", // Tag
-  "✨", // Sparkles
-  "🎯", // Target
-  "💎", // Diamond
-  "🌟", // Star
-  "🎨", // Art
-  "🔥", // Fire
-  "⚡", // Lightning
-  "🎪", // Tent (unique)
-  "🎭", // Theater masks
-  "🎨", // Palette
-  "💫", // Dizzy
+const categoryIcons = [
+  Shirt,
+  Sparkles,
+  Target,
+  Gem,
+  Star,
+  Palette,
+  Flame,
+  Zap,
+  ShoppingBag,
+  Award,
+  TrendingUp,
+  Heart,
 ];
 
 export default function CategorySection() {
@@ -195,8 +209,8 @@ function CategoryCard({
   colorClass: string;
 }) {
   const subcategoryCount = category.children?.length || 0;
-  // Lấy pattern/emoji tương ứng với index
-  const pattern = categoryPatterns[index % categoryPatterns.length];
+  // Lấy icon tương ứng với index
+  const IconComponent = categoryIcons[index % categoryIcons.length];
 
   return (
     <Link
@@ -207,12 +221,12 @@ function CategoryCard({
       }}
     >
       <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 h-full border border-gray-100 group-hover:scale-105">
-        {/* Gradient Circle with Emoji Pattern */}
+        {/* Gradient Circle with Icon */}
         <div className="flex items-center justify-center mb-4">
           <div
             className={`w-16 h-16 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}
           >
-            <span className="text-3xl">{pattern}</span>
+            <IconComponent className="w-8 h-8 text-white" strokeWidth={2.5} />
           </div>
         </div>
 

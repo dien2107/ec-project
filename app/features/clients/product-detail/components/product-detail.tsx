@@ -4,7 +4,7 @@ import { Button } from "~/components/ui/button";
 
 import { NavLink } from "react-router";
 import { formatVND, renderStars } from "~/libs";
-import { addToCart } from "~/redux/slices/cartSlice";
+import { addToCart } from "~/redux/slices/cartSliceold";
 import { useAppDispatch } from "~/redux/store";
 import type { ProductDetail } from "~/types/product/product";
 import type { ProductVariant } from "~/types/product/product-variant";
@@ -25,13 +25,13 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   const availableStock = selected.productVariant?.stockQuantity ?? 0;
 
   const handleSizeSelect = (productVariant: ProductVariant) => {
-    setSelected((prev) => ({ ...prev, productVariant }));
+    setSelected(prev => ({ ...prev, productVariant }));
   };
 
   const handleQuantityChange = (quantity: number, max_value?: number) => {
     if (quantity < 1 || (max_value !== undefined && quantity > max_value))
       return;
-    setSelected((prev) => ({ ...prev, quantity }));
+    setSelected(prev => ({ ...prev, quantity }));
   };
 
   return (
@@ -89,7 +89,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       <div>
         <h1 className="font-medium mb-2">Kích thước</h1>
         <div className="flex flex-wrap gap-2">
-          {product.productVariants.map((productVariant) => (
+          {product.productVariants.map(productVariant => (
             <Button
               key={productVariant.productVariantId}
               variant={
