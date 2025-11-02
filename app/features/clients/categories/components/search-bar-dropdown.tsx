@@ -11,6 +11,7 @@ import { useDebounce } from "~/hooks/use-debounce";
 import { getProductCatelog } from "~/services/products";
 import type { Product } from "~/types/product/product";
 import { Input } from "~/components/ui/input";
+import { formatPrice } from "~/libs";
 
 type SearchBarDropdownProps = {
   searchQuery: string;
@@ -217,18 +218,17 @@ export default function SearchBarDropdown({
                           <p className="text-xs text-gray-500 mb-1 line-clamp-1">
                             {product.category.name || "Chưa phân loại"}
                           </p>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-base font-semibold text-blue-600">
-                              {product.sellingPrice?.toLocaleString("vi-VN")} ₫
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-sm font-semibold text-red-600">
+                              {formatPrice(product.sellingPrice)}
                             </p>
                             {product.discountPercentage &&
                               product.discountPercentage > 0 && (
                                 <>
-                                  <p className="text-sm text-gray-400 line-through">
-                                    {product.basePrice?.toLocaleString("vi-VN")}{" "}
-                                    ₫
+                                  <p className="text-xs text-gray-400 line-through">
+                                    {formatPrice(product.basePrice)}
                                   </p>
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                  <span className="text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
                                     -{product.discountPercentage}%
                                   </span>
                                 </>
