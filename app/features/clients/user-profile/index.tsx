@@ -60,7 +60,7 @@ export default function UserProfilePage() {
       total: order.totalAmount,
       address: order.addressInfo,
       user: {
-        id: order.user.userId,
+        userId: order.user.userId,
         fullName: order.user.fullName,
         phone: order.user.phone,
       },
