@@ -1,7 +1,20 @@
-import { X, Clock, Truck, CheckCircle2, XCircle, Star, Camera, Video, Send } from "lucide-react";
+import {
+  X,
+  Clock,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  Star,
+  Camera,
+  Video,
+  Send,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
-import type { OrderItem, OrderStatus } from "~/features/clients/user-profile/types/user";
+import type {
+  OrderItem,
+  OrderStatus,
+} from "~/features/clients/user-profile/types/user";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -23,12 +36,12 @@ const statusBadgeClass = (status: OrderStatus) => {
   }
 };
 
-function ReviewForm({ 
-  productName, 
-  productImage, 
-  onClose, 
-  onSubmit 
-}: { 
+function ReviewForm({
+  productName,
+  productImage,
+  onClose,
+  onSubmit,
+}: {
   productName: string;
   productImage: string;
   onClose: () => void;
@@ -48,10 +61,10 @@ function ReviewForm({
     }
 
     setMediaFiles(prev => [...prev, ...files]);
-    
+
     files.forEach(file => {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         setMediaPreviews(prev => [...prev, e.target?.result as string]);
       };
       reader.readAsDataURL(file);
@@ -68,13 +81,13 @@ function ReviewForm({
       alert("Vui lòng chọn số sao");
       return;
     }
-    
+
     onSubmit({
       rating,
       text: reviewText,
       media: mediaFiles,
       productName,
-      productImage
+      productImage,
     });
     onClose();
   };
@@ -82,7 +95,7 @@ function ReviewForm({
   return (
     <div className="fixed inset-0 z-60 overflow-y-auto">
       <div className="fixed inset-0 bg-black/60" onClick={onClose} />
-      
+
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
           {/* Header */}
@@ -94,14 +107,16 @@ function ReviewForm({
               <X className="h-5 w-5" />
             </Button>
             <h2 className="text-xl font-bold">Đánh giá sản phẩm</h2>
-            <p className="text-pink-100 text-sm mt-1">Chia sẻ trải nghiệm của bạn</p>
+            <p className="text-pink-100 text-sm mt-1">
+              Chia sẻ trải nghiệm của bạn
+            </p>
           </div>
 
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
             {/* Product Info */}
             <div className="flex items-center space-x-3 mb-6 p-3 bg-gray-50 rounded-lg">
-              <img 
-                src={productImage} 
+              <img
+                src={productImage}
                 alt={productName}
                 className="w-12 h-12 rounded-lg object-cover"
               />
@@ -113,9 +128,11 @@ function ReviewForm({
 
             {/* Rating */}
             <div className="mb-6 text-center">
-              <p className="text-gray-700 mb-3 font-medium">Bạn cảm thấy sản phẩm thế nào?</p>
+              <p className="text-gray-700 mb-3 font-medium">
+                Bạn cảm thấy sản phẩm thế nào?
+              </p>
               <div className="flex justify-center space-x-2">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <button
                     key={star}
                     onMouseEnter={() => setHoverRating(star)}
@@ -148,7 +165,7 @@ function ReviewForm({
             <div className="mb-6">
               <textarea
                 value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
+                onChange={e => setReviewText(e.target.value)}
                 placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này... (tùy chọn)"
                 className="w-full h-24 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 maxLength={500}
@@ -160,14 +177,16 @@ function ReviewForm({
 
             {/* Media Upload */}
             <div className="mb-6">
-              <p className="text-gray-700 mb-3 font-medium">Thêm ảnh/video (tùy chọn)</p>
-              
+              <p className="text-gray-700 mb-3 font-medium">
+                Thêm ảnh/video (tùy chọn)
+              </p>
+
               {/* Media Previews */}
               {mediaPreviews.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {mediaPreviews.map((preview, index) => (
                     <div key={index} className="relative aspect-square">
-                      {mediaFiles[index]?.type.startsWith('video') ? (
+                      {mediaFiles[index]?.type.startsWith("video") ? (
                         <video
                           src={preview}
                           className="w-full h-full object-cover rounded-lg"
@@ -186,7 +205,7 @@ function ReviewForm({
                       >
                         <X className="h-3 w-3" />
                       </button>
-                      {mediaFiles[index]?.type.startsWith('video') && (
+                      {mediaFiles[index]?.type.startsWith("video") && (
                         <Video className="absolute bottom-1 right-1 h-4 w-4 text-white" />
                       )}
                     </div>
@@ -209,7 +228,7 @@ function ReviewForm({
                     <span className="text-sm text-gray-600">Ảnh</span>
                   </div>
                 </label>
-                
+
                 <label className="flex-1">
                   <input
                     type="file"
@@ -224,7 +243,7 @@ function ReviewForm({
                   </div>
                 </label>
               </div>
-              
+
               <p className="text-xs text-gray-500 mt-2 text-center">
                 Tối đa 5 ảnh/video • Dung lượng tối đa 10MB/file
               </p>
@@ -256,7 +275,10 @@ export default function OrderDetailsModal({
   onClose: () => void;
 }) {
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewingProduct, setReviewingProduct] = useState<{name: string, image: string} | null>(null);
+  const [reviewingProduct, setReviewingProduct] = useState<{
+    name: string;
+    image: string;
+  } | null>(null);
 
   if (!isOpen || !order) return null;
 
@@ -274,10 +296,7 @@ export default function OrderDetailsModal({
   return (
     <>
       <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div
-          className="fixed inset-0 bg-black/40"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/40" onClick={onClose} />
 
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
@@ -288,7 +307,9 @@ export default function OrderDetailsModal({
                   <h2 className="text-xl font-semibold">
                     Chi tiết đơn hàng #{order.id}
                   </h2>
-                  <p className="text-sm text-gray-500">Ngày đặt: {order.date}</p>
+                  <p className="text-sm text-gray-500">
+                    Ngày đặt: {order.date}
+                  </p>
                 </div>
               </div>
               <Button
@@ -310,9 +331,9 @@ export default function OrderDetailsModal({
 
               <div className="mt-6 space-y-4">
                 <h3 className="font-semibold text-lg">Sản phẩm đã đặt</h3>
-                {order.items.map((item) => (
+                {order.items.map(item => (
                   <div
-                    key={item.id}
+                    key={item.productVariantId}
                     className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
                   >
                     <img
@@ -322,19 +343,21 @@ export default function OrderDetailsModal({
                     />
                     <div className="flex-1">
                       <h4 className="font-medium text-lg">{item.name}</h4>
-                      {item.variant && (
+                      {item.size && (
                         <p className="text-sm text-gray-600 mt-1">
-                          {item.variant}
+                          {item.size}
                         </p>
                       )}
                       <p className="text-sm mt-2">
                         {item.price.toLocaleString("vi-VN")}₫ × {item.quantity}
                       </p>
-                      
+
                       {/* Review Button - only show for delivered orders */}
                       {order.status === "Đã giao" && (
                         <Button
-                          onClick={() => handleReviewProduct(item.name, item.image)}
+                          onClick={() =>
+                            handleReviewProduct(item.name, item.image)
+                          }
                           className="mt-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-sm px-4 py-2 rounded-lg flex items-center space-x-2"
                         >
                           <Star className="h-4 w-4" />
@@ -352,7 +375,9 @@ export default function OrderDetailsModal({
               </div>
 
               <div className="border-t pt-6 mt-6">
-                <h3 className="font-semibold text-lg mb-4">Tổng kết đơn hàng</h3>
+                <h3 className="font-semibold text-lg mb-4">
+                  Tổng kết đơn hàng
+                </h3>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tạm tính</span>

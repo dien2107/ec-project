@@ -2,7 +2,7 @@ import {
   addToCart,
   removeFromCart,
   updateQuantity,
-} from "~/redux/slices/cartSlice";
+} from "~/redux/slices/cartSliceold";
 import CartHeader from "./components/cart-header";
 import CartItem from "./components/cart-item";
 import OrderSummary from "./components/order-summary";

@@ -10,7 +10,7 @@ import CartSummary from "~/features/clients/payment/components/cart-summary";
 import SuccessDialog from "~/features/clients/payment/components/success-dialog";
 import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { createOrder } from "~/services/order";
-import { clearCart } from "~/redux/slices/cartSlice";
+import { clearCart } from "~/redux/slices/cartSliceold";
 import { createPayment, type CreatePaymentPayload } from "~/services/payment";
 import { toast } from "sonner";
 import { ENTITY_TYPE } from "~/constants/entity-types";

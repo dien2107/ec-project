@@ -1,7 +1,10 @@
 import { ChevronRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Clock, Truck, CheckCircle2, XCircle } from "lucide-react";
-import type { OrderItem, OrderStatus } from "~/features/clients/user-profile/types/user";
+import type {
+  OrderItem,
+  OrderStatus,
+} from "~/features/clients/user-profile/types/user";
 
 const statusIconMap: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -59,10 +62,8 @@ export default function OrderCard({
             />
             <div className="flex-1">
               <h4 className="font-medium">{order.items[0].name}</h4>
-              {order.items[0].variant && (
-                <p className="text-sm text-gray-500">
-                  {order.items[0].variant}
-                </p>
+              {order.items[0].size && (
+                <p className="text-sm text-gray-500">{order.items[0].size}</p>
               )}
               <p className="text-sm mt-1">
                 {order.items[0].price.toLocaleString("vi-VN")}₫ ×{" "}
