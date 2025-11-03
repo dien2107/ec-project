@@ -16,22 +16,39 @@ export const getColumns = (
   {
     accessorKey: "shipId",
     header: ({ column }) => {
-      return <SortableHeader column={column} title="Mã VC" />;
+      return (
+        <SortableHeader column={column} className="w-[80px]">
+          <div className="flex flex-col items-start ">
+            <span>Mã</span>
+            <span>vận chuyển</span>
+          </div>
+        </SortableHeader>
+      );
     },
-    cell: ({ getValue }) => (
-      <span className="font-mono text-sm">{getValue() as string}</span>
-    ),
+    cell: ({ row }) => {
+      return (
+        <span className="font-bold ">
+          {String(row.original.shipId).padStart(3, "0")}
+        </span>
+      );
+    },
     sticky: true,
   },
   {
     accessorKey: "corpName",
     header: ({ column }) => {
-      return <SortableHeader column={column} title="Đơn vị vận chuyển" />;
+      return (
+        <SortableHeader column={column} className="w-[80px] justify-start">
+          <div className="flex flex-col items-start justify-start">
+            <span>Đơn vị</span>
+            <span>vận chuyển</span>
+          </div>
+        </SortableHeader>
+      );
     },
     cell: ({ getValue }) => (
       <span className="font-medium">{getValue() as string}</span>
     ),
-    sticky: true,
   },
   {
     accessorKey: "description",
@@ -48,7 +65,14 @@ export const getColumns = (
   {
     accessorKey: "baseCost",
     header: ({ column }) => {
-      return <SortableHeader column={column} title="Phí vận chuyển" />;
+      return (
+        <SortableHeader column={column} className="w-[80px] justify-start">
+          <div className="flex flex-col items-start">
+            <span>Phí</span>
+            <span>vận chuyển</span>
+          </div>
+        </SortableHeader>
+      );
     },
     cell: ({ getValue }) => (
       <span className="font-medium text-blue-600">
@@ -59,7 +83,14 @@ export const getColumns = (
   {
     accessorKey: "estimatedDays",
     header: ({ column }) => {
-      return <SortableHeader column={column} title="Thời gian (ngày)" />;
+      return (
+        <SortableHeader column={column} className="w-[80px] justify-start">
+          <div className="flex flex-col items-start">
+            <span>Thời gian</span>
+            <span>(ngày)</span>
+          </div>
+        </SortableHeader>
+      );
     },
     cell: ({ getValue }) => (
       <div className="text-center">
@@ -107,25 +138,51 @@ export const getColumns = (
   },
   {
     accessorKey: "createdAt",
-    header: "Ngày tạo",
-    cell: ({ getValue }) => (
-      <span className="text-sm text-gray-600">
-        {formatDate(getValue() as string)}
-      </span>
-    ),
-    filterFn: (row, id, value) => {
-      if (!value || value === "all") return true;
-      return row.getValue(id) === value;
+    header: ({ column }) => {
+      return (
+        <SortableHeader column={column} title="Ngày tạo" className="w-[80px]">
+          <div className="flex flex-col items-start">
+            <span>Ngày</span>
+            <span>tạo</span>
+          </div>
+        </SortableHeader>
+      );
+    },
+    cell: ({ row }) => {
+      const dateStr = row.original.createdAt;
+      const dateObj = new Date(dateStr);
+      return (
+        <div className="text-center text-gray-400">
+          {dateObj.toLocaleDateString("en-GB")}
+        </div>
+      );
     },
   },
   {
-    accessorKey: "createdAt",
-    header: "Ngày tạo",
-    cell: ({ getValue }) => (
-      <span className="text-sm text-gray-600">
-        {formatDate(getValue() as string)}
-      </span>
-    ),
+    accessorKey: "updatedAt",
+    header: ({ column }) => {
+      return (
+        <SortableHeader
+          column={column}
+          title="Ngày cập nhật"
+          className="w-[80px]"
+        >
+          <div className="flex flex-col items-start">
+            <span>Ngày</span>
+            <span>cập nhật</span>
+          </div>
+        </SortableHeader>
+      );
+    },
+    cell: ({ row }) => {
+      const dateStr = row.original.updatedAt;
+      const dateObj = new Date(dateStr);
+      return (
+        <div className="text-center text-gray-400">
+          {dateObj.toLocaleDateString("en-GB")}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "actions",

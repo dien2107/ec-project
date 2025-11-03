@@ -278,7 +278,7 @@ export const getColumns = (
             <SquarePen />
           </Button>
 
-          {product.status.name == "Draft" && (
+          {product.status.name == "ComingSoon" && (
             <Button
               variant="ghost"
               color="destructive"

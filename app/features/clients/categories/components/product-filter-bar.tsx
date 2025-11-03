@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import Select from "react-select";
 import {
   Popover,
@@ -45,10 +45,12 @@ export default function ProductFilterBar({
   filters,
   setFilters,
   totalCount,
+  isFiltering = false,
 }: {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   totalCount: number;
+  isFiltering?: boolean;
 }) {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
@@ -61,6 +63,7 @@ export default function ProductFilterBar({
 
   const [minPrice, setMinPrice] = useState(String(filters.minPrice ?? ""));
   const [maxPrice, setMaxPrice] = useState(String(filters.maxPrice ?? ""));
+  const [priceError, setPriceError] = useState<string>("");
 
   const minPriceDebounced = useDebounce(minPrice, 800);
   const maxPriceDebounced = useDebounce(maxPrice, 800);
@@ -79,20 +82,36 @@ export default function ProductFilterBar({
   useEffect(() => {
     const next =
       minPriceDebounced === "" ? undefined : Number(minPriceDebounced);
+
+    // Validate min price
+    if (next !== undefined && maxPrice !== "" && next >= Number(maxPrice)) {
+      setPriceError("Giá tối thiểu phải nhỏ hơn giá tối đa");
+      return;
+    }
+
+    setPriceError("");
     setFilters((prev) => {
       if (prev.minPrice === next) return prev;
       return { ...prev, minPrice: next };
     });
-  }, [minPriceDebounced, setFilters]);
+  }, [minPriceDebounced, maxPrice, setFilters]);
 
   useEffect(() => {
     const next =
       maxPriceDebounced === "" ? undefined : Number(maxPriceDebounced);
+
+    // Validate max price
+    if (next !== undefined && minPrice !== "" && next <= Number(minPrice)) {
+      setPriceError("Giá tối đa phải lớn hơn giá tối thiểu");
+      return;
+    }
+
+    setPriceError("");
     setFilters((prev) => {
       if (prev.maxPrice === next) return prev;
       return { ...prev, maxPrice: next };
     });
-  }, [maxPriceDebounced, setFilters]);
+  }, [maxPriceDebounced, minPrice, setFilters]);
 
   const colorOptions = useMemo(
     () =>
@@ -242,6 +261,7 @@ export default function ProductFilterBar({
                             className="cursor-pointer text-gray-500 hover:text-gray-800 hover:underline"
                             onClick={() => {
                               handleClearFilter(0, "price");
+                              setPriceError("");
                             }}
                           >
                             Đặt lại
@@ -260,6 +280,36 @@ export default function ProductFilterBar({
                                 const value = e.target.value;
                                 if (/^\d*$/.test(value)) {
                                   setMinPrice(value);
+                                  setPriceError("");
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const minVal =
+                                    minPrice === ""
+                                      ? undefined
+                                      : Number(minPrice);
+                                  const maxVal =
+                                    maxPrice === ""
+                                      ? undefined
+                                      : Number(maxPrice);
+
+                                  if (
+                                    minVal !== undefined &&
+                                    maxVal !== undefined &&
+                                    minVal >= maxVal
+                                  ) {
+                                    setPriceError(
+                                      "Giá tối thiểu phải nhỏ hơn giá tối đa"
+                                    );
+                                    return;
+                                  }
+
+                                  setPriceError("");
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    minPrice: minVal,
+                                  }));
                                 }
                               }}
                             />
@@ -276,11 +326,46 @@ export default function ProductFilterBar({
                                 const value = e.target.value;
                                 if (/^\d*$/.test(value)) {
                                   setMaxPrice(value);
+                                  setPriceError("");
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const minVal =
+                                    minPrice === ""
+                                      ? undefined
+                                      : Number(minPrice);
+                                  const maxVal =
+                                    maxPrice === ""
+                                      ? undefined
+                                      : Number(maxPrice);
+
+                                  if (
+                                    maxVal !== undefined &&
+                                    minVal !== undefined &&
+                                    maxVal <= minVal
+                                  ) {
+                                    setPriceError(
+                                      "Giá tối đa phải lớn hơn giá tối thiểu"
+                                    );
+                                    return;
+                                  }
+
+                                  setPriceError("");
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    maxPrice: maxVal,
+                                  }));
                                 }
                               }}
                             />
                           </div>
                         </div>
+                        {priceError && (
+                          <p className="text-xs text-red-500 mt-1">
+                            {priceError}
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-1.5">
@@ -403,9 +488,13 @@ export default function ProductFilterBar({
                 classNamePrefix="react-select"
                 styles={reactSelectStyles}
               />
-              <span className="text-sm text-gray-400">
-                Có {totalCount} sản phẩm
-              </span>
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                {isFiltering ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  <span>Có {totalCount} sản phẩm</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -418,6 +507,10 @@ export default function ProductFilterBar({
             selectedProductGroups={selectedProductGroups}
             selectedStockStatuses={selectedStockStatuses}
             handleClearFilter={handleClearFilter}
+            onClearAllFilters={() => {
+              setMinPrice("");
+              setMaxPrice("");
+            }}
           />
         </div>
       </motion.div>

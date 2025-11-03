@@ -19,6 +19,7 @@ export default function Categories() {
 
   const mainRef = useRef<HTMLDivElement | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState(q || "");
@@ -41,6 +42,7 @@ export default function Categories() {
     inStock: false,
   });
   const debouncedFilters = useDebounce(filters, 800);
+  const [isFiltering, setIsFiltering] = useState(false);
 
   // Sync search query with URL param
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function Categories() {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
+        setIsFiltering(true); // Add this
         const response = await getProductCatelog({
           categorySlug: slug,
           search: q || undefined,
@@ -81,11 +84,13 @@ export default function Categories() {
           pageSize: response.data.pageSize ?? prev.pageSize,
         }));
         setProducts(response.data.items);
+        setIsSuccess(response.isSuccess);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
         setIsLoading(false);
-        setHasLoaded(true); // ✅ Đánh dấu đã load xong
+        setIsFiltering(false); // Add this
+        setHasLoaded(true);
       }
     };
 
@@ -136,15 +141,26 @@ export default function Categories() {
   return (
     <div ref={mainRef} className="max-w-[1280px] mx-auto p-4 md:p-6">
       {slug ? (
-        <motion.div
-          key={categoryName}
-          className="flex items-center justify-between pb-4 border-b border-gray-200"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-        >
-          <h1 className="font-medium text-4xl">{categoryName}</h1>
-        </motion.div>
+        <>
+          {isSuccess ? (
+            <motion.div
+              key={categoryName}
+              className="flex items-center justify-between pb-4 border-b border-gray-200"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <h1 className="font-medium text-4xl">{categoryName}</h1>
+            </motion.div>
+          ) : hasLoaded ? (
+            <SearchResultHeader
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              onSubmit={handleSearchSubmit}
+              onClear={handleClearSearch}
+            />
+          ) : null}
+        </>
       ) : (
         <SearchResultHeader
           searchQuery={searchQuery}
@@ -156,11 +172,12 @@ export default function Categories() {
 
       {(slug || q) && (
         <>
-          {products.length > 0 && (
+          {isSuccess && (
             <ProductFilterBar
               filters={filters}
               setFilters={setFilters}
               totalCount={pagination.totalCount}
+              isFiltering={isFiltering} // Add this prop
             />
           )}
 
