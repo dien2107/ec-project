@@ -24,7 +24,7 @@ export default function AddressSection({
   const [deletingAddress, setDeletingAddress] = useState<Address | null>(null);
   const [reopenViewAfterEdit, setReopenViewAfterEdit] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector(state => state.auth);
 
   // Fetch địa chỉ nếu chưa có
   useEffect(() => {

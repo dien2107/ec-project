@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { Order } from "~/features/system/orders/types";
 import instance from "~/services/customize-axios";
+import type { ApiPagedResponse } from "~/types/api-response";
 
 export interface OrderItem {
   productId: number;
@@ -8,17 +9,6 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
 }
-
-// export interface Order {
-//   orderId: number;
-//   userId: number;
-//   addressInfo: string;
-//   totalAmount: number;
-//   shippingFee: number;
-//   isFreeShip: boolean;
-//   createdAt: string; // ISO string
-//   items: OrderItem[];
-// }
 
 // Standard API response wrapper
 export interface ApiResponse<T> {
@@ -28,25 +18,48 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export type OrderListResponse = ApiResponse<Order[]>;
-
-const initialState: {
-  orderList: OrderListResponse | null;
+// State with paged response
+interface OrderListState {
+  orderList: ApiPagedResponse<Order[]> | null;
   isLoading: boolean;
-  isError: boolean;
-} = {
+  error: string | null;
+}
+
+const initialState: OrderListState = {
   orderList: null,
   isLoading: false,
-  isError: false,
+  error: null,
 };
 
+// Async thunk with pagination and filtering
 export const fetchOrderListData = createAsyncThunk(
   "orders/fetchOrderListData",
-  async () => {
-    const response = await instance.get<ApiResponse<Order[]>>("/orders");
-    return response.data;
+  async (
+    params: {
+      Search?: string; // Search by order ID or customer name
+      StatusName?: string; // Filter by status
+      PageNumber?: number;
+      PageSize?: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await instance.get<ApiPagedResponse<Order[]>>(
+        "/orders",
+        {
+          params,
+        }
+      );
+      console.log("✅ Orders API response:", response.data);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || "Lỗi khi tải danh sách đơn hàng"
+      );
+    }
   }
 );
+
 export const fetchOrderListDataByUserId = createAsyncThunk(
   "orders/fetchOrderListDataByUserId",
   async (userId: number) => {
@@ -65,29 +78,16 @@ const orderListDataSlice = createSlice({
     builder
       .addCase(fetchOrderListData.pending, state => {
         state.isLoading = true;
-        state.isError = false;
+        state.error = null;
       })
       .addCase(fetchOrderListData.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.isError = false;
         state.orderList = action.payload;
       })
-      .addCase(fetchOrderListData.rejected, state => {
+      .addCase(fetchOrderListData.rejected, (state, action) => {
         state.isLoading = false;
-        state.isError = true;
-      })
-      .addCase(fetchOrderListDataByUserId.pending, state => {
-        state.isLoading = true;
-        state.isError = false;
-      })
-      .addCase(fetchOrderListDataByUserId.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isError = false;
-        state.orderList = action.payload;
-      })
-      .addCase(fetchOrderListDataByUserId.rejected, state => {
-        state.isLoading = false;
-        state.isError = true;
+        state.error =
+          (action.payload as string) || "Không thể tải dữ liệu đơn hàng";
       });
   },
 });

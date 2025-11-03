@@ -65,7 +65,9 @@ export default function ProductVariant({
               </span>
             </div>
             <div className="text-gray-400 flex justify-between">
-              <span>ID: {variant.productVariantId}</span>
+              <span>
+                ID: {String(variant.productVariantId).padStart(3, "0")}
+              </span>
               <span>SKU: {variant.sku}</span>
             </div>
           </div>

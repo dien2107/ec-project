@@ -1,58 +1,88 @@
 import { useNavigate, useLocation } from "react-router";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Nhận dữ liệu truyền qua navigate, ví dụ navigate("/payment/success", { state: paymentData })
+  // Lấy dữ liệu từ navigate("/payment/success", { state: { paymentData } })
   const { paymentData } = location.state || {};
+  const { orderId, amount, paidAt, status } = paymentData || {};
 
-  const { orderId, amount, paidAt, qrCodeUrl, status } = paymentData;
+  const handleClose = () => navigate("/profile");
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center animate-fadeIn">
-        {/* Dấu tick */}
-        <CheckCircle className="text-green-500 w-20 h-20 mx-auto mb-4 animate-bounce" />
+    <Dialog open={true} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full">
+            <CheckCircle className="w-6 h-6 text-green-600" />
+          </div>
+          <DialogTitle className="text-center text-xl text-green-700">
+            Thanh toán thành công
+          </DialogTitle>
+          <DialogDescription className="text-center text-slate-600">
+            Cảm ơn bạn đã mua hàng! Đơn hàng của bạn đang được xử lý.
+          </DialogDescription>
+        </DialogHeader>
 
-        <h1 className="text-2xl font-bold text-green-600 mb-2">
-          🎉 Thanh toán thành công! 🎉
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đang được xử lý.
-        </p>
+        {/* Chi tiết thanh toán */}
+        <div className="py-4 space-y-3">
+          <div className="bg-slate-50 p-4 rounded-lg space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Mã đơn hàng:</span>
+              <span className="text-sm font-medium">#{orderId}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Số tiền:</span>
+              <span className="text-sm font-medium">
+                {amount?.toLocaleString("vi-VN")} ₫
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Trạng thái:</span>
+              <span className="text-sm font-medium text-green-700">
+                {status === "Draft" ? "Đã thanh toán" : status}
+              </span>
+            </div>
+            {paidAt && (
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">
+                  Thời gian thanh toán:
+                </span>
+                <span className="text-sm font-medium">
+                  {new Date(paidAt).toLocaleString("vi-VN")}
+                </span>
+              </div>
+            )}
+          </div>
 
-        {/* Thông tin chi tiết */}
-        <div className="bg-gray-50 rounded-lg p-4 text-left mb-6 space-y-2 text-gray-700">
-          <p>
-            <span className="font-semibold">Mã đơn hàng:</span> #{orderId}
-          </p>
-          <p>
-            <span className="font-semibold">Số tiền:</span>{" "}
-            {amount?.toLocaleString("vi-VN")} ₫
-          </p>
-          <p>
-            <span className="font-semibold">Trạng thái:</span>{" "}
-            <span className="text-green-600 font-medium">
-              {status === "Draft" ? "Đã thanh toán" : status}
-            </span>
-          </p>
-          {paidAt && (
-            <p>
-              <span className="font-semibold">Thời gian thanh toán:</span>{" "}
-              {new Date(paidAt).toLocaleString("vi-VN")}
+          <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+            <p className="text-sm text-green-800 text-center">
+              Giao dịch đã được xác nhận. Bạn có thể xem chi tiết đơn hàng trong
+              trang cá nhân.
             </p>
-          )}
+          </div>
         </div>
 
-        <button
-          onClick={() => navigate("/profile")}
-          className="px-6 py-3 bg-green-600 text-white text-lg rounded-xl shadow-md hover:bg-green-700 transition"
-        >
-          Về trang cá nhân
-        </button>
-      </div>
-    </div>
+        <DialogFooter className="justify-center">
+          <Button
+            onClick={handleClose}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            Về trang cá nhân
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

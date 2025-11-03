@@ -21,8 +21,6 @@ export default function Product() {
     enabled: !!slug,
   });
 
-  console.log(product);
-
   if (isLoading)
     return (
       <motion.div
