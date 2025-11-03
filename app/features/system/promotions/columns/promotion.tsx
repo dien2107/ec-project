@@ -163,37 +163,24 @@ export const getColumns = (
   {
     accessorKey: "status",
     header: () => (
-      <div className="w-[130px] text-center font-medium text-gray-700">
+      <div className="w-[145px] text-center font-medium text-gray-700">
         Trạng thái
       </div>
     ),
     cell: ({ row }) => {
-      const status = row.original.status;
-
-      if (!status) {
-        return (
-          <div className="w-[110px] text-center">
-            <div className="bg-gray-300 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
-              Không xác định
-            </div>
-          </div>
-        );
-      }
-
-      const { name, displayName } = status;
+      const { name, displayName } = row.original.status;
 
       const statusColorMap: Record<string, string> = {
         Active: "bg-green-400 text-white",
         Inactive: "bg-red-300 text-white",
-        Expired: "bg-gray-400 text-white",
       };
 
       const statusClass = statusColorMap[name] || "bg-gray-300 text-white";
 
       return (
-        <div className="w-[110px] text-center">
+        <div className="w-[120px] text-center">
           <div
-            className={`${statusClass} py-1 px-2 rounded-lg text-center whitespace-normal break-words`}
+            className={`${statusClass} text-white py-1 px-2 rounded-lg text-center whitespace-nowrap`}
             title={displayName || name}
           >
             {displayName || name}

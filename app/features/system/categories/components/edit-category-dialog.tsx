@@ -103,7 +103,16 @@ export default function EditCategoryDialog({
       setPreviewUrl(selectedCategory.sizeDetail ?? "");
       setSelectedFile(null);
       setImageError("");
-      setIsImageDeleted(false); // 🆕 Reset trạng thái xóa
+      setIsImageDeleted(false);
+
+      // Khóa trường thể loại cha nếu là ID 1 hoặc 2
+      if (
+        selectedCategory.categoryId === 1 ||
+        selectedCategory.categoryId === 2
+      ) {
+        setValue("parentId", ""); // Hoặc đặt giá trị mặc định khác
+        trigger(); // Xác nhận lại trạng thái để cập nhật giao diện
+      }
     }
   }, [open, selectedCategory, reset]);
 
@@ -265,24 +274,32 @@ export default function EditCategoryDialog({
               <Controller
                 name="parentId"
                 control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={categories.map((c) => ({
-                      value: c.id.toString(),
-                      label: c.name,
-                    }))}
-                    placeholder="Chọn thể loại cha"
-                    styles={reactSelectStyles}
-                    isDisabled={isLoading}
-                    onChange={(opt) => field.onChange(opt?.value ?? "")}
-                    value={
-                      categories
-                        .map((c) => ({ value: c.id.toString(), label: c.name }))
-                        .find((opt) => opt.value === field.value) || null
-                    }
-                  />
-                )}
+                render={({ field }) => {
+                  // 🧩 Loại bỏ chính danh mục hiện tại khỏi danh sách chọn cha
+                  const parentOptions = categories
+                    .filter((c) => c.id !== selectedCategory?.categoryId) // ❌ Không cho chọn chính nó
+                    .map((c) => ({ value: c.id.toString(), label: c.name }));
+
+                  return (
+                    <Select
+                      {...field}
+                      options={parentOptions}
+                      placeholder="Chọn thể loại cha"
+                      styles={reactSelectStyles}
+                      isDisabled={
+                        isLoading ||
+                        selectedCategory?.categoryId === 1 ||
+                        selectedCategory?.categoryId === 2
+                      }
+                      onChange={(opt) => field.onChange(opt?.value ?? "")}
+                      value={
+                        parentOptions.find(
+                          (opt) => opt.value === field.value
+                        ) || null
+                      }
+                    />
+                  );
+                }}
               />
             </div>
           </div>
@@ -355,7 +372,12 @@ export default function EditCategoryDialog({
                   options={statuses}
                   placeholder="Chọn trạng thái"
                   styles={reactSelectStyles}
-                  isDisabled={isLoading || isStatusesLoading}
+                  isDisabled={
+                    isLoading ||
+                    isStatusesLoading ||
+                    selectedCategory?.categoryId === 1 ||
+                    selectedCategory?.categoryId === 2
+                  }
                   onChange={(opt) => field.onChange(opt?.value ?? null)}
                   value={
                     statuses.find((opt) => opt.value === field.value) || null
