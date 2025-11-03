@@ -10,13 +10,15 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Link, useNavigate } from "react-router";
-import { useAppSelector, useAppDispatch, type RootState } from "~/redux/store";
 import { useEffect, useState, useMemo, useRef } from "react";
+import { logoutLocal } from "~/redux/slices/auth";
+import toast from "react-hot-toast";
+import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import SearchBar from "~/components/common/search-bar";
 import type { Category } from "~/types/home-page";
-import { logoutLocal } from "~/redux/slices/auth";
-import toast from "react-hot-toast";
+import { fetchCurrentUser } from "~/redux/slices/auth";
+import { fetchCart } from "~/redux/slices/cartSlice";
 
 type MenuItem = {
   name: string;
@@ -85,11 +87,19 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const cartCount = useAppSelector((state: RootState) => {
-    return state.cart.items.reduce((total, item) => total + item.quantity, 0);
-  });
-
-  const user = useAppSelector((state: RootState) => state.auth.user);
+  const { user, accessToken } = useAppSelector(state => state.auth);
+  const cartItems = useAppSelector(state => state.cart.items);
+  const cartCount = useAppSelector((state: RootState) =>
+    state.cart.items.reduce((total, item) => total + item.quantity, 0)
+  );
+  useEffect(() => {
+    if (accessToken && !user) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [accessToken, user, dispatch]);
+  useEffect(() => {
+    dispatch(fetchCart(user?.data.userId));
+  }, [user]);
   const isAuthenticated = !!user;
 
   console.log("Header - User state:", user);

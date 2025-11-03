@@ -212,25 +212,37 @@ export const getColumns = (
       </div>
     ),
     cell: ({ row }) => {
-      const isDeletable = row.original.status?.name === "Inactive";
+      const discount = row.original;
+
+      const now = new Date();
+      const endAt = discount.endAt ? new Date(discount.endAt) : null;
+
+      // Điều kiện cho phép chỉnh sửa
+      const canEdit = !endAt || now <= endAt;
+
+      // Điều kiện cho phép xóa
+      const canDelete =
+        discount.status?.name === "Inactive" && discount.usedCount === 0;
 
       return (
         <div className="flex gap-2 justify-center w-[100px]">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(row.original)}
-            className="h-8 w-8 p-0 hover:bg-green-100"
-            title="Chỉnh sửa"
-          >
-            <Edit className="h-4 w-4 text-green-600" />
-          </Button>
-
-          {isDeletable && (
+          {canEdit && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleDelete(row.original)}
+              onClick={() => handleEdit(discount)}
+              className="h-8 w-8 p-0 hover:bg-green-100"
+              title="Chỉnh sửa"
+            >
+              <Edit className="h-4 w-4 text-green-600" />
+            </Button>
+          )}
+
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(discount)}
               className="h-8 w-8 p-0 hover:bg-red-100"
               title="Xóa"
             >

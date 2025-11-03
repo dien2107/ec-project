@@ -1,41 +1,129 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "react-hot-toast";
+import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
 import {
-  addToCart,
-  removeFromCart,
-  updateQuantity,
-} from "~/redux/slices/cartSliceold";
+  fetchCart,
+  updateCartItem,
+  deleteCartItem,
+} from "~/redux/slices/cartSlice";
 import CartHeader from "./components/cart-header";
 import CartItem from "./components/cart-item";
 import OrderSummary from "./components/order-summary";
-import { useEffect, useMemo, useState } from "react";
 import type { CartItemData } from "./types";
-import { useAppDispatch, useAppSelector } from "~/redux/store";
-import { useNavigate } from "react-router";
-import { fakeDiscounts } from "./types/fakeDiscountData";
-import { toast } from "react-hot-toast";
+// import { fakeDiscounts } from "./types/fakeDiscountData";
+import { fetchDiscountListData } from "~/redux/slices/discount";
+import { ENTITY_TYPE } from "~/constants/entity-types";
+import { fetchStatuses } from "~/redux/slices/statuses";
 
-export const getDiscountByCode = (code: string) => {
-  return fakeDiscounts.find(
-    d => d.code.toLowerCase() === code.trim().toLowerCase()
-  );
-};
+// 🔍 Giả lập dữ liệu mã giảm giá
+// export const getDiscountByCode = (code: string) => {
+//   return fakeDiscounts.find(
+//     d => d.code.toLowerCase() === code.trim().toLowerCase()
+//   );
+// };
 
-// Main ShoppingCart Component - DÙNG REDUX
 export default function ShoppingCart() {
-  // redux
-  const cartItems = useAppSelector(state => state.cart.items);
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
+  // Redux states
+  const { user } = useAppSelector(state => state.auth);
+  const cartItems = useAppSelector(state => state.cart.items);
+  const isLoading = useAppSelector(state => state.cart.isLoading);
+  const { discountList, isLoading: isDiscountLoading } = useAppSelector(
+    (state: RootState) => state.discountList
+  );
+  // Local UI state
   const [localItems, setLocalItems] = useState<CartItemData[]>([]);
   const [discountCode, setDiscountCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState<null | ReturnType<
-    typeof getDiscountByCode
-  >>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<ReturnType<
+    typeof findDiscountByCode
+  > | null>(null);
   const [discountError, setDiscountError] = useState("");
 
-  const handleApplyDiscount = () => {
-    const discount = getDiscountByCode(discountCode);
+  // Khi user đăng nhập -> tải giỏ hàng
+  useEffect(() => {
+    if (user?.data?.userId) {
+      dispatch(fetchCart(user.data.userId));
+    }
+  }, [user, dispatch]);
+  useEffect(() => {
+    dispatch(
+      fetchDiscountListData({
+        StatusName: "Active",
+      })
+    );
+  }, [dispatch]);
 
+  useEffect(() => {
+    console.log(discountList);
+  }, [discountList]);
+
+  // Đồng bộ Redux → local state (để quản lý chọn/bỏ chọn)
+  useEffect(() => {
+    setLocalItems(prev => {
+      const prevMap = new Map(prev.map(p => [p.id, p.selected]));
+
+      return cartItems.map(ci => {
+        const id = String(ci.productVariantId);
+        return {
+          id,
+          variantId: ci.productVariantId,
+          name: ci.productName,
+          image: ci.productImageUrl,
+          size: ci.size,
+          color: ci.color,
+          price: ci.price,
+          quantity: ci.quantity,
+          selected: prevMap.has(id) ? (prevMap.get(id) as boolean) : true,
+        } as CartItemData;
+      });
+    });
+  }, [cartItems]);
+  const findDiscountByCode = (code: string) => {
+    if (!discountList?.data) return null;
+    return discountList.data.items
+      .flat()
+      .find(d => d.code.toLowerCase() === code.trim().toLowerCase());
+  };
+  // Tính toán tổng giá trị
+  const selectedItems = useMemo(
+    () => localItems.filter(i => i.selected),
+    [localItems]
+  );
+  const selectedCount = selectedItems.length;
+  const isAllSelected =
+    localItems.length > 0 && selectedItems.length === localItems.length;
+
+  const subtotal = useMemo(
+    () => selectedItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    [selectedItems]
+  );
+
+  const discountAmount = useMemo(() => {
+    if (!appliedDiscount) return 0;
+
+    if (appliedDiscount.discountType === "fixed") {
+      return Math.min(
+        appliedDiscount.discountValue,
+        appliedDiscount.maxDiscountAmount
+      );
+    }
+    if (appliedDiscount.discountType === "percentage") {
+      const amount = (subtotal * appliedDiscount.discountValue) / 100;
+      return Math.min(amount, appliedDiscount.maxDiscountAmount);
+    }
+
+    return 0;
+  }, [appliedDiscount, subtotal]);
+
+  const total = subtotal - discountAmount;
+  const shippingFee = 0;
+
+  // Áp dụng mã giảm giá
+  const handleApplyDiscount = () => {
+    const discount = findDiscountByCode(discountCode);
     if (!discount) {
       setAppliedDiscount(null);
       setDiscountError("Mã giảm giá không hợp lệ");
@@ -43,141 +131,108 @@ export default function ShoppingCart() {
       return;
     }
 
-    if (subtotal < discount.min_order_amount) {
+    if (subtotal < discount.minOrderAmount) {
       setAppliedDiscount(null);
       setDiscountError(
-        `Đơn hàng tối thiểu ${discount.min_order_amount.toLocaleString()}₫`
+        `Đơn hàng tối thiểu ${discount.minOrderAmount.toLocaleString()}₫`
       );
       toast.error(
-        `Đơn hàng phải từ ${discount.min_order_amount.toLocaleString()}₫`
+        `Đơn hàng phải từ ${discount.minOrderAmount.toLocaleString()}₫`
       );
       return;
     }
 
-    // Nếu hợp lệ
-    setDiscountError("");
     setAppliedDiscount(discount);
+    setDiscountError("");
     toast.success(`Áp dụng mã ${discount.code} thành công 🎉`);
   };
-  // Sync Redux -> Local state
-  useEffect(() => {
-    setLocalItems(prev => {
-      const prevMap = new Map(prev.map(p => [p.id, p.selected]));
 
-      return cartItems.map(ci => {
-        const variant = ci.ProductVariant;
-        const variantId = Number(
-          variant.productVariantId ?? (variant as any).id
-        );
-        const id = String(variantId);
-
-        return {
-          id,
-          variantId,
-          name: (variant as any).sku ?? (ci as any).name ?? "Sản phẩm",
-          image: String(ci?.image?.imageUrl ?? ci?.image ?? ""),
-          size: (variant as any).size?.name ?? "",
-          color: (variant as any).color?.name ?? "",
-          price: ci.price || 0,
-          quantity: ci.quantity || 1,
-          selected: prevMap.has(id) ? (prevMap.get(id) as boolean) : true,
-        } as CartItemData;
-      });
-    });
-  }, [dispatch, cartItems]);
-
-  const selectedItems = useMemo(
-    () => localItems.filter(item => item.selected),
-    [localItems]
-  );
-  const selectedCount = selectedItems.length;
-  const isAllSelected =
-    localItems.length > 0 && selectedItems.length === localItems.length;
-
-  // total quantity across all cart line items (used for header display)
-  const itemsCount = useMemo(
-    () => localItems.reduce((sum, it) => sum + (it.quantity || 0), 0),
-    [localItems]
-  );
-
-  const subtotal = useMemo(() => {
-    return selectedItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-  }, [selectedItems]);
-
-  const discountAmount = useMemo(() => {
-    if (!appliedDiscount) return 0;
-
-    if (appliedDiscount.discount_type === "fixed") {
-      return Math.min(
-        appliedDiscount.discount_value,
-        appliedDiscount.max_discount_amount
-      );
-    }
-
-    if (appliedDiscount.discount_type === "percentage") {
-      const amount = (subtotal * appliedDiscount.discount_value) / 100;
-      return Math.min(amount, appliedDiscount.max_discount_amount);
-    }
-
-    return 0;
-  }, [appliedDiscount, subtotal]);
-  const shippingFee = 0;
-  const total = subtotal - discountAmount + shippingFee;
-
+  // Chọn tất cả
   const handleSelectAll = (checked: boolean) => {
-    setLocalItems(prev => prev.map(item => ({ ...item, selected: checked })));
+    setLocalItems(prev => prev.map(i => ({ ...i, selected: checked })));
   };
 
+  // Chọn từng item
   const handleSelectItem = (id: string, checked: boolean) => {
     setLocalItems(prev =>
-      prev.map(item => (item.id === id ? { ...item, selected: checked } : item))
+      prev.map(i => (i.id === id ? { ...i, selected: checked } : i))
     );
   };
 
-  // FIX: Logic tăng giảm số lượng đơn giản hơn
-  const handleQuantityChange = (id: string, newQuantity: number) => {
+  // Cập nhật số lượng
+  const handleQuantityChange = async (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
     const item = localItems.find(i => i.id === id);
-    if (!item) return;
+    if (!item || !user?.data?.userId) return;
 
-    // Cập nhật local
     setLocalItems(prev =>
       prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
     );
 
-    // Cập nhật Redux
-    dispatch(
-      updateQuantity({
-        variantId: Number(item.variantId),
+    await dispatch(
+      updateCartItem({
+        userId: user.data.userId,
+        variantId: item.variantId,
         quantity: newQuantity,
+        price: item.price,
       })
     );
+
+    // Refresh lại giỏ hàng sau khi cập nhật
+    dispatch(fetchCart(user.data.userId));
   };
 
-  const handleRemoveItem = (id: string) => {
+  // Xóa 1 sản phẩm
+  const handleRemoveItem = async (id: string) => {
     const item = localItems.find(i => i.id === id);
-    if (item) {
-      dispatch(removeFromCart(item.variantId));
-      setLocalItems(prev => prev.filter(i => i.id !== id));
+    if (!item || !user?.data?.userId) return;
+
+    await dispatch(
+      deleteCartItem({
+        userId: user.data.userId,
+        variantId: item.variantId,
+      })
+    );
+
+    // Cập nhật lại local
+    setLocalItems(prev => prev.filter(i => i.id !== id));
+  };
+
+  // Xóa tất cả item đã chọn
+  const handleClearSelected = async () => {
+    if (!user?.data?.userId) return;
+
+    for (const i of selectedItems) {
+      await dispatch(
+        deleteCartItem({
+          userId: user.data.userId,
+          variantId: i.variantId,
+        })
+      );
     }
+
+    setLocalItems(prev => prev.filter(i => !i.selected));
+    dispatch(fetchCart(user.data.userId));
   };
 
-  const handleClearSelected = () => {
-    selectedItems.forEach(item => {
-      dispatch(removeFromCart(item.variantId));
-    });
-    setLocalItems(prev => prev.filter(item => !item.selected));
-  };
-
+  // Thanh toán
   const handleCheckout = () => {
-    // Navigate to payment page
-    navigate("/payments", { state: { appliedDiscount } });
+    navigate("/payments", { state: { appliedDiscount, selectedItems } });
+    // console.log(`appliedDiscount: ${appliedDiscount}`);
+    // console.log(`selectedItems: ${JSON.stringify(selectedItems)}`);
   };
 
+  // Hiển thị khi đang tải
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64 text-gray-500">
+        Đang tải giỏ hàng...
+      </div>
+    );
+  }
+
+  // Giao diện chính
   return (
     <div className="max-w-[1280px] mx-auto p-4 md:p-6 mt-10 mb-20">
       <h1 className="text-xl font-bold mb-6">Giỏ hàng</h1>
@@ -186,7 +241,7 @@ export default function ShoppingCart() {
         <div className="flex-1">
           <div className="bg-white rounded-lg shadow-sm border">
             <CartHeader
-              itemsCount={itemsCount}
+              itemsCount={localItems.length}
               isAllSelected={isAllSelected}
               onSelectAll={handleSelectAll}
               onClearSelected={handleClearSelected}
