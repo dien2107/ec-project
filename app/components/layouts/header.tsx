@@ -5,14 +5,18 @@ import {
   Menu as MenuIcon,
   ChevronDown,
   ChevronRight,
+  LogOut,
+  UserCircle,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { Link } from "react-router";
-import { useAppSelector, type RootState } from "~/redux/store";
-import { useEffect, useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router";
+import { useAppSelector, useAppDispatch, type RootState } from "~/redux/store";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import SearchBar from "~/components/common/search-bar";
 import type { Category } from "~/types/home-page";
+import { logoutLocal } from "~/redux/slices/auth";
+import toast from "react-hot-toast";
 
 type MenuItem = {
   name: string;
@@ -29,12 +33,10 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
 
   const filteredChildren = category.children
     ?.map((child) => {
-  
       const childGrandChildren = child.children?.filter(
         (grandChild) => grandChild.hasProduct
       );
 
-  
       if (
         child.hasProduct ||
         (childGrandChildren && childGrandChildren.length > 0)
@@ -66,9 +68,8 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
         path: `/categories/${child.slug}`,
       };
 
-  
       if (child.children && child.children.length > 0) {
-        childItem.dropdown = child.children.map(grandChild => ({
+        childItem.dropdown = child.children.map((grandChild) => ({
           name: grandChild.name,
           path: `/categories/${grandChild.slug}`,
         }));
@@ -82,9 +83,17 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
 };
 
 const Header = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const cartCount = useAppSelector((state: RootState) => {
     return state.cart.items.reduce((total, item) => total + item.quantity, 0);
   });
+
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = !!user;
+
+  console.log("Header - User state:", user);
+  console.log("Header - isAuthenticated:", isAuthenticated);
 
   const categories = useAppSelector(
     (state: RootState) => state.homePage.homeData?.categories || []
@@ -100,6 +109,15 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = () => {
+    dispatch(logoutLocal());
+    setIsProfileDropdownOpen(false);
+    toast.success("Đăng xuất thành công!");
+    navigate("/");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -109,8 +127,28 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
+
   const MegaMenuDropdown = ({ item }: { item: MenuItem }) => {
-    const hasNestedDropdown = item.dropdown?.some(sub => sub.dropdown);
+    const hasNestedDropdown = item.dropdown?.some((sub) => sub.dropdown);
 
     return (
       <div
@@ -136,7 +174,7 @@ const Header = () => {
               )}
               {subItem.dropdown && subItem.dropdown.length > 0 && (
                 <div className="pl-3 space-y-1 border-l-2 border-gray-200">
-                  {subItem.dropdown.map(nestedItem => (
+                  {subItem.dropdown.map((nestedItem) => (
                     <Link
                       key={nestedItem.path}
                       to={nestedItem.path}
@@ -173,7 +211,7 @@ const Header = () => {
 
           {/* Desktop Menu - Center */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {menuItems.map(item =>
+            {menuItems.map((item) =>
               item.dropdown ? (
                 <div key={item.name} className="relative group">
                   <button className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors flex items-center gap-1">
@@ -204,25 +242,84 @@ const Header = () => {
             >
               <Search className="h-5 w-5 text-gray-700" />
             </Button>
-            <Link to="/profile">
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <User className="h-5 w-5 text-gray-700" />
-              </Button>
-            </Link>
-            <Link to="/cart">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden sm:flex relative"
-              >
-                <ShoppingBag className="h-5 w-5 text-gray-700" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
+
+            {isAuthenticated ? (
+              <>
+                {/* Profile Dropdown when authenticated */}
+                <div
+                  className="relative hidden sm:block"
+                  ref={profileDropdownRef}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                    onMouseEnter={() => setIsProfileDropdownOpen(true)}
+                  >
+                    <User className="h-5 w-5 text-gray-700" />
+                  </Button>
+
+                  {/* Profile Dropdown Menu */}
+                  {isProfileDropdownOpen && (
+                    <div
+                      className="absolute -right-22 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                      onMouseLeave={() => setIsProfileDropdownOpen(false)}
+                    >
+                      {/* Menu Items */}
+                      <Link
+                        to="/profile"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                      >
+                        <UserCircle className="h-4 w-4" />
+                        <span>Thông tin cá nhân</span>
+                      </Link>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Đăng xuất</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Cart when authenticated */}
+                <Link to="/cart">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hidden sm:flex relative"
+                  >
+                    <ShoppingBag className="h-5 w-5 text-gray-700" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Login/Register buttons when not authenticated */}
+                <Link to="/login">
+                  <Button
+                    variant="ghost"
+                    className="hidden sm:flex text-sm font-medium"
+                  >
+                    Đăng nhập
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button className="hidden sm:flex text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white">
+                    Đăng ký
+                  </Button>
+                </Link>
+              </>
+            )}
 
             {/* Mobile Menu Button */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -251,7 +348,7 @@ const Header = () => {
                   </button>
 
                   {/* Mobile Menu Items */}
-                  {menuItems.map(item => (
+                  {menuItems.map((item) => (
                     <div key={item.name} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Link
@@ -284,7 +381,7 @@ const Header = () => {
                       {/* Level 1 Dropdown */}
                       {item.dropdown && openDropdown === item.name && (
                         <div className="pl-4 space-y-2 border-l-2 border-gray-200">
-                          {item.dropdown.map(subItem => (
+                          {item.dropdown.map((subItem) => (
                             <div key={subItem.path} className="space-y-1">
                               <div className="flex items-center justify-between">
                                 {subItem.dropdown &&
@@ -309,7 +406,7 @@ const Header = () => {
                               {/* Level 2 Dropdown */}
                               {subItem.dropdown && (
                                 <div className="pl-3 space-y-1">
-                                  {subItem.dropdown.map(nestedItem => (
+                                  {subItem.dropdown.map((nestedItem) => (
                                     <Link
                                       key={nestedItem.path}
                                       to={nestedItem.path}
