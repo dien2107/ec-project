@@ -119,7 +119,7 @@ export const getColumns = (
   {
     accessorKey: "status",
     header: () => (
-      <div className="w-[130px] text-center font-medium text-gray-700">
+      <div className="w-[140px] text-center font-medium text-gray-700">
         Trạng thái
       </div>
     ),
@@ -134,9 +134,9 @@ export const getColumns = (
       const statusClass = statusColorMap[name] || "bg-gray-300 text-white";
 
       return (
-        <div className="w-[100px] text-center">
+        <div className="w-[120px] text-center">
           <div
-            className={`${statusClass} py-1 px-2 rounded-lg text-center whitespace-normal break-words`}
+            className={`${statusClass} text-white py-1 px-2 rounded-lg text-center whitespace-nowrap`}
             title={displayName || name}
           >
             {displayName || name}
@@ -155,14 +155,6 @@ export const getColumns = (
     cell: ({ row }) => {
       const { status, categoryId } = row.original;
       const isDeletable = status.name === "Inactive";
-
-      if ([1, 2].includes(categoryId)) {
-        return (
-          <div className="flex justify-center w-[150px] text-xs text-gray-400">
-            Không khả dụng
-          </div>
-        );
-      }
 
       return (
         <div className="flex gap-2 justify-center w-[150px]">

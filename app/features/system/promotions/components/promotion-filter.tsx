@@ -31,7 +31,9 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters, refetch }) => {
   );
 
   React.useEffect(() => {
-    dispatch(fetchStatuses({ entityType: "Discount" }));
+    if (!statusesData["Discount"]) {
+      dispatch(fetchStatuses({ entityType: "Discount" }));
+    }
   }, [dispatch]);
 
   const statuses =
@@ -47,6 +49,12 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters, refetch }) => {
     { value: "", label: "Tất cả các loại khuyến mãi" },
     { value: "percentage", label: "Phần trăm (%)" },
     { value: "fixed", label: "Số tiền cố định" },
+  ];
+
+  const activeTimeOptions = [
+    { value: "all", label: "Tất cả" },
+    { value: "active", label: "Còn hạn" },
+    { value: "expired", label: "Hết hạn" },
   ];
 
   const [searchInput, setSearchInput] = React.useState(filters.Search ?? "");
@@ -108,23 +116,26 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters, refetch }) => {
     try {
       const res = await updateInactiveDiscounts();
 
-      // Nếu API không trả về hoặc trả về lỗi logic
-      if (!res || typeof res.updatedCount !== "number") {
-        toast.error("Không thể cập nhật trạng thái khuyến mãi.");
-        return;
-      }
-
+      // 🔹 Nếu server trả về số lượng cập nhật
       if (res.updatedCount > 0) {
         toast.success(`Đã cập nhật ${res.updatedCount} khuyến mãi hết hạn.`);
       } else {
         toast("Không có khuyến mãi nào cần cập nhật.");
       }
-
-      await refetch();
+      handleReset();
     } catch (err: any) {
-      console.error("Lỗi khi cập nhật khuyến mãi:", err);
       toast.error("Cập nhật trạng thái thất bại.");
     }
+  };
+
+  // 🆕 Tính toán giá trị hiển thị cho activeTime select
+  const getActiveTimeValue = () => {
+    if (filters.isActiveTime === true) {
+      return activeTimeOptions.find((opt) => opt.value === "active");
+    } else if (filters.isActiveTime === false) {
+      return activeTimeOptions.find((opt) => opt.value === "expired");
+    }
+    return activeTimeOptions[0]; // Mặc định "Tất cả"
   };
 
   return (
@@ -167,16 +178,13 @@ const DiscountFilter: React.FC<Props> = ({ filters, setFilters, refetch }) => {
           Thời hạn khuyến mãi
         </label>
         <Select
-          options={[
-            { value: "all", label: "Tất cả" },
-            { value: "active", label: "Còn hạn" },
-            { value: "expired", label: "Hết hạn" },
-          ]}
+          instanceId="discount-active-time-filter"
+          options={activeTimeOptions}
+          value={getActiveTimeValue()}
           onChange={handleActiveTimeChange}
           isSearchable={false}
           styles={reactSelectStyles}
           className="min-w-[150px]"
-          placeholder="Thời hạn"
         />
       </div>
 

@@ -71,7 +71,7 @@ export const getColumns = (
   {
     accessorKey: "status",
     header: () => (
-      <div className="w-[120px] text-center font-medium text-gray-700">
+      <div className="w-[140px] text-center font-medium text-gray-700">
         Trạng thái
       </div>
     ),
@@ -86,9 +86,9 @@ export const getColumns = (
       const statusClass = statusColorMap[name] || "bg-gray-300 text-white";
 
       return (
-        <div className="w-[100px] text-center">
+        <div className="w-[120px] text-center">
           <div
-            className={`${statusClass} text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words`}
+            className={`${statusClass} text-white py-1 px-2 rounded-lg text-center whitespace-nowrap`}
             title={displayName || name}
           >
             {displayName || name}
