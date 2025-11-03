@@ -10,13 +10,13 @@ import CartSummary from "~/features/clients/payment/components/cart-summary";
 import SuccessDialog from "~/features/clients/payment/components/success-dialog";
 import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { createOrder } from "~/services/order";
-import { clearCart } from "~/redux/slices/cartSliceold";
+import { clearCart } from "~/redux/slices/cartSlice";
 import { createPayment, type CreatePaymentPayload } from "~/services/payment";
-import { toast } from "sonner";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import { fetchShipListData } from "~/redux/slices/ships";
 import { fetchStatuses } from "~/redux/slices/statuses";
 import type { Ship } from "~/types/ship";
+import toast from "react-hot-toast";
 
 const paymentSchema = z.object({
   paymentMethod: z.enum(["bank", "cod"]),
@@ -36,7 +36,7 @@ export default function Payment() {
   );
   const { shipList } = useAppSelector(state => state.shipList);
 
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
@@ -46,7 +46,7 @@ export default function Payment() {
   const [ship, setShip] = useState<Ship | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
-
+  console.log(state.selectedItems);
   const paymentForm = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
@@ -82,33 +82,21 @@ export default function Payment() {
   }, [shipList]);
 
   useEffect(() => {
-    // Lấy selectedItems từ location state hoặc chọn tất cả items
-    if (state?.selectedItems) {
-      setSelectedItems(state.selectedItems);
+    if (
+      state?.selectedItems &&
+      Array.isArray(state.selectedItems) &&
+      state.selectedItems.length > 0
+    ) {
+      setSelectedItems(state.selectedItems.map((item: any) => item.variantId));
     } else {
-      // Mặc định chọn tất cả items
-      setSelectedItems(
-        cartItems.map(item =>
-          String(
-            item.ProductVariant.productVariantId ??
-              (item.ProductVariant as any).id
-          )
-        )
-      );
+      setSelectedItems(cartItems.map(item => item.productVariantId));
     }
   }, [state, cartItems]);
 
   // Tính toán các items được chọn
   const selectedCartItems = useMemo(
     () =>
-      cartItems.filter(item =>
-        selectedItems.includes(
-          String(
-            item.ProductVariant.productVariantId ??
-              (item.ProductVariant as any).id
-          )
-        )
-      ),
+      cartItems.filter(item => selectedItems.includes(item.productVariantId)),
     [cartItems, selectedItems]
   );
 
@@ -121,12 +109,32 @@ export default function Payment() {
     [selectedCartItems]
   );
 
+  // Discount passed from Cart via navigation state
+  const appliedDiscount = state?.appliedDiscount ?? null;
+  const discountAmount = useMemo(() => {
+    if (!appliedDiscount) return 0;
+    if (appliedDiscount.discountType === "fixed") {
+      return Math.min(
+        appliedDiscount.discountValue ?? 0,
+        appliedDiscount.maxDiscountAmount ?? Number.POSITIVE_INFINITY
+      );
+    }
+    if (appliedDiscount.discountType === "percentage") {
+      const amount = (subtotal * (appliedDiscount.discountValue ?? 0)) / 100;
+      return Math.min(amount, appliedDiscount.maxDiscountAmount ?? amount);
+    }
+    return 0;
+  }, [appliedDiscount, subtotal]);
+
   const shippingFee = useMemo(() => {
     if (!ship) return 0;
     return ship.baseCost ?? 0;
   }, [ship, subtotal]);
 
-  const total = useMemo(() => subtotal + shippingFee, [subtotal, shippingFee]);
+  const total = useMemo(
+    () => subtotal - discountAmount + shippingFee,
+    [subtotal, shippingFee, discountAmount]
+  );
 
   const handleAddAddress = (address: Address) => {
     // add to local addresses list and select it
@@ -152,9 +160,7 @@ export default function Payment() {
       isFreeShip: shippingFee === 0,
       shippingFee,
       items: selectedCartItems.map(i => ({
-        productVariantId: Number(
-          i.ProductVariant.productVariantId ?? (i.ProductVariant as any).id
-        ),
+        productVariantId: Number(i.productVariantId),
         quantity: i.quantity,
       })),
     };
@@ -194,14 +200,15 @@ export default function Payment() {
             paymentPayload,
           },
         });
+        console.log(`paymentPayload: ${paymentPayload}`);
+        console.log(`paymentResponse: ${paymentResponse}`);
       } else {
         // 3️⃣ COD (thanh toán khi nhận hàng)
-        toast.success("Đặt hàng thành công!");
         setIsSuccessDialogOpen(true);
+        // toast.success("Đặt hàng thành công!");
       }
 
       // 4️⃣ Xóa giỏ hàng sau khi hoàn tất
-      dispatch(clearCart());
     } catch (err) {
       console.error("Place order failed:", err);
       toast.error("Đặt hàng thất bại!");
@@ -271,42 +278,39 @@ export default function Payment() {
             <div className="p-6 space-y-4">
               {selectedCartItems.map(item => (
                 <div
-                  key={String(
-                    item.ProductVariant.productVariantId ??
-                      (item.ProductVariant as any).id
-                  )}
+                  key={String(item.productVariantId)}
                   className="flex gap-4 pb-4 border-b last:border-b-0 last:pb-0"
                 >
                   <img
                     src={
-                      typeof item.image === "string"
-                        ? item.image
-                        : (item.image && (item.image as any).imageUrl) || ""
+                      typeof item.productImageUrl === "string"
+                        ? item.productImageUrl
+                        : (item.productImageUrl &&
+                            (item.productImageUrl as any).imageUrl) ||
+                          ""
                     }
-                    alt={
-                      (item.ProductVariant as any).product?.name || "Product"
-                    }
+                    alt={item.productName}
                     className="w-20 h-20 object-cover rounded-md border"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-900 mb-1 truncate">
-                      {(item.ProductVariant as any).product?.name || "Sản phẩm"}
+                      {item.productName || "Sản phẩm"}
                     </h3>
                     <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-2">
-                      {item.ProductVariant.size && (
+                      {item.size && (
                         <span className="px-2 py-0.5 bg-gray-100 rounded">
                           Size:{" "}
-                          {typeof item.ProductVariant.size === "string"
-                            ? item.ProductVariant.size
-                            : (item.ProductVariant.size as any).name}
+                          {typeof item.size === "string"
+                            ? item.size
+                            : (item.size as any).name}
                         </span>
                       )}
-                      {item.ProductVariant.color && (
+                      {item.color && (
                         <span className="px-2 py-0.5 bg-gray-100 rounded">
                           Màu:{" "}
-                          {typeof item.ProductVariant.color === "string"
-                            ? item.ProductVariant.color
-                            : (item.ProductVariant.color as any).name}
+                          {typeof item.color === "string"
+                            ? item.color
+                            : (item.color as any).name}
                         </span>
                       )}
                     </div>
@@ -335,7 +339,8 @@ export default function Payment() {
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-24">
             <CartSummary
-              subtotal={total}
+              subtotal={subtotal}
+              discount={discountAmount}
               shippingFee={shippingFee}
               total={total}
               ship={ship}
@@ -350,7 +355,10 @@ export default function Payment() {
       <SuccessDialog
         open={isSuccessDialogOpen}
         onOpenChange={setIsSuccessDialogOpen}
-        onConfirm={() => navigate("/")}
+        onConfirm={() => {
+          dispatch(clearCart());
+          navigate("/profile");
+        }}
       />
     </div>
   );

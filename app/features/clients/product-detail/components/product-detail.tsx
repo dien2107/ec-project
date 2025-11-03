@@ -1,11 +1,11 @@
 import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-
 import { NavLink } from "react-router";
 import { formatVND, renderStars } from "~/libs";
-import { addToCart } from "~/redux/slices/cartSliceold";
-import { useAppDispatch } from "~/redux/store";
+// 🧩 Dùng slice thật, không dùng cartSliceold
+import { updateCartItem } from "~/redux/slices/cartSlice";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
 import type { ProductDetail } from "~/types/product/product";
 import type { ProductVariant } from "~/types/product/product-variant";
 import type { SelectedProductProps } from "../types";
@@ -13,6 +13,7 @@ import { toast } from "react-hot-toast";
 
 export default function ProductDetail({ product }: { product: ProductDetail }) {
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector(state => state.auth); // 🧩 Lấy userId từ Redux
   const [selected, setSelected] = useState<SelectedProductProps>({
     productVariant: null,
     quantity: 1,
@@ -32,6 +33,32 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
     if (quantity < 1 || (max_value !== undefined && quantity > max_value))
       return;
     setSelected(prev => ({ ...prev, quantity }));
+  };
+
+  // 🧩 Hàm thêm vào giỏ hàng (đã dùng API thật)
+  const handleAddToCart = async () => {
+    if (!user?.data?.userId) {
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
+      return;
+    }
+    if (!selected.productVariant) {
+      toast.error("Vui lòng chọn kích thước sản phẩm");
+      return;
+    }
+
+    try {
+      await dispatch(
+        updateCartItem({
+          userId: user.data.userId,
+          variantId: selected.productVariant.productVariantId,
+          quantity: selected.quantity,
+          price: selected.price,
+        })
+      ).unwrap();
+    } catch (err) {
+      console.error("Add to cart failed:", err);
+      toast.error("Thêm sản phẩm thất bại, vui lòng thử lại!");
+    }
   };
 
   return (
@@ -175,22 +202,13 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           ) : null}
         </div>
       </div>
+
+      {/* 🛒 Add to cart */}
       <div>
         <Button
           className="h-[44px] !px-8 cursor-pointer bg-black text-white"
           disabled={noStock || !selected.productVariant}
-          onClick={() => {
-            // dispatch add to cart then show toast
-            dispatch(
-              addToCart({
-                ProductVariant: selected.productVariant!,
-                quantity: selected.quantity,
-                price: selected.price,
-                image: selected.image,
-              })
-            );
-            toast.success("Đã thêm vào giỏ hàng!");
-          }}
+          onClick={handleAddToCart}
         >
           <ShoppingCart />
           <span>Thêm vào giỏ hàng</span>
