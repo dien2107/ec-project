@@ -8,11 +8,13 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
-import { useAppSelector, type RootState } from "~/redux/store";
-import { useEffect, useState, useMemo } from "react";
+import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
+import { useEffect, useState, useMemo, use } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import SearchBar from "~/components/common/search-bar";
 import type { Category } from "~/types/home-page";
+import { fetchCurrentUser } from "~/redux/slices/auth";
+import { fetchCart } from "~/redux/slices/cartSlice";
 
 type MenuItem = {
   name: string;
@@ -51,9 +53,20 @@ const convertCategoryToMenuItem = (category: Category): MenuItem => {
 };
 
 const Header = () => {
-  const cartCount = useAppSelector((state: RootState) => {
-    return state.cart.items.reduce((total, item) => total + item.quantity, 0);
-  });
+  const dispatch = useAppDispatch();
+  const { user, accessToken } = useAppSelector(state => state.auth);
+  const cartItems = useAppSelector(state => state.cart.items);
+  const cartCount = useAppSelector((state: RootState) =>
+    state.cart.items.reduce((total, item) => total + item.quantity, 0)
+  );
+  useEffect(() => {
+    if (accessToken && !user) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [accessToken, user, dispatch]);
+  useEffect(() => {
+    dispatch(fetchCart(user?.data.userId));
+  }, [user]);
 
   // Lấy categories từ Redux store
   const categories = useAppSelector(

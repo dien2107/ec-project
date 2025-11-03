@@ -22,7 +22,7 @@ export const fetchDiscountListData = createAsyncThunk(
   "discounts/fetchDiscountListData",
   async (
     params: {
-      Search?: string; // 🔍 Tìm theo mã hoặc tên giảm giá
+      Search?: string; // 🔍. Tìm theo mã hoặc tên giảm giá
       StatusName?: string; // 🔘 Lọc trạng thái
       DiscoyntType?: string; // 🔘 Lọc loại giảm giá
       PageNumber?: number;
@@ -52,9 +52,9 @@ const discountListDataSlice = createSlice({
   name: "discounts",
   initialState,
   reducers: {},
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(fetchDiscountListData.pending, (state) => {
+      .addCase(fetchDiscountListData.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
