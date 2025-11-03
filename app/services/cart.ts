@@ -1,7 +1,7 @@
 import instance from "./customize-axios";
 
 export const fetchUserCart = async (userId: number) => {
-  const { data } = await instance.get(`/cart/${userId}`);
+  const { data } = await instance.get(`/carts/${userId}`);
   return data;
 };
 
@@ -11,7 +11,7 @@ export const createOrUpdateCartItem = async (payload: {
   quantity: number;
   price: number;
 }) => {
-  const { data } = await instance.post("/cart/update", payload);
+  const { data } = await instance.post("/carts/update", payload);
   return data;
 };
 
@@ -20,7 +20,7 @@ export const removeCartItem = async (payload: {
   variantId: number;
 }) => {
   const { data } = await instance.delete(
-    `/cart/${payload.userId}/${payload.variantId}`
+    `/carts/${payload.userId}/${payload.variantId}`
   );
   return data;
 };

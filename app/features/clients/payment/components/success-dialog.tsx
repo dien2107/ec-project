@@ -47,7 +47,7 @@ export default function SuccessDialog({
             onClick={onConfirm}
             className="w-full bg-green-600 hover:bg-green-700 text-white"
           >
-            Tiếp tục mua sắm
+            Tới trang tài khoản của tôi
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
