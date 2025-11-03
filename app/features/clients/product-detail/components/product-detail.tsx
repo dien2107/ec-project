@@ -95,7 +95,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
               variant={
                 selected.productVariant?.size.sizeId ===
                 productVariant.size.sizeId
-                  ? "default"
+                  ? "primary"
                   : "outline"
               }
               disabled={productVariant.stockQuantity === 0}

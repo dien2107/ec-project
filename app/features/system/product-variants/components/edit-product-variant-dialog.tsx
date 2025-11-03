@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { Loader2, Save } from "lucide-react";
 import {
@@ -19,12 +19,12 @@ import {
   SelectItem,
 } from "~/components/ui/select";
 import type { ProductVariant } from "~/types/product/product-variant";
-import type { Status } from "~/types/status";
 import type { UpdateProductVariant } from "../types/update-product-variant";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import { fetchSizeOptions } from "~/redux/slices/sizes-options";
 import { updateProductVariant } from "~/services/product-variants";
+import { fetchStatuses } from "~/redux/slices/statuses";
 
 export default function EditProductVariantDialog({
   open,
@@ -40,8 +40,9 @@ export default function EditProductVariantDialog({
   variants: ProductVariant[];
 }) {
   const dispatch = useAppDispatch();
-  const [statusOptions, setStatusOptions] = useState<Status[]>([]);
-  const { statuses } = useAppSelector((state) => state.statuses);
+  const statuses = useAppSelector(
+    (state) => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
+  );
   const { sizeOptions } = useAppSelector((state) => state.sizeOptions);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState<UpdateProductVariant>({
@@ -56,11 +57,11 @@ export default function EditProductVariantDialog({
   }, [dispatch, sizeOptions]);
 
   useEffect(() => {
+    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.SHIP }));
+  }, [dispatch]);
+
+  useEffect(() => {
     if (open && variant) {
-      const variantStatues = statuses.filter(
-        (status) => status.entityType === ENTITY_TYPE.PRODUCT_VARIANT
-      );
-      setStatusOptions(variantStatues);
       setForm({
         statusId: variant.status.statusId,
         sizeId: variant.size.sizeId,
@@ -107,7 +108,7 @@ export default function EditProductVariantDialog({
 
   return (
     <Dialog
-      open={open && statusOptions.length > 0 && availableSizes.length > 0}
+      open={open && statuses.length > 0 && availableSizes.length > 0}
       onOpenChange={onClose}
     >
       <DialogContent>
@@ -120,7 +121,11 @@ export default function EditProductVariantDialog({
               <label className="block text-sm font-medium mb-1">
                 ID biến thể
               </label>
-              <Input value={variant.productVariantId} disabled readOnly />
+              <Input
+                value={String(variant.productVariantId).padStart(3, "0")}
+                disabled
+                readOnly
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Tồn kho</label>
@@ -159,7 +164,7 @@ export default function EditProductVariantDialog({
                 <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map((opt) => (
+                {statuses.map((opt) => (
                   <SelectItem
                     key={opt.statusId}
                     value={opt.statusId.toString()}

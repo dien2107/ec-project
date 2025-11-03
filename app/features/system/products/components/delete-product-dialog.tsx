@@ -52,8 +52,7 @@ export default function DeleteProductDialog({
           <AlertDialogTitle>Xác nhận xóa sản phẩm</AlertDialogTitle>
           <AlertDialogDescription>
             Bạn có chắc chắn muốn xóa sản phẩm có ID{" "}
-            <span className="font-mono font-bold">
-              PRO
+            <span className="font-bold">
               {String(selectedProduct.productId).padStart(3, "0")}
             </span>{" "}
             này? Hành động này không thể hoàn tác.
