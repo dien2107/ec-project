@@ -14,8 +14,8 @@ export type Ship = {
   statusId?: number;
   statusName?: string;
   status?: EntityStatus | null;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
   canDelete?: boolean;
 };
 

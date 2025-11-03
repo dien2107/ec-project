@@ -12,6 +12,7 @@ export default function ProductFilterBadge({
   selectedProductGroups = [],
   selectedStockStatuses = [],
   handleClearFilter,
+  onClearAllFilters,
 }: {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
@@ -20,18 +21,20 @@ export default function ProductFilterBadge({
   selectedProductGroups: Array<{ label: string; value: number }>;
   selectedStockStatuses: Array<{ label: string; value: boolean }>;
   handleClearFilter: (id: number | boolean, option: string) => void;
+  onClearAllFilters?: () => void;
 }) {
   const handleClearAllFilter = () => {
     setFilters({
       colorIds: [],
       materialIds: [],
       productGroupIds: [],
-      orderBy: "",
+      orderBy: "date_newest",
       minPrice: undefined,
       maxPrice: undefined,
       outOfStock: undefined,
       inStock: undefined,
     });
+    onClearAllFilters?.();
   };
 
   // whether any filter is active
