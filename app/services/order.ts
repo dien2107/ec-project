@@ -27,7 +27,7 @@ export const createOrder = async (data: CreateOrderPayload) => {
 
 export const getOrderByUserId = async (userId: number) => {
   try {
-    const response = await instance.get(`/orders/${userId}`);
+    const response = await instance.get(`/orders/user/${userId}`);
     return response.data;
   } catch (error) {
     console.error("Có lỗi khi lấy đơn hàng:", error);

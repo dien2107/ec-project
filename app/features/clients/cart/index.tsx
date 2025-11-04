@@ -11,17 +11,7 @@ import CartHeader from "./components/cart-header";
 import CartItem from "./components/cart-item";
 import OrderSummary from "./components/order-summary";
 import type { CartItemData } from "./types";
-// import { fakeDiscounts } from "./types/fakeDiscountData";
 import { fetchDiscountListData } from "~/redux/slices/discount";
-import { ENTITY_TYPE } from "~/constants/entity-types";
-import { fetchStatuses } from "~/redux/slices/statuses";
-
-// 🔍 Giả lập dữ liệu mã giảm giá
-// export const getDiscountByCode = (code: string) => {
-//   return fakeDiscounts.find(
-//     d => d.code.toLowerCase() === code.trim().toLowerCase()
-//   );
-// };
 
 export default function ShoppingCart() {
   const dispatch = useAppDispatch();

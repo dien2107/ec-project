@@ -64,7 +64,7 @@ export const fetchOrderListDataByUserId = createAsyncThunk(
   "orders/fetchOrderListDataByUserId",
   async (userId: number) => {
     const response = await instance.get<ApiResponse<Order[]>>(
-      `/orders/${userId}`
+      `/orders/user/${userId}`
     );
     return response.data;
   }
@@ -88,6 +88,32 @@ const orderListDataSlice = createSlice({
         state.isLoading = false;
         state.error =
           (action.payload as string) || "Không thể tải dữ liệu đơn hàng";
+      })
+      .addCase(fetchOrderListDataByUserId.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderListDataByUserId.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Transform ApiResponse<Order[]> to ApiPagedResponse format
+        state.orderList = {
+          status: action.payload.status,
+          isSuccess: action.payload.isSuccess,
+          message: action.payload.message,
+          data: {
+            items: [action.payload.data], // Wrap in array to match ApiPagedResponse structure
+            totalCount: action.payload.data.length,
+            totalPages: 1,
+            pageNumber: 1,
+            pageSize: action.payload.data.length,
+          },
+        };
+      })
+      .addCase(fetchOrderListDataByUserId.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          (action.error.message as string) ||
+          "Không thể tải dữ liệu đơn hàng theo user";
       });
   },
 });
