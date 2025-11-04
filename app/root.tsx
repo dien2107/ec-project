@@ -52,13 +52,15 @@ const queryClient = new QueryClient();
 function AuthInitializer() {
   const dispatch = useAppDispatch();
   useEffect(() => {
-    const accessToken = safeLocalStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+    const accessToken =
+      safeLocalStorage.getItem("accessToken") ||
+      sessionStorage.getItem("accessToken");
     if (accessToken) {
       dispatch(fetchCurrentUser());
     }
   }, [dispatch]);
 
-  return null; 
+  return null;
 }
 
 export default function App() {

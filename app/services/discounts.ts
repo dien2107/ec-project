@@ -39,3 +39,16 @@ export const deleteDiscount = async (discountId: number) => {
     throw error;
   }
 };
+
+export const updateInactiveDiscounts = async () => {
+  try {
+    const response = await instance.patch("/discounts/update-inactive");
+    console.log(
+      `Đã cập nhật ${response.data.updatedCount} khuyến mãi hết hạn.`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating inactive discounts:", error);
+    throw error;
+  }
+};

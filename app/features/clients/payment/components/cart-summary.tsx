@@ -7,6 +7,7 @@ export default function CartSummary({
   subtotal,
   shippingFee,
   total,
+  discount = 0,
   onPlaceOrder,
   disabled,
   ship,
@@ -14,6 +15,7 @@ export default function CartSummary({
   subtotal: number;
   shippingFee: number;
   total: number;
+  discount?: number;
   onPlaceOrder: () => void;
   disabled: boolean;
   ship: Ship | null;
@@ -74,7 +76,38 @@ export default function CartSummary({
 
       <Separator className="my-5" />
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="space-y-3 text-sm text-gray-600">
+        <div className="flex justify-between items-center">
+          <span className="">Tạm tính</span>
+          <span className="font-medium text-gray-900">
+            {subtotal.toLocaleString("vi-VN")}₫
+          </span>
+        </div>
+
+        {discount > 0 && (
+          <div className="flex justify-between items-center text-red-600">
+            <span className="">Giảm giá</span>
+            <span className="font-medium">
+              -{discount.toLocaleString("vi-VN")}₫
+            </span>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          <span className="">Phí vận chuyển</span>
+          <span
+            className={`font-medium ${
+              shippingFee === 0 ? "text-green-600" : "text-gray-900"
+            }`}
+          >
+            {shippingFee === 0
+              ? "Miễn phí"
+              : `${shippingFee.toLocaleString("vi-VN")}₫`}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-6 mt-4">
         <span className="text-lg font-semibold text-gray-700">Tổng cộng</span>
         <span className="text-2xl font-bold text-red-600">
           {total.toLocaleString("vi-VN")}₫
