@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { loginThunk } from "~/redux/slices/auth";
+import { loginThunk, fetchCurrentUser } from "~/redux/slices/auth";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 
@@ -81,11 +81,23 @@ export default function LoginPage() {
           rememberMe: formData.rememberMe,
         })
       ).unwrap();
+
+      console.log("Login result:", result);
+
+      // Fetch current user after successful login to update header
+      const userData = await dispatch(fetchCurrentUser()).unwrap();
+      console.log("User data fetched:", userData);
+
       toast.success("Đăng nhập thành công");
-      navigate("/");
+
+      // Small delay to ensure Redux state is updated
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
     } catch (err: any) {
       const message =
-        err?.response?.data?.message || (typeof err === "string" ? err : "Đăng nhập thất bại");
+        err?.response?.data?.message ||
+        (typeof err === "string" ? err : "Đăng nhập thất bại");
       toast.error(message);
       console.error("Login failed:", err);
     } finally {
