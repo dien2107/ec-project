@@ -30,19 +30,27 @@ const PriceSection = memo(({ control, register, errors, isLoading }: any) => {
           disabled={isLoading}
           className="mt-1"
           placeholder="Nhập giá cơ bản"
-          min="0"
-          step="1000"
+          onKeyDown={(e) => {
+            if (
+              !/^\d$/.test(e.key) &&
+              e.key !== "Backspace" &&
+              e.key !== "Delete" &&
+              e.key !== "Tab"
+            ) {
+              e.preventDefault();
+            }
+          }}
           {...register("basePrice", {
             required: "Vui lòng nhập giá cơ bản",
+            valueAsNumber: true,
             min: {
               value: 0,
-              message: "Giá cơ bản không hợp lệ",
+              message: "Giá cơ bản phải lớn hơn hoặc bằng 0",
             },
-            valueAsNumber: true,
           })}
         />
         {errors.basePrice && (
-          <p className="text-sm text-red-500">{errors.basePrice.message}</p>
+          <p className="text-xs text-red-500">{errors.basePrice.message}</p>
         )}
       </div>
 
@@ -57,14 +65,15 @@ const PriceSection = memo(({ control, register, errors, isLoading }: any) => {
           disabled={isLoading}
           className="mt-1"
           placeholder="Nhập giảm giá"
-          min="0"
-          max="100"
-          step="1"
           {...register("discountPercentage", {
             required: "Giảm giá không được để trống",
-            min: { value: 0, message: "Giảm giá phải ≥ 0" },
-            max: { value: 100, message: "Giảm giá phải ≤ 100" },
             valueAsNumber: true,
+            validate: (value: number) => {
+              if (isNaN(value)) return "Giảm giá không hợp lệ";
+              if (value < 0) return "Giảm giá phải lớn hơn hoặc bằng 0";
+              if (value > 100) return "Giảm giá phải nhỏ hơn hoặc bằng 100";
+              return true;
+            },
           })}
         />
         {errors.discountPercentage && (

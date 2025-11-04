@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import type { Ship } from "~/types/ship";
-import { ENTITY_TYPE } from "~/constants/entity-types";
-import { useAppSelector } from "~/redux/store";
-import type { ShippingFormData } from "../types/shipping-form-data";
 import { updateShipping } from "~/services/ships";
+import type { Ship } from "~/types/ship";
+import type { ShippingFormData } from "../types/shipping-form-data";
 interface EditShippingDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
@@ -33,11 +31,6 @@ export default function EditShippingDialog({
   onEdited,
 }: EditShippingDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const statuses = useAppSelector(
-    (state) => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
-  );
-  const inactiveStatus = statuses.find((s: any) => s.name === "Inactive");
-
   const {
     register,
     handleSubmit,
@@ -68,7 +61,7 @@ export default function EditShippingDialog({
       reset();
       setIsLoading(false);
     }
-  }, [open, method, reset, setValue, inactiveStatus]);
+  }, [open, method, reset, setValue]);
 
   const onSubmit = async (data: ShippingFormData) => {
     try {
@@ -101,7 +94,11 @@ export default function EditShippingDialog({
           <DialogTitle>Chỉnh sửa phương thức vận chuyển</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+          noValidate
+        >
           {/* Dòng 1: Đơn vị vận chuyển (full width) */}
           <div className="space-y-2">
             <Label htmlFor="corpName">
@@ -137,8 +134,11 @@ export default function EditShippingDialog({
                 disabled={isLoading}
                 {...register("baseCost", {
                   required: "Phí vận chuyển bắt buộc",
-                  min: { value: 0, message: "Phí phải >= 0" },
                   valueAsNumber: true,
+                  validate: {
+                    isNumber: (value) => !isNaN(value) || "Phải là số hợp lệ",
+                    minValue: (value) => value >= 0 || "Phí phải >= 0",
+                  },
                 })}
               />
               {errors.baseCost && (
@@ -161,8 +161,12 @@ export default function EditShippingDialog({
                 disabled={isLoading}
                 {...register("estimatedDays", {
                   required: "Thời gian giao hàng bắt buộc",
-                  min: { value: 1, message: "Phải lớn hơn hoặc bằng 1 ngày" },
                   valueAsNumber: true,
+                  validate: {
+                    isNumber: (value) => !isNaN(value) || "Phải là số hợp lệ",
+                    minValue: (value) =>
+                      value >= 1 || "Phải lớn hơn hoặc bằng 1 ngày",
+                  },
                 })}
               />
               {errors.estimatedDays && (

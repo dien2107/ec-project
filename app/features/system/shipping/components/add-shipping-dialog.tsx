@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
-  DialogClose,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import type { Ship } from "~/types/ship";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import { useAppSelector } from "~/redux/store";
 import { createShipping } from "~/services/ships";
@@ -97,7 +96,11 @@ export default function AddShippingDialog({
           <DialogTitle>Thêm phương thức vận chuyển mới</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+          noValidate
+        >
           {/* Dòng 1: Đơn vị vận chuyển (full width) */}
           <div className="space-y-2">
             <Label htmlFor="corpName">
@@ -133,8 +136,11 @@ export default function AddShippingDialog({
                 disabled={isLoading}
                 {...register("baseCost", {
                   required: "Phí vận chuyển bắt buộc",
-                  min: { value: 0, message: "Phí phải >= 0" },
                   valueAsNumber: true,
+                  validate: {
+                    isNumber: (value) => !isNaN(value) || "Phải là số hợp lệ",
+                    minValue: (value) => value >= 0 || "Phí phải >= 0",
+                  },
                 })}
               />
               {errors.baseCost && (
@@ -157,8 +163,12 @@ export default function AddShippingDialog({
                 disabled={isLoading}
                 {...register("estimatedDays", {
                   required: "Thời gian giao hàng bắt buộc",
-                  min: { value: 1, message: "Phải lớn hơn hoặc bằng 1 ngày" },
                   valueAsNumber: true,
+                  validate: {
+                    isNumber: (value) => !isNaN(value) || "Phải là số hợp lệ",
+                    minValue: (value) =>
+                      value >= 1 || "Phải lớn hơn hoặc bằng 1 ngày",
+                  },
                 })}
               />
               {errors.estimatedDays && (
