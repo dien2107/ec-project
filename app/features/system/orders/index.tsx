@@ -53,6 +53,18 @@ export default function Orders() {
   const data = orderList?.data?.items.flat() ?? [];
   const totalPages = orderList?.data?.totalPages ?? 1;
   const columns = useMemo(() => getColumns(handleView), [handleView]);
+
+  const handleOrderUpdated = useCallback(() => {
+    dispatch(
+      fetchOrderListData({
+        PageNumber: currentPage,
+        PageSize: PAGE_SIZE,
+        Search: filters.Search || undefined,
+        StatusName: filters.StatusName || undefined,
+      })
+    );
+  }, [dispatch, currentPage, filters.Search, filters.StatusName]);
+
   return (
     <>
       <div className="container">
@@ -93,6 +105,7 @@ export default function Orders() {
         order={selectedOrder}
         open={isViewOpen}
         setIsOpen={setIsViewOpen}
+        onOrderUpdated={handleOrderUpdated}
       />
     </>
   );

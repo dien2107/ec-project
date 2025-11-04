@@ -42,13 +42,13 @@ export const deleteDiscount = async (discountId: number) => {
 
 export const updateInactiveDiscounts = async () => {
   try {
-    const response = await instance.patch("/discounts/update-inactive");
-    console.log(
-      `Đã cập nhật ${response.data.updatedCount} khuyến mãi hết hạn.`
-    );
-    return response.data;
+    const response = await instance.post("/discounts/update-inactive", {}); // gửi body rỗng
+    return {
+      success: true,
+      updatedCount: response?.data?.data ?? 0,
+    };
   } catch (error) {
     console.error("Error updating inactive discounts:", error);
-    throw error;
+    return { success: false, updatedCount: 0 };
   }
 };

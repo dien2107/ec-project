@@ -50,6 +50,7 @@ export default function AddReturnDialog({
   });
 
   const handleSubmit = () => {
+    // Kiểm tra các trường bắt buộc chung
     if (
       payload.orderItemId == null ||
       payload.returnType == null ||
@@ -59,15 +60,23 @@ export default function AddReturnDialog({
       return;
     }
 
+    // 🧠 Nếu là ĐỔI HÀNG (returnType = 1) → bắt buộc có returnProductVariantId
+    if (payload.returnType === 1 && !payload.returnProductVariantId) {
+      alert(
+        "Khi chọn Đổi hàng, vui lòng nhập Variant ID (returnProductVariantId)!"
+      );
+      return;
+    }
+
     onAdded(payload as MinimalProductReturnRequest);
     setIsOpen(false);
 
-    // reset
+    // Reset form sau khi gửi
     setPayload({
-      returnType: 0,
-      returnAmount: 0,
+      returnType: 1,
+      returnAmount: null,
       orderItemId: 0,
-      returnProductVariantId: 0,
+      returnProductVariantId: null,
       returnReason: "",
     });
   };
@@ -130,7 +139,7 @@ export default function AddReturnDialog({
             />
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="returnAmount">
               Số tiền hoàn/giá trị (returnAmount)
             </Label>
@@ -142,24 +151,26 @@ export default function AddReturnDialog({
                 setPayload({ ...payload, returnAmount: Number(e.target.value) })
               }
             />
-          </div>
+          </div> */}
 
-          <div className="space-y-2">
-            <Label htmlFor="returnProductVariantId">
-              Variant ID (returnProductVariantId)
-            </Label>
-            <Input
-              id="returnProductVariantId"
-              type="number"
-              value={payload.returnProductVariantId ?? 0}
-              onChange={e =>
-                setPayload({
-                  ...payload,
-                  returnProductVariantId: Number(e.target.value),
-                })
-              }
-            />
-          </div>
+          {payload.returnType === 1 && (
+            <div className="space-y-2">
+              <Label htmlFor="returnProductVariantId">
+                Variant ID (returnProductVariantId)
+              </Label>
+              <Input
+                id="returnProductVariantId"
+                type="number"
+                value={payload.returnProductVariantId ?? 0}
+                onChange={e =>
+                  setPayload({
+                    ...payload,
+                    returnProductVariantId: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>

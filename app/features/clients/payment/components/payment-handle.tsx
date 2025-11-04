@@ -141,7 +141,7 @@ export default function PaymentOnline() {
               <div>
                 <p className="text-sm text-gray-500">Chủ Tài Khoản</p>
                 <p className="font-semibold text-gray-900 text-lg">
-                  Lưu Quang Minh
+                  Lư Quang Minh
                 </p>
               </div>
 

@@ -38,6 +38,7 @@ export const updateCategory = async (
         },
       }
     );
+    console.log("✅ API trả về:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating category:", error);

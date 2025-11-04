@@ -17,7 +17,7 @@ export type DiscountDetailDto = {
   usedCount: number;
   startAt?: Date;
   endAt?: Date;
-  status?: Status;
+  status: Status;
   createdAt: Date;
   updatedAt: Date;
 };
