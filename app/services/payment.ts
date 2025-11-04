@@ -11,6 +11,8 @@ export type PaymentResponse = {
   qrCodeUrl?: string;
   message?: string;
   transactionId: string;
+  accountName: string;
+  imageUrl: string;
 };
 
 export const createPayment = async (data: CreatePaymentPayload) => {
