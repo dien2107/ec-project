@@ -47,10 +47,12 @@ export default function ViewOrderDetailDialog({
   order,
   open,
   setIsOpen,
+  onOrderUpdated,
 }: {
   order: Order | null;
   open: boolean;
   setIsOpen: (open: boolean) => void;
+  onOrderUpdated?: () => void;
 }) {
   const dispatch = useAppDispatch();
   const handleCancel = async () => {
@@ -63,7 +65,9 @@ export default function ViewOrderDetailDialog({
       }
       toast.success("Hủy đơn hàng thành công.");
       setIsOpen(false);
-      dispatch(fetchOrderListData());
+      if (onOrderUpdated) {
+        onOrderUpdated();
+      }
     } catch (ex) {
       const error = ex as Error;
       toast.error(error.message || "Hủy đơn hàng thất bại.");
@@ -79,7 +83,9 @@ export default function ViewOrderDetailDialog({
       }
       toast.success("Duyệt đơn hàng thành công.");
       setIsOpen(false);
-      dispatch(fetchOrderListData());
+      if (onOrderUpdated) {
+        onOrderUpdated();
+      }
     } catch (ex) {
       const error = ex as Error;
       toast.error(error.message || "Duyệt đơn hàng thất bại.");

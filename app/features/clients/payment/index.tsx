@@ -169,6 +169,7 @@ export default function Payment() {
 
     try {
       // 1️⃣ Tạo đơn hàng trước
+      console.log(payload);
       const orderResponse = await createOrder(payload);
       console.log(orderResponse);
 
@@ -188,7 +189,7 @@ export default function Payment() {
         };
 
         const paymentResponse = await createPayment(paymentPayload);
-        console.log(paymentResponse);
+
         if (!paymentResponse.isSuccess) {
           toast.error("Không thể tạo đơn thanh toán!");
           return;
