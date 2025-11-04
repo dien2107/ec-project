@@ -176,9 +176,13 @@ export default function EditPromotionDialog({
       formData.append("discountType", data.discountType);
       formData.append("discountValue", data.discountValue.toString());
       formData.append("minOrderAmount", data.minOrderAmount.toString());
-      formData.append("startAt", data.startAt);
-      formData.append("endAt", data.endAt);
-      formData.append("statusId", data.statusId.toString());
+      if (data.startAt) formData.append("startAt", data.startAt);
+      if (data.endAt) formData.append("endAt", data.endAt);
+
+      formData.append(
+        "statusId",
+        data.statusId != null ? data.statusId.toString() : ""
+      );
 
       if (data.maxDiscountAmount)
         formData.append("maxDiscountAmount", data.maxDiscountAmount.toString());
@@ -240,6 +244,10 @@ export default function EditPromotionDialog({
               {...register("code", {
                 required: "Vui lòng nhập mã khuyến mãi",
                 maxLength: { value: 50, message: "Tối đa 50 ký tự" },
+                pattern: {
+                  value: /^[A-Za-z0-9]+$/,
+                  message: "Chỉ được phép nhập chữ và số, không khoảng trắng",
+                },
               })}
             />
             {errors.code && (
@@ -403,7 +411,13 @@ export default function EditPromotionDialog({
                 type="date"
                 disabled={isLoading || isUsed}
                 {...register("startAt", {
-                  required: "Vui lòng chọn ngày bắt đầu",
+                  validate: (value) => {
+                    const other = watch("endAt");
+                    if ((value && !other) || (!value && other)) {
+                      return "Phải điền cả ngày bắt đầu và ngày kết thúc hoặc để trống cả hai";
+                    }
+                    return true;
+                  },
                 })}
               />
               {errors.startAt && (
@@ -419,12 +433,12 @@ export default function EditPromotionDialog({
                 type="date"
                 disabled={isLoading}
                 {...register("endAt", {
-                  required: "Vui lòng chọn ngày kết thúc",
                   validate: (value) => {
-                    if (!value) return "Vui lòng chọn ngày kết thúc";
-                    const endDate = new Date(value);
-                    const startDate = new Date(watch("startAt"));
-                    if (endDate < startDate) {
+                    const other = watch("startAt");
+                    if ((value && !other) || (!value && other)) {
+                      return "Phải điền cả ngày bắt đầu và ngày kết thúc hoặc để trống cả hai";
+                    }
+                    if (value && other && new Date(value) < new Date(other)) {
                       return "Ngày kết thúc phải >= ngày bắt đầu";
                     }
                     return true;
