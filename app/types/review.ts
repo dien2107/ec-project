@@ -25,4 +25,5 @@ export type Review = {
   orderItem: OrderItem;
   reviewImages: ReviewImage[];
   username: string;
+  avatarImage: string;
 };

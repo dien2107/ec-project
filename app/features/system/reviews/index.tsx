@@ -1,22 +1,21 @@
-import { useEffect, useState, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "~/redux/store";
-import DataTable from "../components/data-table";
-import type { Product } from "../../../types/product/product";
-import { getColumns } from "./columns/review";
-import type { Review } from "./types/review";
-import { fetchReviewListData } from "~/redux/slices/reviews";
-import type { RootState } from "~/redux/store";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { ENTITY_TYPE } from "~/constants/entity-types";
+import { fetchReviewListData } from "~/redux/slices/reviews";
+import { fetchStatuses } from "~/redux/slices/statuses";
+import type { RootState } from "~/redux/store";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import type { Product } from "../../../types/product/product";
+import DataTable from "../components/data-table";
+import { getColumns } from "./columns/review";
 import ReviewDetail from "./components/review-detail";
 import ReviewFilter from "./components/review-filter";
-import type { Status } from "~/types/status";
-import { ENTITY_TYPE } from "~/constants/entity-types";
-import { fetchStatuses } from "~/redux/slices/statuses";
+import type { Review } from "./types/review";
 
 export default function ReviewDialog({
   open,
@@ -44,6 +43,12 @@ export default function ReviewDialog({
     rating: undefined as number | undefined,
   });
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedReview(null);
+    }
+  }, [open, setSelectedReview]);
 
   useEffect(() => {
     dispatch(fetchStatuses({ entityType: ENTITY_TYPE.REVIEW }));
@@ -93,22 +98,16 @@ export default function ReviewDialog({
                   currentPage={currentPage}
                   totalPages={reviewList?.data?.totalPages ?? 1}
                   onPageChange={setCurrentPage}
+                  isLoading={isLoading}
                 />
               </div>
             </div>
             <div className="col-span-1 h-full flex flex-col">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-start h-full pt-12">
-                  <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-400"></span>
-                  <span className="mt-4 text-gray-500 text-lg">
-                    Đang tải chi tiết đánh giá...
-                  </span>
-                </div>
-              ) : (
+              {selectedReview ? (
                 <ReviewDetail
                   selectedProduct={selectedProduct}
                   selectedReview={selectedReview}
-                  onHideReview={() => {
+                  onToggledReview={() => {
                     if (!selectedProduct) return;
                     dispatch(
                       fetchReviewListData({
@@ -123,6 +122,12 @@ export default function ReviewDialog({
                     setSelectedReview(null);
                   }}
                 />
+              ) : (
+                <div className="flex flex-col items-center justify-start h-full pt-12">
+                  <span className="mt-4 text-gray-500 text-md">
+                    Chưa chọn đánh giá
+                  </span>
+                </div>
               )}
             </div>
           </div>

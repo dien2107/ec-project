@@ -128,6 +128,7 @@ export default function ShippingMethodManagement() {
           currentPage={currentPage}
           totalPages={shipList?.data?.totalPages ?? 1}
           onPageChange={setCurrentPage}
+          isLoading={isLoading}
         />
       </div>
 
