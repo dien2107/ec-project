@@ -12,6 +12,7 @@ export type ProductVariant = {
   stockQuantity: number;
   createdAt: string;
   updatedAt: string;
+  canDelete: boolean;
 };
 
 export type ProductVariantForReview = Omit<

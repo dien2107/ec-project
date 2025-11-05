@@ -11,13 +11,14 @@ export default function PaymentOnline() {
   const [isChecking, setIsChecking] = useState(false);
   const orderId = paymentPayload?.orderId;
   const [timeLeft, setTimeLeft] = useState(600); // 10 phút = 600 giây
+  console.log(paymentInfo);
   const checkOrderStatus = async () => {
     if (!orderId || isChecking) return;
     setIsChecking(true);
 
     try {
       const data = await getOrderStatus(orderId);
-      console.log(data.data);
+      // console.log(data.data);
 
       if (data.data.isPaid) {
         toast.success("Thanh toán thành công!");
@@ -124,7 +125,7 @@ export default function PaymentOnline() {
             {/* Bank Header */}
             <div className="flex items-center gap-4 mb-5">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/2/25/Logo_MB_new.png"
+                src={paymentInfo.data.imageUrl}
                 alt="MB Bank"
                 className="w-12 h-12 rounded-md border border-blue-200"
               />
@@ -141,7 +142,7 @@ export default function PaymentOnline() {
               <div>
                 <p className="text-sm text-gray-500">Chủ Tài Khoản</p>
                 <p className="font-semibold text-gray-900 text-lg">
-                  Lư Quang Minh
+                  {paymentInfo.data.accountName}
                 </p>
               </div>
 

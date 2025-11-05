@@ -117,7 +117,7 @@ export default function Categories() {
 
   if (isLoading && !hasLoaded) {
     return (
-      <div ref={mainRef} className="max-w-[1280px] mx-auto p-4 md:p-6">
+      <div ref={mainRef} className="max-w-[1280px] mx-auto p-3 sm:p-4 md:p-6">
         {q && (
           <SearchResultHeader
             searchQuery={searchQuery}
@@ -128,29 +128,33 @@ export default function Categories() {
         )}
 
         <div
-          className="flex items-center justify-center gap-4 min-h-[60vh]"
+          className="flex items-center justify-center gap-3 min-h-[50vh] sm:min-h-[60vh]"
           aria-live="polite"
         >
-          <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
-          <span className="text-gray-700">Đang tải...</span>
+          <Loader2 className="animate-spin w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
+          <span className="text-sm sm:text-base text-gray-700">
+            Đang tải...
+          </span>
         </div>
       </div>
     );
   }
 
   return (
-    <div ref={mainRef} className="max-w-[1280px] mx-auto p-4 md:p-6">
+    <div ref={mainRef} className="max-w-[1280px] mx-auto p-3 sm:p-4 md:p-6">
       {slug ? (
         <>
           {isSuccess ? (
             <motion.div
               key={categoryName}
-              className="flex items-center justify-between pb-4 border-b border-gray-200"
+              className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-200"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              <h1 className="font-medium text-4xl">{categoryName}</h1>
+              <h1 className="font-medium text-2xl sm:text-3xl md:text-4xl">
+                {categoryName}
+              </h1>
             </motion.div>
           ) : hasLoaded ? (
             <SearchResultHeader
@@ -177,16 +181,16 @@ export default function Categories() {
               filters={filters}
               setFilters={setFilters}
               totalCount={pagination.totalCount}
-              isFiltering={isFiltering} // Add this prop
+              isFiltering={isFiltering}
             />
           )}
 
-          <div className="flex flex-col md:flex-row mt-4 min-h-[calc(100vh-180px)]">
-            <main className={`w-full py-4`}>
+          <div className="flex flex-col md:flex-row mt-3 sm:mt-4 min-h-[calc(100vh-200px)] sm:min-h-[calc(100vh-180px)]">
+            <main className={`w-full py-3 sm:py-4`}>
               {hasLoaded ? <ProductGrid products={products} /> : null}
 
               {products.length > 0 && (
-                <div className="mt-20 pb-8 flex justify-center">
+                <div className="mt-12 sm:mt-16 md:mt-20 pb-6 sm:pb-8 flex justify-center">
                   <Pagination
                     currentPage={pagination.currentPage}
                     totalPages={pagination.totalPages}

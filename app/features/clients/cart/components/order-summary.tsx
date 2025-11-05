@@ -14,6 +14,7 @@ interface OrderSummaryProps {
   onDiscountChange: (code: string) => void;
   onApplyDiscount: () => void;
   onCheckout: () => void;
+  hasOutOfStockItems?: boolean;
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -28,6 +29,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   onDiscountChange,
   onApplyDiscount,
   onCheckout,
+  hasOutOfStockItems = false,
 }) => {
   const formatPrice = (price: number) => price.toLocaleString("vi-VN") + "₫";
 
@@ -84,13 +86,19 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
         <Button
           className="w-full mt-4 bg-gray-800 hover:bg-gray-700 text-white py-3"
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || hasOutOfStockItems}
           onClick={onCheckout}
         >
           Đến trang thanh toán
         </Button>
 
-        {selectedCount > 0 && (
+        {hasOutOfStockItems && (
+          <p className="text-xs text-red-500 text-center mt-2">
+            Một số sản phẩm đã hết hàng hoặc không đủ số lượng
+          </p>
+        )}
+
+        {selectedCount > 0 && !hasOutOfStockItems && (
           <p className="text-xs text-gray-500 text-center mt-2">
             Đã chọn {selectedCount} sản phẩm
           </p>

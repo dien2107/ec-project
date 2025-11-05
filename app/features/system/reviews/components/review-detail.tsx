@@ -1,5 +1,5 @@
-import { EyeOff, Star, StarHalf, ThumbsUp } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { EyeOff } from "lucide-react";
+import { useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 
 import toast from "react-hot-toast";
@@ -8,47 +8,48 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { Product } from "~/types/product/product";
-import { hideReviewById } from "~/services/reviews";
-import type { Review } from "../types/review";
 import {
   AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
   AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { renderStars, formatDate } from "~/libs";
+import { formatDate, renderStars } from "~/libs";
+import { toggleStatusReviewById } from "~/services/reviews";
+import type { Product } from "~/types/product/product";
+import type { Review } from "../types/review";
 
 export default function ReviewDetail({
   selectedProduct,
   selectedReview,
-  onHideReview,
+  onToggledReview,
 }: {
   selectedProduct: Product | null;
   selectedReview: Review | null;
-  onHideReview: () => void;
+  onToggledReview: () => void;
 }) {
   const swiperRef = useRef<SwiperClass | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
+  const [openShowAlert, setOpenShowAlert] = useState(false);
 
   const handleThumbnailClick = (idx: number) => {
     setPhotoIndex(idx);
     swiperRef.current?.slideTo(idx);
   };
 
-  const handleHideReview = async (reviewId: number) => {
+  const handleToggleStatusReview = async (reviewId: number) => {
     try {
       setIsLoading(true);
-      await hideReviewById(reviewId);
+      await toggleStatusReviewById(reviewId);
       toast.success("Đánh giá đã được ẩn thành công!");
-      onHideReview();
+      onToggledReview();
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -109,7 +110,18 @@ export default function ReviewDetail({
           </div>
           <div className="flex items-center justify-between">
             <p className="text-sm">{selectedReview.username}</p>
-            <p className="text-sm">{formatDate(selectedReview.createdAt)}</p>
+            <p className="text-sm">
+              {selectedReview.isEdited ? (
+                <span>
+                  {formatDate(selectedReview.updatedAt)}{" "}
+                  <span className="text-xs text-gray-500 ml-1">
+                    (Đã chỉnh sửa)
+                  </span>
+                </span>
+              ) : (
+                formatDate(selectedReview.createdAt)
+              )}
+            </p>
           </div>
         </div>
         <div>
@@ -126,9 +138,11 @@ export default function ReviewDetail({
         </div>
         <div className="grid grid-cols-6 gap-2">
           {selectedReview.reviewImages.map((image, idx) => (
-            <div className={`w-16 h-16 overflow-hidden`}>
+            <div
+              key={image.reviewImageId}
+              className={`w-16 h-16 overflow-hidden`}
+            >
               <img
-                key={image.reviewImageId}
                 src={image.imageUrl}
                 alt="Review Image"
                 className="w-full h-full object-cover bg-gray-200 transition-all duration-200 cursor-pointer hover:scale(1.2) hover:border-4 hover:border-black"
@@ -195,7 +209,10 @@ export default function ReviewDetail({
                 <AlertDialogCancel disabled={isLoading}>Hủy</AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isLoading}
-                  onClick={() => handleHideReview(selectedReview.reviewId)}
+                  className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-300"
+                  onClick={() =>
+                    handleToggleStatusReview(selectedReview.reviewId)
+                  }
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
@@ -204,6 +221,53 @@ export default function ReviewDetail({
                     </span>
                   ) : (
                     "Xác nhận ẩn"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        {selectedReview.status.name === "Hidden" && (
+          <AlertDialog open={openShowAlert} onOpenChange={setOpenShowAlert}>
+            <AlertDialogTrigger asChild>
+              <Button variant="edit" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="ml-2 flex items-center gap-2">
+                    <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
+                    Đang hiển thị
+                  </span>
+                ) : (
+                  "Hiển thị"
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Bạn có chắc muốn hiển thị đánh giá này?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Đánh giá sẽ được hiển thị lại trên hệ thống và người dùng sẽ
+                  thấy đánh giá này.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isLoading}>Hủy</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={isLoading}
+                  className="bg-yellow-500 text-white hover:brightness-95"
+                  onClick={() =>
+                    handleToggleStatusReview(selectedReview.reviewId)
+                  }
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
+                      Đang hiển thị
+                    </span>
+                  ) : (
+                    "Xác nhận hiển thị"
                   )}
                 </AlertDialogAction>
               </AlertDialogFooter>

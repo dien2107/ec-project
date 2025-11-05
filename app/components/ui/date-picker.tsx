@@ -18,24 +18,33 @@ function formatDate(date: Date | undefined) {
   });
 }
 
+// helper: strip time portion for date-only comparisons
+const stripTime = (d: Date) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
 interface DatePickerProps {
-  value?: Date;
+  value?: Date | undefined;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
+  disabled?: boolean;
+  minDate?: Date | undefined;
+  maxDate?: Date | undefined;
 }
 
-export function DatePicker({ value }: DatePickerProps) {
+export function DatePicker({
+  value,
+  onChange,
+  disabled,
+  minDate,
+  maxDate,
+}: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(value);
   const [month, setMonth] = React.useState<Date | undefined>(value);
-  const [inputValue, setInputValue] = React.useState(formatDate(value));
 
   React.useEffect(() => {
-    if (value) {
-      setDate(value);
-      setMonth(value);
-      setInputValue(formatDate(value));
-    }
+    setDate(value);
+    setMonth(value);
   }, [value]);
 
   return (
@@ -46,6 +55,7 @@ export function DatePicker({ value }: DatePickerProps) {
             variant="outline"
             id="date"
             className="w-full justify-between font-normal"
+            disabled={disabled}
           >
             {date ? date.toLocaleDateString("en-GB") : "Select date"}
             <ChevronDownIcon />
@@ -56,9 +66,16 @@ export function DatePicker({ value }: DatePickerProps) {
             mode="single"
             selected={date}
             captionLayout="dropdown"
-            onSelect={(date) => {
-              setDate(date);
+            // disable days before minDate or after maxDate
+            disabled={(day: Date) =>
+              (minDate ? stripTime(day) < stripTime(minDate) : false) ||
+              (maxDate ? stripTime(day) > stripTime(maxDate) : false)
+            }
+            onSelect={(d) => {
+              // Calendar returns Date | undefined
+              setDate(d);
               setOpen(false);
+              if (onChange) onChange(d);
             }}
             className="pointer-events-auto"
           />
