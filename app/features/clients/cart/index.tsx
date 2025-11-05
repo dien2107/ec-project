@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
+import { useQueries } from "@tanstack/react-query";
 import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
 import {
   fetchCart,
@@ -10,8 +11,10 @@ import {
 import CartHeader from "./components/cart-header";
 import CartItem from "./components/cart-item";
 import OrderSummary from "./components/order-summary";
-import type { CartItemData } from "./types";
+import type { CartItemData, AvailableVariant } from "./types";
 import { fetchDiscountListData } from "~/redux/slices/discount";
+import { getProductDetailBySlug } from "~/services/products";
+import type { ProductVariant } from "~/types/product/product-variant";
 
 export default function ShoppingCart() {
   const dispatch = useAppDispatch();
@@ -42,6 +45,7 @@ export default function ShoppingCart() {
     dispatch(
       fetchDiscountListData({
         StatusName: "Active",
+        PageSize: 100,
       })
     );
   }, [dispatch]);
@@ -50,6 +54,70 @@ export default function ShoppingCart() {
     console.log(discountList);
   }, [discountList]);
 
+  // Fetch product variants for each cart item using React Query
+  const productQueries = useQueries({
+    queries: cartItems
+      .filter(item => item.slug) // Only fetch for items with slug
+      .map(item => ({
+        queryKey: ["product", item.slug],
+        queryFn: () => getProductDetailBySlug(item.slug!),
+        enabled: !!item.slug,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      })),
+  });
+
+  // Process fetched product data to extract variants using useMemo
+  const productVariants = useMemo(() => {
+    const variantsMap = new Map<number, AvailableVariant[]>();
+
+    const cartItemsWithSlug = cartItems.filter(item => item.slug);
+
+    cartItemsWithSlug.forEach((cartItem, index) => {
+      const queryResult = productQueries[index];
+      if (queryResult?.data?.data && queryResult.isSuccess) {
+        const product = queryResult.data.data;
+        const currentColor = cartItem.color;
+
+        const sameColorVariants = product.productVariants
+          .filter((v: ProductVariant) => v.color.name === currentColor)
+          .map((v: ProductVariant) => ({
+            productVariantId: v.productVariantId,
+            sizeId: v.size.sizeId,
+            sizeName: v.size.name,
+            stockQuantity: v.stockQuantity,
+          }));
+
+        variantsMap.set(cartItem.productVariantId, sameColorVariants);
+      }
+    });
+
+    return variantsMap;
+  }, [cartItems, productQueries.length]);
+
+  // Extract product pricing info from queries
+  const productPricingMap = useMemo(() => {
+    const pricingMap = new Map<
+      number,
+      { basePrice: number; discountPercentage: number; sellingPrice: number }
+    >();
+
+    const cartItemsWithSlug = cartItems.filter(item => item.slug);
+
+    cartItemsWithSlug.forEach((cartItem, index) => {
+      const queryResult = productQueries[index];
+      if (queryResult?.data?.data && queryResult.isSuccess) {
+        const product = queryResult.data.data;
+        pricingMap.set(cartItem.productVariantId, {
+          basePrice: product.basePrice,
+          discountPercentage: product.discountPercentage,
+          sellingPrice: product.sellingPrice,
+        });
+      }
+    });
+
+    return pricingMap;
+  }, [cartItems, productQueries.length]);
+
   // Đồng bộ Redux → local state (để quản lý chọn/bỏ chọn)
   useEffect(() => {
     setLocalItems(prev => {
@@ -57,6 +125,9 @@ export default function ShoppingCart() {
 
       return cartItems.map(ci => {
         const id = String(ci.productVariantId);
+        const variants = productVariants.get(ci.productVariantId) || [];
+        const pricing = productPricingMap.get(ci.productVariantId);
+
         return {
           id,
           variantId: ci.productVariantId,
@@ -67,10 +138,16 @@ export default function ShoppingCart() {
           price: ci.price,
           quantity: ci.quantity,
           selected: prevMap.has(id) ? (prevMap.get(id) as boolean) : true,
+          availableVariants: variants,
+          slug: ci.slug,
+          productId: ci.productId,
+          basePrice: pricing?.basePrice,
+          discountPercentage: pricing?.discountPercentage,
+          sellingPrice: pricing?.sellingPrice,
         } as CartItemData;
       });
     });
-  }, [cartItems]);
+  }, [cartItems, productVariants, productPricingMap]);
   const findDiscountByCode = (code: string) => {
     if (!discountList?.data) return null;
     return discountList.data.items
@@ -85,6 +162,25 @@ export default function ShoppingCart() {
   const selectedCount = selectedItems.length;
   const isAllSelected =
     localItems.length > 0 && selectedItems.length === localItems.length;
+
+  // Kiểm tra sản phẩm hết hàng hoặc số lượng không đủ
+  const hasOutOfStockItems = useMemo(() => {
+    return selectedItems.some(item => {
+      const variants = productVariants.get(item.variantId);
+      if (!variants || variants.length === 0) return false;
+
+      const currentVariant = variants.find(
+        v => v.productVariantId === item.variantId
+      );
+      if (!currentVariant) return false;
+
+      // Kiểm tra hết hàng hoặc số lượng không đủ
+      return (
+        currentVariant.stockQuantity === 0 ||
+        currentVariant.stockQuantity < item.quantity
+      );
+    });
+  }, [selectedItems, productVariants]);
 
   const subtotal = useMemo(
     () => selectedItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
@@ -121,6 +217,40 @@ export default function ShoppingCart() {
       return;
     }
 
+    // Kiểm tra thời gian bắt đầu
+    const now = new Date();
+    if (discount.startAt) {
+      const startDate = new Date(discount.startAt);
+      if (now < startDate) {
+        setAppliedDiscount(null);
+        setDiscountError(
+          `Mã giảm giá chưa có hiệu lực. Bắt đầu từ ${startDate.toLocaleDateString("vi-VN")}`
+        );
+        toast.error("Mã giảm giá chưa có hiệu lực");
+        return;
+      }
+    }
+
+    // Kiểm tra thời gian kết thúc
+    if (discount.endAt) {
+      const endDate = new Date(discount.endAt);
+      if (now > endDate) {
+        setAppliedDiscount(null);
+        setDiscountError("Mã giảm giá đã hết hạn");
+        toast.error("Mã giảm giá đã hết hạn");
+        return;
+      }
+    }
+
+    // Kiểm tra số lượt sử dụng
+    if (discount.usageLimit && discount.usedCount >= discount.usageLimit) {
+      setAppliedDiscount(null);
+      setDiscountError("Mã giảm giá đã hết lượt sử dụng");
+      toast.error("Mã giảm giá đã hết lượt sử dụng");
+      return;
+    }
+
+    // Kiểm tra giá trị đơn hàng tối thiểu
     if (subtotal < discount.minOrderAmount) {
       setAppliedDiscount(null);
       setDiscountError(
@@ -166,6 +296,7 @@ export default function ShoppingCart() {
         variantId: item.variantId,
         quantity: newQuantity,
         price: item.price,
+        slug: item.slug,
       })
     );
 
@@ -189,6 +320,39 @@ export default function ShoppingCart() {
     setLocalItems(prev => prev.filter(i => i.id !== id));
   };
 
+  // Thay đổi size (variant)
+  const handleSizeChange = async (id: string, newVariantId: number) => {
+    const item = localItems.find(i => i.id === id);
+    if (!item || !user?.data?.userId) return;
+
+    try {
+      // Xóa item cũ
+      await dispatch(
+        deleteCartItem({
+          userId: user.data.userId,
+          variantId: item.variantId,
+        })
+      );
+
+      // Thêm item mới với variant mới
+      await dispatch(
+        updateCartItem({
+          userId: user.data.userId,
+          variantId: newVariantId,
+          quantity: item.quantity,
+          price: item.price,
+          slug: item.slug,
+        })
+      );
+
+      // Refresh lại giỏ hàng
+      dispatch(fetchCart(user.data.userId));
+      toast.success("Đã thay đổi kích thước sản phẩm");
+    } catch (error) {
+      toast.error("Không thể thay đổi kích thước");
+    }
+  };
+
   // Xóa tất cả item đã chọn
   const handleClearSelected = async () => {
     if (!user?.data?.userId) return;
@@ -208,9 +372,19 @@ export default function ShoppingCart() {
 
   // Thanh toán
   const handleCheckout = () => {
+    if (hasOutOfStockItems) {
+      toast.error(
+        "Một số sản phẩm đã hết hàng hoặc số lượng không đủ. Vui lòng kiểm tra lại giỏ hàng!"
+      );
+      return;
+    }
+
+    if (selectedCount === 0) {
+      toast.error("Vui lòng chọn sản phẩm để thanh toán");
+      return;
+    }
+
     navigate("/payments", { state: { appliedDiscount, selectedItems } });
-    // console.log(`appliedDiscount: ${appliedDiscount}`);
-    // console.log(`selectedItems: ${JSON.stringify(selectedItems)}`);
   };
 
   // Hiển thị khi đang tải
@@ -246,6 +420,7 @@ export default function ShoppingCart() {
                   onSelect={handleSelectItem}
                   onQuantityChange={handleQuantityChange}
                   onRemove={handleRemoveItem}
+                  onSizeChange={handleSizeChange}
                 />
               ))}
 
@@ -272,6 +447,7 @@ export default function ShoppingCart() {
             discountCode={discountCode}
             onDiscountChange={setDiscountCode}
             onCheckout={handleCheckout}
+            hasOutOfStockItems={hasOutOfStockItems}
           />
         </div>
       </div>

@@ -26,7 +26,7 @@ export const statusMap: Record<
   Delivered: { label: "Đã giao", color: "bg-green-500" },
   Cancelled: { label: "Đã hủy", color: "bg-red-500" },
   Returned: { label: "Đã hoàn trả", color: "bg-gray-500" },
-  Shipped: { label: "Đã gửi hàng", color: "bg-purple-500" },
+  Shipping: { label: "Đang vận chuyển", color: "bg-purple-500" },
 };
 export type discount = {
   id: number;
@@ -64,7 +64,7 @@ export type Status = {
     | "Delivered"
     | "Cancelled"
     | "Returned"
-    | "Shipped";
+    | "Shipping";
 };
 
 export type User = {

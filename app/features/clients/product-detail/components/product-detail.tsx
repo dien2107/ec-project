@@ -11,28 +11,35 @@ import type { ProductVariant } from "~/types/product/product-variant";
 import type { SelectedProductProps } from "../types";
 import { toast } from "react-hot-toast";
 
-export default function ProductDetail({ product }: { product: ProductDetail }) {
+export default function ProductDetail({
+  product,
+  slug,
+}: {
+  product: ProductDetail;
+  slug: string | undefined;
+}) {
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth); // 🧩 Lấy userId từ Redux
+  const { user } = useAppSelector(state => state.auth); // 🧩 Lấy userId từ Redux
   const [selected, setSelected] = useState<SelectedProductProps>({
     productVariant: null,
     quantity: 1,
-    price: product.basePrice,
+    price: product.sellingPrice,
     image: product.primaryImage,
   });
   const variants = product.productVariants ?? [];
+  console.log(variants);
   const totalAvailableStock = variants.reduce((s, v) => s + v.stockQuantity, 0);
   const noStock = totalAvailableStock === 0;
   const availableStock = selected.productVariant?.stockQuantity ?? 0;
 
   const handleSizeSelect = (productVariant: ProductVariant) => {
-    setSelected((prev) => ({ ...prev, productVariant }));
+    setSelected(prev => ({ ...prev, productVariant }));
   };
 
   const handleQuantityChange = (quantity: number, max_value?: number) => {
     if (quantity < 1 || (max_value !== undefined && quantity > max_value))
       return;
-    setSelected((prev) => ({ ...prev, quantity }));
+    setSelected(prev => ({ ...prev, quantity }));
   };
 
   // 🧩 Hàm thêm vào giỏ hàng (đã dùng API thật)
@@ -53,6 +60,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           variantId: selected.productVariant.productVariantId,
           quantity: selected.quantity,
           price: selected.price,
+          slug,
         })
       ).unwrap();
     } catch (err) {
@@ -126,7 +134,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           Kích thước
         </h1>
         <div className="flex flex-wrap gap-2">
-          {product.productVariants.map((productVariant) => (
+          {product.productVariants.map(productVariant => (
             <Button
               key={productVariant.productVariantId}
               variant={
@@ -151,7 +159,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           Chọn màu khác
         </h1>
         <div className="flex flex-wrap gap-2">
-          {product.relatedProducts.map((p) => {
+          {product.relatedProducts.map(p => {
             const imageUrl =
               p.primaryImage?.imageUrl || "/placeholder-product.jpg";
 

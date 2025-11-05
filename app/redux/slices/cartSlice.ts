@@ -15,6 +15,8 @@ export interface CartItem {
   productImageUrl: string;
   quantity: number;
   price: number;
+  slug?: string;
+  productId?: number;
 }
 
 export interface CartDetail {
@@ -73,6 +75,7 @@ export const updateCartItem = createAsyncThunk(
       variantId: number;
       quantity: number;
       price: number;
+      slug?: string;
     },
     { dispatch, rejectWithValue }
   ) => {
