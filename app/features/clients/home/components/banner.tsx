@@ -86,12 +86,12 @@ export default function Banner() {
             <p className="text-lg md:text-2xl mb-8 drop-shadow-md max-w-2xl">
               {slide.subtitle}
             </p>
-            <Button
+            {/* <Button
               size="lg"
               className="bg-white text-black hover:bg-gray-100 font-semibold shadow-lg text-base md:text-lg px-8 py-6"
             >
               Khám phá ngay
-            </Button>
+            </Button> */}
           </div>
         </div>
       ))}

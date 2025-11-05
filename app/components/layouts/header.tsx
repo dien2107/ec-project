@@ -86,8 +86,8 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, accessToken } = useAppSelector(state => state.auth);
-  const cartItems = useAppSelector(state => state.cart.items);
+  const { user, accessToken } = useAppSelector((state) => state.auth);
+  const cartItems = useAppSelector((state) => state.cart.items);
   const cartCount = useAppSelector(
     (state: RootState) => state.cart.items.length
   );
@@ -105,10 +105,37 @@ const Header = () => {
     (state: RootState) => state.homePage.homeData?.categories || []
   );
 
+  // Static menu items - các menu cố định
+  const staticMenuItems: MenuItem[] = [
+    {
+      name: "Trang chủ",
+      path: "/",
+    },
+    {
+      name: "Giới thiệu",
+      path: "/about",
+      dropdown: [
+        { name: "Về chúng tôi", path: "/about" },
+        { name: "Câu chuyện thương hiệu", path: "/brand-story" },
+        { name: "Đội ngũ", path: "/team" },
+      ],
+    },
+  ];
+
   const menuItems = useMemo(() => {
-    return categories
+    const dynamicItems = categories
       .map(convertCategoryToMenuItem)
       .filter((item): item is MenuItem => item !== null);
+
+    // Thêm các menu tĩnh ở cuối
+    const endStaticItems: MenuItem[] = [
+      {
+        name: "Liên hệ",
+        path: "/contact",
+      },
+    ];
+
+    return [...staticMenuItems, ...dynamicItems, ...endStaticItems];
   }, [categories]);
 
   const [isScrolled, setIsScrolled] = useState(false);

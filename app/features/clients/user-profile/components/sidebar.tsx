@@ -1,15 +1,23 @@
 import { User, MapPin, ShoppingCart, KeyRound, CreditCard } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
+interface SidebarProps {
+  activeTab: string;
+  onChangeTab: (tab: string) => void;
+  totalOrders: number;
+  user: {
+    username: string;
+    imageUrl?: string;
+    fullName?: string;
+  };
+}
+
 export default function Sidebar({
   activeTab,
   onChangeTab,
   totalOrders,
-}: {
-  activeTab: string;
-  onChangeTab: (tab: string) => void;
-  totalOrders: number;
-}) {
+  user,
+}: SidebarProps) {
   const navItems = [
     { id: "thong-tin", label: "Thông tin tài khoản", icon: User },
     { id: "dia-chi", label: "Địa chỉ giao hàng", icon: MapPin },
@@ -23,24 +31,24 @@ export default function Sidebar({
       {/* Profile header */}
       <div className="flex items-center gap-3 pb-4 border-b mb-4">
         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-          {/* placeholder avatar */}
-          <svg
-            width="36"
-            height="36"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="text-gray-300"
-          >
-            <path
-              d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z"
-              fill="currentColor"
+          {user.imageUrl && user.imageUrl !== "/logo-icon.png" ? (
+            <img
+              src={user.imageUrl}
+              alt={user.username}
+              className="w-full h-full object-cover"
             />
-          </svg>
+          ) : (
+            <img
+              src={"/logo-icon.png"}
+              alt={user.username}
+              className="w-full h-full object-cover"
+            />
+          )}
         </div>
         <div>
-          <div className="text-md font-medium">luquangminh29</div>
+          <div className="text-md font-medium">{user.username}</div>
           <div
-            className="text-xs text-gray-400 mt-1 cursor-pointer"
+            className="text-xs text-gray-400 mt-1 cursor-pointer hover:text-blue-600 transition-colors"
             onClick={() => onChangeTab("thong-tin")}
           >
             Sửa Hồ Sơ

@@ -1,6 +1,6 @@
 import { createListenerMiddleware } from "@reduxjs/toolkit";
-import { safeLocalStorage } from "~/helper/safeLocalStorage";
 import { logoutLocal } from "~/redux/slices/auth";
+
 const authLogoutListener = createListenerMiddleware();
 
 authLogoutListener.startListening({
@@ -8,12 +8,10 @@ authLogoutListener.startListening({
     const prevAccess = previousState?.auth?.accessToken;
     const currentAccess = currentState?.auth?.accessToken;
 
+    // Chỉ cần kiểm tra token trong Redux state
     const tokenCleared = !!(prevAccess && !currentAccess);
-    const tokenRemovedFromStorage = !!(
-      !safeLocalStorage.getItem("accessToken") && prevAccess
-    );
 
-    return tokenCleared || tokenRemovedFromStorage;
+    return tokenCleared;
   },
   effect: async (action, listenerApi) => {
     listenerApi.dispatch(logoutLocal());

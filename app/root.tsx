@@ -7,12 +7,17 @@ import {
   ScrollRestoration,
 } from "react-router";
 import { Provider } from "react-redux";
-import { store, useAppDispatch } from "~/redux/store";
+import { PersistGate } from "redux-persist/integration/react";
+import {
+  store,
+  persistor,
+  useAppDispatch,
+  useAppSelector,
+} from "~/redux/store";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
-import { safeLocalStorage } from "./helper/safeLocalStorage";
 import { fetchCurrentUser } from "./redux/slices/auth";
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -49,16 +54,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 const queryClient = new QueryClient();
+
+// Component để tự động fetch user khi có token (sau khi rehydrate)
 function AuthInitializer() {
   const dispatch = useAppDispatch();
+  const { accessToken, user } = useAppSelector((state) => state.auth);
+
   useEffect(() => {
-    const accessToken =
-      safeLocalStorage.getItem("accessToken") ||
-      sessionStorage.getItem("accessToken");
-    if (accessToken) {
+    // Chỉ fetch user nếu có token nhưng chưa có thông tin user
+    if (accessToken && !user) {
       dispatch(fetchCurrentUser());
     }
-  }, [dispatch]);
+  }, [dispatch, accessToken, user]);
 
   return null;
 }
@@ -66,12 +73,14 @@ function AuthInitializer() {
 export default function App() {
   return (
     <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <AuthInitializer />
-        <Outlet />
-        <Toaster />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <QueryClientProvider client={queryClient}>
+          <AuthInitializer />
+          <Outlet />
+          <Toaster />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </PersistGate>
     </Provider>
   );
 }

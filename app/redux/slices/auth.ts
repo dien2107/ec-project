@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as authService from "../../services/auth";
-import { safeLocalStorage } from "~/helper/safeLocalStorage";
 import * as userService from "~/services/customers";
+
 type State = {
   user: any | null;
   accessToken: string | null;
@@ -10,15 +10,10 @@ type State = {
   error: string | null;
 };
 
-const readStored = (key: string) => {
-  if (typeof window === "undefined") return null;
-  return safeLocalStorage.getItem(key) ?? sessionStorage.getItem(key);
-};
-
 const initialState: State = {
   user: null,
-  accessToken: readStored("accessToken"),
-  refreshToken: readStored("refreshToken"),
+  accessToken: null,
+  refreshToken: null,
   loading: false,
   error: null,
 };
@@ -62,18 +57,18 @@ const slice = createSlice({
       state.user = null;
       state.accessToken = null;
       state.refreshToken = null;
-      safeLocalStorage.removeItem("accessToken");
-      safeLocalStorage.removeItem("refreshToken");
-      if (typeof window !== "undefined") {
-        sessionStorage.removeItem("accessToken");
-        sessionStorage.removeItem("refreshToken");
-        sessionStorage.removeItem("user");
-      }
+      // redux-persist sẽ tự động xóa khỏi localStorage
+    },
+    updateTokens(state, action) {
+      // Action để cập nhật token khi refresh thành công
+      const { accessToken, refreshToken } = action.payload;
+      if (accessToken) state.accessToken = accessToken;
+      if (refreshToken) state.refreshToken = refreshToken;
     },
   },
   extraReducers(builder) {
     builder
-      .addCase(loginThunk.pending, state => {
+      .addCase(loginThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -92,35 +87,8 @@ const slice = createSlice({
         state.refreshToken = refresh;
         state.user = user ?? null;
         console.log("Login successful:", action.payload);
-        const remember = (action.meta?.arg as any)?.rememberMe ?? true;
 
-        try {
-          if (typeof window !== "undefined") {
-            if (remember) {
-              token
-                ? safeLocalStorage.setItem("accessToken", token)
-                : safeLocalStorage.removeItem("accessToken");
-              refresh
-                ? safeLocalStorage.setItem("refreshToken", refresh)
-                : safeLocalStorage.removeItem("refreshToken");
-
-              sessionStorage.removeItem("accessToken");
-              sessionStorage.removeItem("refreshToken");
-            } else {
-              token
-                ? sessionStorage.setItem("accessToken", token)
-                : sessionStorage.removeItem("accessToken");
-              refresh
-                ? sessionStorage.setItem("refreshToken", refresh)
-                : sessionStorage.removeItem("refreshToken");
-
-              safeLocalStorage.removeItem("accessToken");
-              safeLocalStorage.removeItem("refreshToken");
-            }
-          }
-        } catch (e) {
-          console.warn("Persist auth tokens failed:", e);
-        }
+        // redux-persist sẽ tự động lưu vào localStorage
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
@@ -129,11 +97,11 @@ const slice = createSlice({
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.user = action.payload ?? null;
       })
-      .addCase(fetchCurrentUser.rejected, state => {
+      .addCase(fetchCurrentUser.rejected, (state) => {
         state.user = null;
       });
   },
 });
 
-export const { logoutLocal } = slice.actions;
+export const { logoutLocal, updateTokens } = slice.actions;
 export default slice.reducer;
