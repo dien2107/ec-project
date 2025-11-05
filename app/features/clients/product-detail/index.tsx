@@ -20,7 +20,8 @@ export default function Product() {
     queryFn: () => getProductDetailBySlug(slug!),
     enabled: !!slug,
   });
-
+  console.log(JSON.stringify(product));
+  console.log(`=============`);
   if (isLoading)
     return (
       <motion.div
@@ -72,7 +73,7 @@ export default function Product() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <ProductDetail product={product.data} />
+          <ProductDetail product={product.data} slug={slug} />
         </motion.div>
       </div>
 

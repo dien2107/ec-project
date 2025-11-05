@@ -23,9 +23,24 @@ const paymentSchema = z.object({
 });
 
 export default function Payment() {
-  const { state } = useLocation();
+  const location = useLocation();
+  const state = location.state ?? { selectedItems: [], appliedDiscount: null };
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  // Kiểm tra state và redirect nếu không hợp lệ
+  useEffect(() => {
+    if (
+      !state ||
+      !("selectedItems" in state) ||
+      !Array.isArray(state.selectedItems)
+    ) {
+      toast.error("Vui lòng chọn sản phẩm từ giỏ hàng!");
+      navigate("/cart");
+      return;
+    }
+  }, [state, navigate]);
 
   //Redux
   const cartItems = useAppSelector(state => state.cart.items);
@@ -44,6 +59,7 @@ export default function Payment() {
   );
 
   const [ship, setShip] = useState<Ship | null>(null);
+  const [isShipLoading, setIsShipLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   console.log(state.selectedItems);
@@ -65,19 +81,36 @@ export default function Payment() {
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(
-      fetchShipListData({
-        statusId: statuses.find(s => s.name === "Active")?.statusId,
-      })
-    );
-    console.log(shipList);
-  }, [dispatch, statuses]);
+    // Chỉ fetch ship khi đã có statuses
+    if (statuses.length > 0) {
+      const activeStatus = statuses.find(s => s.name === "Active");
+      if (activeStatus) {
+        dispatch(
+          fetchShipListData({
+            statusId: activeStatus.statusId,
+          })
+        );
+      }
+    }
+  }, [dispatch, statuses.length]); // Chỉ phụ thuộc vào length, không phụ thuộc statuses array
+
   useEffect(() => {
     setIsOnlinePayment(paymentMethod === "bank");
   }, [paymentMethod]);
+
   useEffect(() => {
-    if (shipList?.isSuccess) {
-      setShip(shipList.data.items.at(0));
+    if (shipList?.isSuccess && shipList.data?.items) {
+      const items = shipList.data.items.flat();
+      if (items.length > 0) {
+        setShip(items[0]);
+        console.log("Ship loaded:", items[0]);
+      } else {
+        console.warn("No ship items found");
+      }
+      setIsShipLoading(false);
+    } else if (shipList?.isSuccess === false) {
+      console.error("Failed to load ship list");
+      setIsShipLoading(false);
     }
   }, [shipList]);
 
@@ -100,14 +133,22 @@ export default function Payment() {
     [cartItems, selectedItems]
   );
 
-  const subtotal = useMemo(
-    () =>
-      selectedCartItems.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-      ),
-    [selectedCartItems]
-  );
+  const subtotal = useMemo(() => {
+    return selectedCartItems.reduce((total, item) => {
+      // Tìm item data từ state để lấy giá giảm
+      const itemData = state?.selectedItems?.find(
+        (si: any) => si.variantId === item.productVariantId
+      );
+
+      // Sử dụng sellingPrice nếu có discount, nếu không dùng price gốc
+      const itemPrice =
+        itemData?.discountPercentage && itemData.discountPercentage > 0
+          ? itemData.sellingPrice
+          : item.price;
+
+      return total + itemPrice * item.quantity;
+    }, 0);
+  }, [selectedCartItems, state?.selectedItems]);
 
   // Discount passed from Cart via navigation state
   const appliedDiscount = state?.appliedDiscount ?? null;
@@ -277,58 +318,97 @@ export default function Payment() {
               </h2>
             </div>
             <div className="p-6 space-y-4">
-              {selectedCartItems.map(item => (
-                <div
-                  key={String(item.productVariantId)}
-                  className="flex gap-4 pb-4 border-b last:border-b-0 last:pb-0"
-                >
-                  <img
-                    src={
-                      typeof item.productImageUrl === "string"
-                        ? item.productImageUrl
-                        : (item.productImageUrl &&
-                            (item.productImageUrl as any).imageUrl) ||
-                          ""
-                    }
-                    alt={item.productName}
-                    className="w-20 h-20 object-cover rounded-md border"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 mb-1 truncate">
-                      {item.productName || "Sản phẩm"}
-                    </h3>
-                    <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-2">
-                      {item.size && (
-                        <span className="px-2 py-0.5 bg-gray-100 rounded">
-                          Size:{" "}
-                          {typeof item.size === "string"
-                            ? item.size
-                            : (item.size as any).name}
-                        </span>
-                      )}
-                      {item.color && (
-                        <span className="px-2 py-0.5 bg-gray-100 rounded">
-                          Màu:{" "}
-                          {typeof item.color === "string"
-                            ? item.color
-                            : (item.color as any).name}
-                        </span>
-                      )}
+              {selectedCartItems.map(item => {
+                const itemData = state?.selectedItems?.find(
+                  (si: any) => si.variantId === item.productVariantId
+                );
+                const hasDiscount =
+                  itemData?.discountPercentage &&
+                  itemData.discountPercentage > 0;
+                const displayPrice = hasDiscount
+                  ? itemData.sellingPrice
+                  : item.price;
+
+                return (
+                  <div
+                    key={String(item.productVariantId)}
+                    className="flex gap-4 pb-4 border-b last:border-b-0 last:pb-0"
+                  >
+                    <img
+                      src={
+                        typeof item.productImageUrl === "string"
+                          ? item.productImageUrl
+                          : (item.productImageUrl &&
+                              (item.productImageUrl as any).imageUrl) ||
+                            ""
+                      }
+                      alt={item.productName}
+                      className="w-20 h-20 object-cover rounded-md border"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 mb-1 truncate">
+                        {item.productName || "Sản phẩm"}
+                      </h3>
+                      <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-2">
+                        {item.size && (
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">
+                            Size:{" "}
+                            {typeof item.size === "string"
+                              ? item.size
+                              : (item.size as any).name}
+                          </span>
+                        )}
+                        {item.color && (
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">
+                            Màu:{" "}
+                            {typeof item.color === "string"
+                              ? item.color
+                              : (item.color as any).name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Số lượng: {item.quantity}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      Số lượng: {item.quantity}
+                    <div className="text-right flex flex-col justify-between">
+                      {hasDiscount ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 justify-end">
+                            <span className="font-semibold text-red-600">
+                              {displayPrice.toLocaleString("vi-VN")}₫
+                            </span>
+                            <span className="text-xs text-gray-400 line-through">
+                              {itemData.basePrice.toLocaleString("vi-VN")}₫
+                            </span>
+                          </div>
+                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold bg-red-100 text-red-600 rounded">
+                            -{itemData.discountPercentage}%
+                          </span>
+                          <div className="text-sm text-gray-500 font-medium mt-1">
+                            {(displayPrice * item.quantity).toLocaleString(
+                              "vi-VN"
+                            )}
+                            ₫
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="font-semibold text-gray-900">
+                            {item.price.toLocaleString("vi-VN")}₫
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {(item.price * item.quantity).toLocaleString(
+                              "vi-VN"
+                            )}
+                            ₫
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right flex flex-col justify-between">
-                    <div className="font-semibold text-gray-900">
-                      {item.price.toLocaleString("vi-VN")}₫
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {(item.price * item.quantity).toLocaleString("vi-VN")}₫
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -345,9 +425,14 @@ export default function Payment() {
               shippingFee={shippingFee}
               total={total}
               ship={ship}
-              disabled={isProcessing}
+              disabled={isProcessing || isShipLoading}
               onPlaceOrder={handlePlaceOrder}
             />
+            {isShipLoading && (
+              <div className="mt-2 text-sm text-gray-500 text-center">
+                Đang tải thông tin vận chuyển...
+              </div>
+            )}
           </div>
         </div>
       </div>
