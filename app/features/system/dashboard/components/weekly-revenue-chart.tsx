@@ -15,8 +15,9 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 
-import { fakeWeeklyRevenueData } from "../data/fakeVisualReports";
 import { formatVND } from "~/libs";
+import { useQuery } from "@tanstack/react-query";
+import { getWeeklySales } from "~/services/dashboard";
 
 const weekMap: Record<string, string> = {
   CN: "Chủ nhật",
@@ -29,6 +30,46 @@ const weekMap: Record<string, string> = {
 };
 
 export default function WeeklyRevenueChart() {
+  const { data: res, isLoading } = useQuery({
+    queryKey: ["weekly-sales"],
+    queryFn: () => getWeeklySales(),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+    refetchInterval: 1000 * 60,
+  });
+
+  // helper: map API dayOfWeek or date -> short code (CN, T2..T7)
+  const shortDayFromItem = (item: any) => {
+    if (item?.dayOfWeek) {
+      const s = item.dayOfWeek.toLowerCase();
+      if (s.includes("chủ")) return "CN";
+      if (s.includes("hai") || s.includes("thứ 2") || s.includes("t2"))
+        return "T2";
+      if (s.includes("ba") || s.includes("thứ 3") || s.includes("t3"))
+        return "T3";
+      if (s.includes("tư") || s.includes("thứ 4") || s.includes("t4"))
+        return "T4";
+      if (s.includes("năm") || s.includes("thứ 5") || s.includes("t5"))
+        return "T5";
+      if (s.includes("sáu") || s.includes("thứ 6") || s.includes("t6"))
+        return "T6";
+      if (s.includes("bảy") || s.includes("thứ 7") || s.includes("t7"))
+        return "T7";
+    }
+    if (item?.date) {
+      const d = new Date(item.date);
+      const codes = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+      return codes[d.getDay()] || "";
+    }
+    return "";
+  };
+
+  const chartData =
+    res?.data?.map((item: any) => ({
+      name: shortDayFromItem(item),
+      revenue: item.revenue,
+    })) ?? [];
+
   return (
     <div className="col-span-1 flex flex-1">
       <Card className="shadow-sm rounded-lg border bg-card text-card-foreground ">
@@ -49,7 +90,7 @@ export default function WeeklyRevenueChart() {
             <LineChart
               width={322}
               height={200}
-              data={fakeWeeklyRevenueData}
+              data={chartData}
               margin={{
                 top: 5,
                 right: 30,

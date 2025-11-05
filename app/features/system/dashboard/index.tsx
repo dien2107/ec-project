@@ -3,7 +3,6 @@ import RevenueChart from "./components/revenue-chart";
 import CategoryChart from "./components/category-chart";
 import WeeklyRevenueChart from "./components/weekly-revenue-chart";
 import TopSellingProductsChart from "./components/top-selling-products";
-import RecentOrders from "./components/recent-orders";
 
 export default function Dashboard() {
   return (
@@ -14,12 +13,20 @@ export default function Dashboard() {
 
       <div className="flex flex-col gap-4">
         <StatisticCards />
-        <div className="grid grid-cols-3 gap-4">
-          <RevenueChart />
-          <CategoryChart />
-          <WeeklyRevenueChart />
-          <TopSellingProductsChart />
-          <RecentOrders />
+        <div className="grid grid-cols-3 gap-4 auto-rows-fr">
+          <div className="h-full col-span-2">
+            <RevenueChart />
+          </div>
+          <div className="h-full col-span-1">
+            <CategoryChart />
+          </div>
+
+          <div className="h-full col-span-1">
+            <WeeklyRevenueChart />
+          </div>
+          <div className="h-full col-span-2">
+            <TopSellingProductsChart />
+          </div>
         </div>
       </div>
     </div>
