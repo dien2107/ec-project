@@ -235,23 +235,24 @@ export default function ProductFilterBar({
         transition={{ duration: 0.6, ease: "easeInOut" }}
         style={{ overflow: "visible" }}
       >
-        <div className="flex flex-col gap-3 border-b border-gray-200 py-3">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex flex-col gap-3 sm:gap-4 border-b border-gray-200 py-3 sm:py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
             {/* Bộ lọc */}
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-800">
-              <span className="text-sm text-gray-400">Bộ lọc:</span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-800">
+              <span className="text-xs sm:text-sm text-gray-400">Bộ lọc:</span>
 
               {filterOptions.map((f) => (
                 <Popover key={f.label}>
                   <PopoverTrigger asChild>
-                    <Button className="flex items-center gap-1 text-gray-700 hover:text-black hover:underline">
+                    <Button className="flex items-center gap-1 text-xs sm:text-sm text-gray-700 hover:text-black hover:underline px-2 sm:px-3 h-8 sm:h-9">
                       {f.label}
-                      <ChevronDown size={14} />
+                      <ChevronDown size={14} className="hidden sm:block" />
+                      <ChevronDown size={12} className="sm:hidden" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
                     align="start"
-                    className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible"
+                    className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible w-[280px] sm:w-auto"
                   >
                     {f.type === "price" ? (
                       <div className="space-y-3">
@@ -428,14 +429,15 @@ export default function ProductFilterBar({
               ))}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button className="flex items-center gap-1 text-gray-700 hover:text-black hover:underline">
+                  <Button className="flex items-center gap-1 text-xs sm:text-sm text-gray-700 hover:text-black hover:underline px-2 sm:px-3 h-8 sm:h-9">
                     Còn hàng
-                    <ChevronDown size={14} />
+                    <ChevronDown size={14} className="hidden sm:block" />
+                    <ChevronDown size={12} className="sm:hidden" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   align="start"
-                  className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible"
+                  className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible w-[280px] sm:w-auto"
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-gray-500">
@@ -470,30 +472,34 @@ export default function ProductFilterBar({
             </div>
 
             {/* Sort */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-400">Sắp xếp theo:</span>
-              <Select
-                options={sortOptions}
-                value={
-                  sortOptions.find((o) => o.value === filters.orderBy) ?? null
-                }
-                onChange={(option: any) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    orderBy: option?.value ?? "",
-                  }))
-                }
-                isSearchable={false}
-                className="min-w-[240px]"
-                classNamePrefix="react-select"
-                styles={reactSelectStyles}
-              />
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                {isFiltering ? (
-                  <Loader2 className="animate-spin w-4 h-4" />
-                ) : (
-                  <span>Có {totalCount} sản phẩm</span>
-                )}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+              <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                Sắp xếp theo:
+              </span>
+              <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                <Select
+                  options={sortOptions}
+                  value={
+                    sortOptions.find((o) => o.value === filters.orderBy) ?? null
+                  }
+                  onChange={(option: any) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      orderBy: option?.value ?? "",
+                    }))
+                  }
+                  isSearchable={false}
+                  className="min-w-[180px] sm:min-w-[240px] flex-1 sm:flex-none"
+                  classNamePrefix="react-select"
+                  styles={reactSelectStyles}
+                />
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                  {isFiltering ? (
+                    <Loader2 className="animate-spin w-3 h-3 sm:w-4 sm:h-4" />
+                  ) : (
+                    <span>Có {totalCount} sản phẩm</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

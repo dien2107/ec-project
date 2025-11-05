@@ -25,11 +25,13 @@ export default function ProductRelated({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex items-center justify-center gap-4 min-h-[80vh]"
+        className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 min-h-[50vh] sm:min-h-[60vh] md:min-h-[80vh] px-4"
         aria-live="polite"
       >
-        <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
-        <span className="text-gray-700">Đang tải sản phẩm liên quan...</span>
+        <Loader2 className="animate-spin w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
+        <span className="text-sm sm:text-base text-gray-700 text-center">
+          Đang tải sản phẩm liên quan...
+        </span>
       </motion.div>
     );
 
@@ -39,10 +41,13 @@ export default function ProductRelated({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="px-4"
       >
-        <div className="py-8">
-          <h2 className="text-xl font-bold mb-6">Sản phẩm liên quan</h2>
-          <p className="text-center text-black text-lg">
+        <div className="py-6 sm:py-8">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6">
+            Sản phẩm liên quan
+          </h2>
+          <p className="text-center text-black text-sm sm:text-base md:text-lg">
             Lỗi hoặc không tìm thấy sản phẩm liên quan
           </p>
         </div>
@@ -50,16 +55,16 @@ export default function ProductRelated({
     );
 
   return (
-    <div className="py-8">
+    <div className="py-6 sm:py-8 md:py-10">
       <motion.h2
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-xl font-bold mb-6"
+        className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 md:mb-8"
       >
         Sản phẩm liên quan
       </motion.h2>
-      <div className="grid grid-cols-5 gap-x-4 gap-y-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-3 gap-y-8 sm:gap-x-4 sm:gap-y-10 md:gap-x-4 md:gap-y-12">
         {data.data.map((p: Product, index: number) => {
           const imageUrl =
             p.primaryImage?.imageUrl || "/placeholder-product.png";

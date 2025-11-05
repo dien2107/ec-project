@@ -21,13 +21,14 @@ export default function ProductImageGallery({
       });
     }
   };
+
   return (
-    <div className="flex justify-around items-start">
-      {/* List images */}
-      <div className="flex flex-col gap-y-2 pb-2 max-h-[500px] min-w-[58px] overflow-y-auto scrollbar-custom">
+    <div className="flex flex-col sm:flex-row justify-around items-start gap-3 sm:gap-4">
+      {/* List images - Mobile: horizontal scroll, Desktop: vertical */}
+      <div className="flex sm:flex-col gap-2 pb-2 w-full sm:w-auto sm:max-h-[500px] sm:min-w-[58px] md:min-w-[70px] lg:min-w-[80px] overflow-x-auto sm:overflow-x-visible sm:overflow-y-auto scrollbar-custom order-2 sm:order-1">
         {images.map((image, index) => (
           <div
-            className="w-full h-20 cursor-pointer"
+            className="flex-shrink-0 w-16 h-16 sm:w-full sm:h-16 md:h-20 lg:h-24 cursor-pointer rounded-md overflow-hidden border-2 border-transparent hover:border-gray-400 transition-colors"
             key={image.productImageId}
             onClick={() => scrollToImage(image.productImageId)}
           >
@@ -43,7 +44,7 @@ export default function ProductImageGallery({
       {/* Main image */}
       <div
         ref={mainImageContainerRef}
-        className="max-h-[580px] relative overflow-y-auto rounded-lg shadow-md scrollbar-custom"
+        className="w-full sm:flex-1 max-h-[400px] sm:max-h-[500px] md:max-h-[580px] lg:max-h-[650px] relative overflow-y-auto rounded-lg shadow-md scrollbar-custom order-1 sm:order-2"
       >
         {images.map((image, index) => {
           return (
@@ -57,7 +58,7 @@ export default function ProductImageGallery({
               <img
                 src={image.imageUrl}
                 alt={image.altText}
-                className="h-full object-cover"
+                className="h-full w-full object-cover"
               />
             </div>
           );
