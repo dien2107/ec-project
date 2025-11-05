@@ -26,7 +26,7 @@ import type { PaymentDestination } from "~/types/payment/payment-destination";
 
 const PaymentMethods = () => {
   const dispatch = useAppDispatch();
-  const { paymentDestinationList } = useAppSelector(
+  const { paymentDestinationList, isLoading } = useAppSelector(
     (s) => s.paymentDestinationList
   );
   // loadingId holds destinationId currently being toggled (per-row loading)
@@ -93,52 +93,62 @@ const PaymentMethods = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4">
-              {banksList.map((bank) => (
-                <div
-                  key={bank.destinationId}
-                  className="flex items-center justify-between p-4 border rounded-xl"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-sm overflow-hidden flex items-center justify-center bg-gray-100">
-                      {bank.imageUrl ? (
-                        <img
-                          src={bank.imageUrl}
-                          alt={bank.bankName ?? "logo"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-lg font-semibold text-gray-700">
-                          {(bank.bankName ?? "")
-                            .split(" ")
-                            .map((s) => s[0])
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .join("")}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium">{bank.bankName} </div>
-                      <div className="text-sm text-muted-foreground">
-                        {bank.accountName}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        STK: {bank.identifier}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {loadingId === bank.destinationId && (
-                      <Loader2 className="animate-spin h-4 w-4 text-gray-500" />
-                    )}
-                    <Switch
-                      checked={bank.status?.name.toLowerCase() === "active"}
-                      onCheckedChange={() => handleToggleStatus(bank)}
-                      disabled={loadingId === bank.destinationId}
-                    />
-                  </div>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="animate-spin h-8 w-8 text-gray-500" />
                 </div>
-              ))}
+              ) : banksList.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Chưa có tài khoản ngân hàng.
+                </div>
+              ) : (
+                banksList.map((bank) => (
+                  <div
+                    key={bank.destinationId}
+                    className="flex items-center justify-between p-4 border rounded-xl"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-sm overflow-hidden flex items-center justify-center bg-gray-100">
+                        {bank.imageUrl ? (
+                          <img
+                            src={bank.imageUrl}
+                            alt={bank.bankName ?? "logo"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-lg font-semibold text-gray-700">
+                            {(bank.bankName ?? "")
+                              .split(" ")
+                              .map((s) => s[0])
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .join("")}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium">{bank.bankName} </div>
+                        <div className="text-sm text-muted-foreground">
+                          {bank.accountName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          STK: {bank.identifier}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {loadingId === bank.destinationId && (
+                        <Loader2 className="animate-spin h-4 w-4 text-gray-500" />
+                      )}
+                      <Switch
+                        checked={bank.status?.name.toLowerCase() === "active"}
+                        onCheckedChange={() => handleToggleStatus(bank)}
+                        disabled={loadingId === bank.destinationId}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -152,52 +162,62 @@ const PaymentMethods = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4">
-              {eWalletList.map((wallet) => (
-                <div
-                  key={wallet.destinationId}
-                  className="flex items-center justify-between p-4 border rounded-xl"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-sm overflow-hidden flex items-center justify-center bg-gray-100">
-                      {wallet.imageUrl ? (
-                        <img
-                          src={wallet.imageUrl}
-                          alt={wallet.bankName ?? "logo"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-lg font-semibold text-gray-700">
-                          {(wallet.bankName ?? "")
-                            .split(" ")
-                            .map((s) => s[0])
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .join("")}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium">{wallet.bankName}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {wallet.accountName}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        ID: {wallet.identifier}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {loadingId === wallet.destinationId && (
-                      <Loader2 className="animate-spin h-4 w-4 text-gray-500" />
-                    )}
-                    <Switch
-                      checked={wallet.status?.name.toLowerCase() === "active"}
-                      onCheckedChange={() => handleToggleStatus(wallet)}
-                      disabled={loadingId === wallet.destinationId}
-                    />
-                  </div>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="animate-spin h-8 w-8 text-gray-500" />
                 </div>
-              ))}
+              ) : eWalletList.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Chưa có ví điện tử.
+                </div>
+              ) : (
+                eWalletList.map((wallet) => (
+                  <div
+                    key={wallet.destinationId}
+                    className="flex items-center justify-between p-4 border rounded-xl"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-sm overflow-hidden flex items-center justify-center bg-gray-100">
+                        {wallet.imageUrl ? (
+                          <img
+                            src={wallet.imageUrl}
+                            alt={wallet.bankName ?? "logo"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-lg font-semibold text-gray-700">
+                            {(wallet.bankName ?? "")
+                              .split(" ")
+                              .map((s) => s[0])
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .join("")}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium">{wallet.bankName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {wallet.accountName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          ID: {wallet.identifier}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {loadingId === wallet.destinationId && (
+                        <Loader2 className="animate-spin h-4 w-4 text-gray-500" />
+                      )}
+                      <Switch
+                        checked={wallet.status?.name.toLowerCase() === "active"}
+                        onCheckedChange={() => handleToggleStatus(wallet)}
+                        disabled={loadingId === wallet.destinationId}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

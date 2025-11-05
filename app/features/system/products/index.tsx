@@ -120,6 +120,7 @@ export default function Products() {
           expandedRowContent={(product: Product) => (
             <ProductVariantRow productId={product.productId} />
           )}
+          isLoading={isProductListLoading}
         />
       </div>
 
