@@ -41,7 +41,7 @@ export default function EditProductVariantDialog({
 }) {
   const dispatch = useAppDispatch();
   const statuses = useAppSelector(
-    (state) => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
+    (state) => state.statuses.data?.[ENTITY_TYPE.PRODUCT_VARIANT] ?? []
   );
   const { sizeOptions } = useAppSelector((state) => state.sizeOptions);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +57,7 @@ export default function EditProductVariantDialog({
   }, [dispatch, sizeOptions]);
 
   useEffect(() => {
-    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.SHIP }));
+    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.PRODUCT_VARIANT }));
   }, [dispatch]);
 
   useEffect(() => {

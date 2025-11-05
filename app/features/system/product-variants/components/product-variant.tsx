@@ -13,6 +13,18 @@ export default function ProductVariant({
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
+  const getStockColorClass = (stockQuantity: number) => {
+    if (stockQuantity === 0) {
+      return "text-gray-400"; // Hết hàng
+    } else if (stockQuantity <= 10) {
+      return "text-red-600"; // Tồn kho thấp
+    } else if (stockQuantity <= 50) {
+      return "text-yellow-600"; // Tồn kho trung bình
+    } else {
+      return "text-green-600"; // Tồn kho cao
+    }
+  };
+
   return (
     <div className="col-span-1">
       <Card className="gap-0 p-3 ">
@@ -25,11 +37,7 @@ export default function ProductVariant({
                     ? "bg-green-100 text-green-700"
                     : variant.status.name === "Inactive"
                       ? "bg-red-100 text-red-700"
-                      : variant.status.name === "Draft"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : variant.status.name === "OutOfStock"
-                          ? "bg-gray-200 text-gray-700"
-                          : "bg-gray-100 text-gray-500"
+                      : "bg-gray-100 text-gray-700"
                 }`}
               >
                 {variant.status.displayName}
@@ -40,7 +48,7 @@ export default function ProductVariant({
                 <Button variant="ghost" className="w-6 h-6" onClick={onEdit}>
                   <SquarePen />
                 </Button>
-                {variant.status.name === "Draft" && (
+                {variant.canDelete && (
                   <Button
                     variant="ghost"
                     className="w-6 h-6"
@@ -60,7 +68,9 @@ export default function ProductVariant({
             </div>
             <div>
               Tồn kho:{" "}
-              <span className="font-medium text-green-600">
+              <span
+                className={`font-medium ${getStockColorClass(variant.stockQuantity)}`}
+              >
                 {variant.stockQuantity}
               </span>
             </div>
