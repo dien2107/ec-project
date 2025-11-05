@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import UserInfo from "./components/user-info";
-import { Package } from "lucide-react";
+import { Package, ChevronDown, ChevronUp } from "lucide-react";
 import type {
   OrderItem,
   OrderStatus,
@@ -31,9 +31,9 @@ export default function UserProfilePage() {
 
   const { orderList } = useAppSelector(state => state.orderList);
   const [listOrder, setListOrder] = useState<OrderItem[]>([]);
-  // 🔹 Lấy danh sách đơn hàng khi load trang
-  console.log(user);
-  console.log(listOrder);
+  const [showAll, setShowAll] = useState(false);
+  const ITEMS_PER_PAGE = 5;
+
   useEffect(() => {
     if (user?.data?.userId) {
       dispatch(fetchOrderListDataByUserId(user.data.userId));
@@ -44,36 +44,38 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (!orderList?.data) return;
 
-    const formattedList: OrderItem[] = orderList.data.map(order => ({
-      id: order.orderId,
-      status:
-        order.status.name === "Pending"
-          ? "Chờ xác nhận"
-          : order.status.name === "Confirmed"
-            ? "Đang giao"
-            : order.status.name === "Delivered"
-              ? "Đã giao"
-              : order.status.name === "Cancelled"
-                ? "Đã hủy"
-                : "Chờ xác nhận",
-      date: order.createdAt.toString(),
-      total: order.totalAmount,
-      address: order.addressInfo,
-      user: {
-        userId: order.user.userId,
-        fullName: order.user.fullName,
-        phone: order.user.phone,
-      },
-      items: order.items.map(item => ({
-        orderItemId: item.orderItemId,
-        productVariantId: item.productVariantId, // hoặc item.productVariantId nếu có
-        name: item.productName,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.productImage,
-        size: item.size,
-      })),
-    }));
+    const formattedList: OrderItem[] = orderList.data.items
+      .flat()
+      .map(order => ({
+        id: order.orderId,
+        status:
+          order.status.name === "Pending"
+            ? "Chờ xác nhận"
+            : order.status.name === "Confirmed"
+              ? "Đang giao"
+              : order.status.name === "Delivered"
+                ? "Đã giao"
+                : order.status.name === "Cancelled"
+                  ? "Đã hủy"
+                  : "Chờ xác nhận",
+        date: order.createdAt.toString(),
+        total: order.totalAmount,
+        address: order.addressInfo,
+        user: {
+          userId: order.user.userId,
+          fullName: order.user.fullName,
+          phone: order.user.phone,
+        },
+        items: order.items.map(item => ({
+          orderItemId: item.orderItemId,
+          productVariantId: item.productVariantId, // hoặc item.productVariantId nếu có
+          name: item.productName,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.productImage,
+          size: item.size,
+        })),
+      }));
 
     setListOrder(formattedList);
   }, [orderList]);
@@ -84,6 +86,13 @@ export default function UserProfilePage() {
       ? listOrder
       : listOrder.filter(o => o.status === statusFilter);
   }, [statusFilter, listOrder]);
+
+  // 🔹 Hiển thị có giới hạn hoặc tất cả
+  const displayedOrders = useMemo(() => {
+    return showAll ? filteredOrders : filteredOrders.slice(0, ITEMS_PER_PAGE);
+  }, [showAll, filteredOrders]);
+
+  const hasMore = filteredOrders.length > ITEMS_PER_PAGE;
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -126,15 +135,43 @@ export default function UserProfilePage() {
                       <p>Không có đơn hàng</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {filteredOrders.map(order => (
-                        <OrderCard
-                          key={order.id}
-                          order={order}
-                          onClick={() => setSelectedOrder(order)}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      <div className="space-y-4">
+                        {displayedOrders.map(order => (
+                          <OrderCard
+                            key={order.id}
+                            order={order}
+                            onClick={() => setSelectedOrder(order)}
+                          />
+                        ))}
+                      </div>
+
+                      {hasMore && !showAll && (
+                        <div className="text-center mt-6">
+                          <button
+                            onClick={() => setShowAll(true)}
+                            className="px-6 py-2 text-gray-600 hover:text-blue-600 font-medium transition-colors cursor-pointer underline flex items-center gap-2 mx-auto"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                            Xem thêm ({filteredOrders.length -
+                              ITEMS_PER_PAGE}{" "}
+                            đơn hàng)
+                          </button>
+                        </div>
+                      )}
+
+                      {showAll && hasMore && (
+                        <div className="text-center mt-6">
+                          <button
+                            onClick={() => setShowAll(false)}
+                            className="px-6 py-2 text-gray-600 hover:text-blue-600 font-medium transition-colors cursor-pointer underline flex items-center gap-2 mx-auto"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                            Thu gọn
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

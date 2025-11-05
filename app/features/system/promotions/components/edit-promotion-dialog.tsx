@@ -52,6 +52,15 @@ export default function EditPromotionDialog({
     (state) => state.statuses
   );
 
+  const formatDateLocal = (date?: string | Date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const defaultValues: DiscountForm = {
     code: selectedPromotion?.code ?? "",
     description: selectedPromotion?.description ?? "",
@@ -60,12 +69,8 @@ export default function EditPromotionDialog({
     minOrderAmount: selectedPromotion?.minOrderAmount ?? 0,
     maxDiscountAmount: selectedPromotion?.maxDiscountAmount ?? undefined,
     usageLimit: selectedPromotion?.usageLimit ?? undefined,
-    startAt: selectedPromotion?.startAt
-      ? new Date(selectedPromotion.startAt).toISOString().split("T")[0]
-      : "",
-    endAt: selectedPromotion?.endAt
-      ? new Date(selectedPromotion.endAt).toISOString().split("T")[0]
-      : "",
+    startAt: formatDateLocal(selectedPromotion?.startAt),
+    endAt: formatDateLocal(selectedPromotion?.endAt),
     statusId: selectedPromotion?.status?.statusId ?? null,
   };
 
@@ -84,6 +89,10 @@ export default function EditPromotionDialog({
   const discountValue = watch("discountValue");
   const minOrderAmount = watch("minOrderAmount");
   const maxDiscountAmount = watch("maxDiscountAmount");
+  const usageLimit = watch("usageLimit");
+
+  // 🔒 Check nếu đã sử dụng
+  const isUsed = (selectedPromotion?.usedCount ?? 0) > 0;
 
   // 🧠 Reset form khi mở
   useEffect(() => {
@@ -96,12 +105,8 @@ export default function EditPromotionDialog({
         minOrderAmount: selectedPromotion.minOrderAmount,
         maxDiscountAmount: selectedPromotion.maxDiscountAmount ?? undefined,
         usageLimit: selectedPromotion.usageLimit ?? undefined,
-        startAt: selectedPromotion.startAt
-          ? new Date(selectedPromotion.startAt).toISOString().split("T")[0]
-          : "",
-        endAt: selectedPromotion.endAt
-          ? new Date(selectedPromotion.endAt).toISOString().split("T")[0]
-          : "",
+        startAt: formatDateLocal(selectedPromotion.startAt),
+        endAt: formatDateLocal(selectedPromotion.endAt),
         statusId: selectedPromotion.status?.statusId ?? null,
       });
     }
@@ -111,7 +116,6 @@ export default function EditPromotionDialog({
   useEffect(() => {
     if (discountType === "fixed" && discountValue) {
       setValue("maxDiscountAmount", discountValue);
-      // Re-validate các trường liên quan
       trigger(["maxDiscountAmount", "minOrderAmount"]);
     }
   }, [discountType, discountValue, setValue, trigger]);
@@ -130,29 +134,62 @@ export default function EditPromotionDialog({
     }
   }, [maxDiscountAmount, minOrderAmount, trigger]);
 
+  // 🆕 Tự động set status "Inactive" khi usageLimit === usedCount
+  useEffect(() => {
+    if (!statusesData["Discount"] || !selectedPromotion) return;
+
+    const usedCount = selectedPromotion.usedCount ?? 0;
+    const inactiveStatus = statusesData["Discount"].find(
+      (s) => s.name?.toLowerCase() === "inactive"
+    );
+
+    if (!inactiveStatus) return;
+
+    // Nếu đạt giới hạn và chưa set inactive thì mới set
+    if (
+      usageLimit &&
+      Number(usageLimit) === usedCount &&
+      usedCount > 0 &&
+      selectedPromotion.status?.statusId !== inactiveStatus.statusId
+    ) {
+      setValue("statusId", inactiveStatus.statusId);
+      toast(
+        "Đã tự động chuyển sang trạng thái Ngưng áp dụng do hết lượt sử dụng.",
+        {
+          icon: "ℹ️",
+        }
+      );
+    }
+  }, [usageLimit, statusesData, selectedPromotion, setValue]);
+
   const handleSubmitClick = async (data: DiscountForm) => {
     try {
       setIsLoading(true);
       const isValid = await trigger();
       if (!isValid) return;
 
-      const updateData = {
-        code: data.code,
-        description: data.description,
-        discountType: data.discountType,
-        discountValue: data.discountValue,
-        minOrderAmount: data.minOrderAmount,
-        maxDiscountAmount: data.maxDiscountAmount,
-        usageLimit: data.usageLimit,
-        startAt: data.startAt,
-        endAt: data.endAt,
-        statusId: data.statusId,
-      };
+      // Giống hệt Add: dùng FormData
+      const formData = new FormData();
 
-      const res = await updateDiscount(
-        selectedPromotion!.discountId,
-        updateData
+      formData.append("code", data.code?.trim());
+      formData.append("description", data.description?.trim() || "");
+      formData.append("discountType", data.discountType);
+      formData.append("discountValue", data.discountValue.toString());
+      formData.append("minOrderAmount", data.minOrderAmount.toString());
+      if (data.startAt) formData.append("startAt", data.startAt);
+      if (data.endAt) formData.append("endAt", data.endAt);
+
+      formData.append(
+        "statusId",
+        data.statusId != null ? data.statusId.toString() : ""
       );
+
+      if (data.maxDiscountAmount)
+        formData.append("maxDiscountAmount", data.maxDiscountAmount.toString());
+      if (data.usageLimit)
+        formData.append("usageLimit", data.usageLimit.toString());
+
+      const res = await updateDiscount(selectedPromotion!.discountId, formData);
 
       if (res?.isSuccess) {
         await onUpdated();
@@ -176,6 +213,7 @@ export default function EditPromotionDialog({
     statusesData["Discount"]?.map((s) => ({
       value: s.statusId,
       label: s.displayName || s.name,
+      name: s.name,
     })) ?? [];
 
   return (
@@ -184,7 +222,9 @@ export default function EditPromotionDialog({
         <DialogHeader>
           <DialogTitle>Cập nhật mã khuyến mãi</DialogTitle>
           <DialogDescription>
-            Cập nhật thông tin mã khuyến mãi
+            {isUsed
+              ? "Khuyến mãi đã được sử dụng — chỉ có thể cập nhật Mô tả, Ngày kết thúc, Giới hạn sử dụng và Trạng thái."
+              : "Cập nhật thông tin mã khuyến mãi"}
           </DialogDescription>
         </DialogHeader>
 
@@ -200,10 +240,14 @@ export default function EditPromotionDialog({
             <Input
               type="text"
               placeholder="Nhập mã khuyến mãi"
-              disabled={isLoading || (selectedPromotion?.usedCount ?? 0) > 0}
+              disabled={isLoading || isUsed}
               {...register("code", {
                 required: "Vui lòng nhập mã khuyến mãi",
                 maxLength: { value: 50, message: "Tối đa 50 ký tự" },
+                pattern: {
+                  value: /^[A-Za-z0-9]+$/,
+                  message: "Chỉ được phép nhập chữ và số, không khoảng trắng",
+                },
               })}
             />
             {errors.code && (
@@ -211,7 +255,7 @@ export default function EditPromotionDialog({
                 {errors.code.message}
               </span>
             )}
-            {(selectedPromotion?.usedCount ?? 0) > 0 && (
+            {isUsed && (
               <span className="text-gray-500 text-xs">
                 Mã khuyến mãi đã được sử dụng, không thể thay đổi.
               </span>
@@ -237,7 +281,7 @@ export default function EditPromotionDialog({
             <Input
               type="number"
               step="1"
-              disabled={isLoading}
+              disabled={isLoading || isUsed}
               {...register("minOrderAmount", {
                 required: "Vui lòng nhập giá trị đơn tối thiểu",
                 min: { value: 0, message: "Phải >= 0" },
@@ -284,7 +328,7 @@ export default function EditPromotionDialog({
                         { value: "fixed", label: "Số tiền" },
                       ].find((opt) => opt.value === field.value) || null
                     }
-                    isDisabled={isLoading}
+                    isDisabled={isLoading || isUsed}
                   />
                   {fieldState.error && (
                     <span className="text-red-500 text-xs">
@@ -307,7 +351,7 @@ export default function EditPromotionDialog({
               placeholder={
                 discountType === "percentage" ? "Nhập 0-100" : "Nhập số tiền"
               }
-              disabled={isLoading}
+              disabled={isLoading || isUsed}
               {...register("discountValue", {
                 required: "Vui lòng nhập giá trị khuyến mãi",
                 min: { value: 0, message: "Giá trị phải >= 0" },
@@ -339,7 +383,7 @@ export default function EditPromotionDialog({
                   ? "Tự động = giá trị khuyến mãi"
                   : "Nhập giá trị tối đa"
               }
-              disabled={isLoading || discountType === "fixed"}
+              disabled={isLoading || discountType === "fixed" || isUsed}
               {...register("maxDiscountAmount", {
                 required: "Vui lòng nhập giá trị giảm tối đa",
                 min: { value: 0, message: "Phải >= 0" },
@@ -365,9 +409,15 @@ export default function EditPromotionDialog({
               <label className="text-sm font-medium">Ngày bắt đầu</label>
               <Input
                 type="date"
-                disabled={isLoading}
+                disabled={isLoading || isUsed}
                 {...register("startAt", {
-                  required: "Vui lòng chọn ngày bắt đầu",
+                  validate: (value) => {
+                    const other = watch("endAt");
+                    if ((value && !other) || (!value && other)) {
+                      return "Phải điền cả ngày bắt đầu và ngày kết thúc hoặc để trống cả hai";
+                    }
+                    return true;
+                  },
                 })}
               />
               {errors.startAt && (
@@ -383,12 +433,12 @@ export default function EditPromotionDialog({
                 type="date"
                 disabled={isLoading}
                 {...register("endAt", {
-                  required: "Vui lòng chọn ngày kết thúc",
                   validate: (value) => {
-                    if (!value) return "Vui lòng chọn ngày kết thúc";
-                    const endDate = new Date(value);
-                    const startDate = new Date(watch("startAt"));
-                    if (endDate < startDate) {
+                    const other = watch("startAt");
+                    if ((value && !other) || (!value && other)) {
+                      return "Phải điền cả ngày bắt đầu và ngày kết thúc hoặc để trống cả hai";
+                    }
+                    if (value && other && new Date(value) < new Date(other)) {
                       return "Ngày kết thúc phải >= ngày bắt đầu";
                     }
                     return true;

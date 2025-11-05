@@ -204,9 +204,10 @@ export default function AddPromotionDialog({
               disabled={isLoading}
               {...register("promotionCode", {
                 required: "Vui lòng nhập mã khuyến mãi",
-                maxLength: {
-                  value: 50,
-                  message: "Tối đa 50 ký tự",
+                maxLength: { value: 50, message: "Tối đa 50 ký tự" },
+                pattern: {
+                  value: /^[A-Za-z0-9]+$/,
+                  message: "Chỉ được phép nhập chữ và số, không khoảng trắng",
                 },
               })}
             />
@@ -377,14 +378,25 @@ export default function AddPromotionDialog({
                 type="date"
                 disabled={isLoading}
                 {...register("startAt", {
-                  required: "Vui lòng chọn ngày bắt đầu",
                   validate: (value) => {
-                    if (!value) return "Vui lòng chọn ngày bắt đầu";
+                    const endAt = watch("endAt");
+
+                    // ✅ Trường hợp cả 2 đều rỗng => hợp lệ
+                    if (!value && !endAt) return true;
+
+                    // ❌ Một trong 2 null => lỗi
+                    if (!value && endAt)
+                      return "Phải nhập cả ngày bắt đầu và kết thúc";
+                    if (value && !endAt)
+                      return "Phải nhập cả ngày bắt đầu và kết thúc";
+
+                    // ✅ Khi có cả 2 => kiểm tra hợp lệ logic
                     const selectedDate = new Date(value);
                     const now = new Date();
                     now.setHours(0, 0, 0, 0);
                     if (selectedDate < now)
                       return "Ngày bắt đầu phải bằng hoặc sau hôm nay";
+
                     return true;
                   },
                 })}
@@ -402,13 +414,24 @@ export default function AddPromotionDialog({
                 type="date"
                 disabled={isLoading}
                 {...register("endAt", {
-                  required: "Vui lòng chọn ngày kết thúc",
                   validate: (value) => {
-                    if (!value) return "Vui lòng chọn ngày kết thúc";
+                    const startAt = watch("startAt");
+
+                    // ✅ Cả 2 đều rỗng => hợp lệ
+                    if (!value && !startAt) return true;
+
+                    // ❌ Một trong 2 null => lỗi
+                    if (!value && startAt)
+                      return "Phải nhập cả ngày bắt đầu và kết thúc";
+                    if (value && !startAt)
+                      return "Phải nhập cả ngày bắt đầu và kết thúc";
+
+                    // ✅ Khi có cả 2 => kiểm tra hợp lệ logic
                     const endDate = new Date(value);
-                    const startDate = new Date(watch("startAt"));
+                    const startDate = new Date(startAt);
                     if (endDate < startDate)
                       return "Ngày kết thúc phải bằng hoặc sau ngày bắt đầu";
+
                     return true;
                   },
                 })}

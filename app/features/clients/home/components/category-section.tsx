@@ -57,6 +57,7 @@ export default function CategorySection() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
 
   // Nếu không có bestSellingCategories thì ẩn section
   if (bestSellingCategories.length === 0) {
@@ -71,6 +72,9 @@ export default function CategorySection() {
 
     setCanScrollLeft(!atStart);
     setCanScrollRight(!atEnd);
+
+    // Check if content is scrollable
+    setIsScrollable(scrollWidth > clientWidth + 10);
   }, []);
 
   useEffect(() => {
@@ -117,33 +121,37 @@ export default function CategorySection() {
         <div className="flex-1 h-px bg-gradient-to-l from-transparent to-gray-300"></div>
       </div>
 
-      {/* Categories Scroll */}
       <div
         className="relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Left Arrow */}
-        <button
-          onClick={() => scroll("left")}
-          className={`
-            hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
-            bg-white shadow-lg rounded-full p-3
-            hover:bg-gray-100 transition-all duration-300
-            ${isHovered ? "opacity-100 -translate-x-2" : "opacity-0"}
-          `}
-          aria-label="Cuộn trái"
-        >
-          <ChevronLeft className="h-6 w-6 text-gray-700" />
-        </button>
+        {/* Left Arrow - Only show if scrollable */}
+        {isScrollable && (
+          <button
+            onClick={() => scroll("left")}
+            className={`
+              hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
+              bg-white shadow-lg rounded-full p-3
+              hover:bg-gray-100 transition-all duration-300
+              ${isHovered ? "opacity-100 -translate-x-2" : "opacity-0"}
+            `}
+            aria-label="Cuộn trái"
+          >
+            <ChevronLeft className="h-6 w-6 text-gray-700" />
+          </button>
+        )}
 
-        {/* Scrollable Container */}
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className="overflow-x-auto scrollbar-hide scroll-smooth"
+          className={`overflow-x-auto scrollbar-hide scroll-smooth ${
+            !isScrollable ? "flex justify-center" : ""
+          }`}
         >
-          <div className="flex gap-4 md:gap-6">
+          <div
+            className={`flex gap-4 md:gap-6 p-2 ${!isScrollable ? "justify-center" : "f"}`}
+          >
             {bestSellingCategories.map((category, index) => (
               <CategoryCard
                 key={category.categoryId}
@@ -155,19 +163,21 @@ export default function CategorySection() {
           </div>
         </div>
 
-        {/* Right Arrow */}
-        <button
-          onClick={() => scroll("right")}
-          className={`
-            hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
-            bg-white shadow-lg rounded-full p-3
-            hover:bg-gray-100 transition-all duration-300
-            ${isHovered ? "opacity-100 translate-x-2" : "opacity-0"}
-          `}
-          aria-label="Cuộn phải"
-        >
-          <ChevronRight className="h-6 w-6 text-gray-700" />
-        </button>
+        {/* Right Arrow - Only show if scrollable */}
+        {isScrollable && (
+          <button
+            onClick={() => scroll("right")}
+            className={`
+              hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
+              bg-white shadow-lg rounded-full p-3
+              hover:bg-gray-100 transition-all duration-300
+              ${isHovered ? "opacity-100 translate-x-2" : "opacity-0"}
+            `}
+            aria-label="Cuộn phải"
+          >
+            <ChevronRight className="h-6 w-6 text-gray-700" />
+          </button>
+        )}
       </div>
 
       {/* Custom CSS */}
