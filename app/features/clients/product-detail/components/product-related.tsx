@@ -97,6 +97,7 @@ export default function ProductRelated({
                   price={p.sellingPrice}
                   oldPrice={p.basePrice}
                   discount={p.discountPercentage}
+                  outOfStock={p.outOfStock}
                 />
               </motion.div>
             );
