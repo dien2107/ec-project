@@ -36,6 +36,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               price={p.sellingPrice}
               oldPrice={p.basePrice}
               discount={p.discountPercentage}
+              outOfStock={p.outOfStock}
             />
           </motion.div>
         );

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { NavLink } from "react-router";
 import { formatVND, renderStars } from "~/libs";
-// 🧩 Dùng slice thật, không dùng cartSliceold
 import { updateCartItem } from "~/redux/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import type { ProductDetail } from "~/types/product/product";
@@ -19,7 +18,7 @@ export default function ProductDetail({
   slug: string | undefined;
 }) {
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector(state => state.auth); // 🧩 Lấy userId từ Redux
+  const { user } = useAppSelector((state) => state.auth);
   const [selected, setSelected] = useState<SelectedProductProps>({
     productVariant: null,
     quantity: 1,
@@ -32,13 +31,13 @@ export default function ProductDetail({
   const availableStock = selected.productVariant?.stockQuantity ?? 0;
 
   const handleSizeSelect = (productVariant: ProductVariant) => {
-    setSelected(prev => ({ ...prev, productVariant }));
+    setSelected((prev) => ({ ...prev, productVariant }));
   };
 
   const handleQuantityChange = (quantity: number, max_value?: number) => {
     if (quantity < 1 || (max_value !== undefined && quantity > max_value))
       return;
-    setSelected(prev => ({ ...prev, quantity }));
+    setSelected((prev) => ({ ...prev, quantity }));
   };
 
   // 🧩 Hàm thêm vào giỏ hàng (đã dùng API thật)
@@ -73,14 +72,14 @@ export default function ProductDetail({
       {/* Title & Price */}
       <div>
         <div className="border-b border-gray-200">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 leading-tight">
+          <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 leading-tight">
             {product.name}
           </h1>
           {/* Rating, Reviews, Sold - Luôn nằm 1 hàng */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             {/* Rating */}
             <div className="inline-flex items-center gap-1.5 sm:gap-2 border-r border-gray-200 pr-2 sm:pr-4">
-              <span className="font-medium text-xs sm:text-sm border-b border-black">
+              <span className="font-medium text-md sm:text-sm border-b border-black">
                 {product.rating.toFixed(1)}
               </span>
               <div className="flex [&>svg]:w-3 [&>svg]:h-3 sm:[&>svg]:w-3.5 sm:[&>svg]:h-3.5">
@@ -90,20 +89,20 @@ export default function ProductDetail({
 
             {/* Reviews */}
             <div className="inline-flex items-center gap-1 sm:gap-1.5 border-r border-gray-200 pr-2 sm:pr-4">
-              <span className="font-medium text-xs sm:text-sm border-b border-black">
+              <span className="font-medium text-md sm:text-sm border-b border-black">
                 {product.reviewCount}
               </span>
-              <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+              <span className="text-md sm:text-sm text-gray-500 whitespace-nowrap">
                 đánh giá
               </span>
             </div>
 
             {/* Sold */}
             <div className="inline-flex items-center gap-1 sm:gap-1.5">
-              <span className="font-medium text-xs sm:text-sm">
+              <span className="font-medium text-md sm:text-sm">
                 {product.soldQuantity}
               </span>
-              <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+              <span className="text-md sm:text-sm text-gray-500 whitespace-nowrap">
                 đã bán
               </span>
             </div>
@@ -128,56 +127,63 @@ export default function ProductDetail({
       </div>
 
       {/* Size */}
-      <div>
-        <h1 className="font-medium text-sm sm:text-base mb-2 sm:mb-3">
-          Kích thước
-        </h1>
-        <div className="flex flex-wrap gap-2">
-          {product.productVariants.map(productVariant => (
-            <Button
-              key={productVariant.productVariantId}
-              variant={
-                selected.productVariant?.size.sizeId ===
-                productVariant.size.sizeId
-                  ? "primary"
-                  : "outline"
-              }
-              disabled={productVariant.stockQuantity === 0}
-              className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm cursor-pointer border-gray-300 hover:border-gray-400 transition-colors min-w-[44px]"
-              onClick={() => handleSizeSelect(productVariant)}
-            >
-              {productVariant.size.name}
-            </Button>
-          ))}
+      {product.productVariants.length > 0 && (
+        <div>
+          <h1 className="font-medium text-sm sm:text-base mb-2 sm:mb-3">
+            Kích thước
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            {product.productVariants.map((productVariant) => (
+              <Button
+                key={productVariant.productVariantId}
+                variant={
+                  selected.productVariant?.size.sizeId ===
+                  productVariant.size.sizeId
+                    ? "primary"
+                    : "outline"
+                }
+                disabled={
+                  productVariant.stockQuantity === 0 ||
+                  productVariant.status.name == "Inactive"
+                }
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm cursor-pointer border-gray-300 hover:border-gray-400 transition-colors min-w-[44px]"
+                onClick={() => handleSizeSelect(productVariant)}
+              >
+                {productVariant.size.name}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Color */}
-      <div>
-        <h1 className="font-medium text-sm sm:text-base mb-2 sm:mb-3">
-          Chọn màu khác
-        </h1>
-        <div className="flex flex-wrap gap-2">
-          {product.relatedProducts.map(p => {
-            const imageUrl =
-              p.primaryImage?.imageUrl || "/placeholder-product.jpg";
+      {product.relatedProducts.length > 0 && (
+        <div>
+          <h1 className="font-medium text-sm sm:text-base mb-2 sm:mb-3">
+            Chọn màu khác
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            {product.relatedProducts.map((p) => {
+              const imageUrl =
+                p.primaryImage?.imageUrl || "/placeholder-product.jpg";
 
-            return (
-              <NavLink
-                key={p.productId}
-                to={`/products/${p.slug}`}
-                className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden shadow-sm cursor-pointer hover:scale-105 hover:shadow-md hover:border-black`}
-              >
-                <img
-                  src={imageUrl}
-                  alt={p.name}
-                  className="object-cover w-full h-full rounded-full"
-                />
-              </NavLink>
-            );
-          })}
+              return (
+                <NavLink
+                  key={p.productId}
+                  to={`/products/${p.slug}`}
+                  className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden shadow-sm cursor-pointer hover:scale-105 hover:shadow-md hover:border-black`}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={p.name}
+                    className="object-cover w-full h-full rounded-full"
+                  />
+                </NavLink>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Quantity */}
       <div>
@@ -215,11 +221,11 @@ export default function ProductDetail({
             </Button>
           </div>
           {noStock ? (
-            <span className="text-xs sm:text-sm text-red-500 font-medium">
+            <span className="text-sm sm:text-sm text-red-500 font-medium">
               (Hết hàng)
             </span>
           ) : selected.productVariant ? (
-            <span className="text-xs sm:text-sm text-gray-500">
+            <span className="text-sm sm:text-sm text-gray-500">
               (Chỉ còn {availableStock} sản phẩm)
             </span>
           ) : null}

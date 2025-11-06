@@ -103,10 +103,6 @@ export const getTop10RelatedProducts = async (
   productId: number
 ) => {
   try {
-    console.log("API getTop10RelatedProducts params:", {
-      categoryId,
-      productId,
-    });
     const response = await instance.get(`/products/top-related`, {
       params: { categoryId, productId },
     });

@@ -8,9 +8,6 @@ import DataTable from "../components/data-table";
 import { getColumns } from "./columns/product";
 
 import ProductVariantRow from "~/features/system/product-variants";
-import SkeletonFilter from "../../../components/ui/skeleton-filter";
-import SkeletonHeader from "../../../components/ui/skeleton-header";
-import SkeletonTable from "../../../components/ui/skeleton-table";
 import ReviewDialog from "../reviews";
 import AddProductDialog from "./components/add-product-dialog";
 import DeleteProductDialog from "./components/delete-product-dialog";

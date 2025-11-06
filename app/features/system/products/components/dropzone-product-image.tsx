@@ -5,7 +5,8 @@ import {
   uploadSingleProductImage,
   deleteSingleProductImage,
 } from "~/services/product-images";
-import type { Product, ProductImage } from "../types";
+import type { Product } from "~/types/product/product";
+import type { ProductImage } from "~/types/product/product-image";
 import toast from "react-hot-toast";
 
 export default function DropzoneProductImage({

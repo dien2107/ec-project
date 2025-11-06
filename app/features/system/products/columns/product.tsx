@@ -179,7 +179,7 @@ export const getColumns = (
     cell: ({ row }) => {
       const statusName = row.original.status.name;
       return (
-        <div className="w-[100px] text-center">
+        <div className="w-[120px] text-center">
           {statusName === "Active" && (
             <div className="bg-green-400 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
               Hoạt động
@@ -187,7 +187,7 @@ export const getColumns = (
           )}
           {statusName === "Inactive" && (
             <div className="bg-red-200 text-white py-1 px-2 rounded-lg text-center whitespace-normal break-words">
-              Không hoạt động
+              Ngưng bán
             </div>
           )}
           {statusName === "Draft" && (

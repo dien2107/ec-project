@@ -40,6 +40,8 @@ export default function EditProductDialog({
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log(selectedProduct);
+
   useEffect(() => {
     if (open && !meta) {
       dispatch(fetchProductFormMeta());
@@ -139,10 +141,76 @@ export default function EditProductDialog({
     }
   };
 
-  const categories = meta?.data?.categories || [];
-  const materials = meta?.data?.materials || [];
-  const productGroups = meta?.data?.productGroups || [];
-  const colors = meta?.data?.colors || [];
+  const categories = useMemo(() => {
+    const baseCategories = meta?.data?.categories || [];
+    const currentCategory = selectedProduct?.category;
+
+    if (
+      currentCategory &&
+      !baseCategories.some(
+        (cat: any) => cat.categoryId === currentCategory.categoryId
+      )
+    ) {
+      return [
+        ...baseCategories,
+        { ...currentCategory, name: `${currentCategory.name} (Inactive)` },
+      ];
+    }
+    return baseCategories;
+  }, [meta?.data?.categories, selectedProduct?.category]);
+
+  const materials = useMemo(() => {
+    const baseMaterials = meta?.data?.materials || [];
+    const currentMaterial = selectedProduct?.material;
+
+    if (
+      currentMaterial &&
+      !baseMaterials.some(
+        (mat: any) => mat.materialId === currentMaterial.materialId
+      )
+    ) {
+      return [
+        ...baseMaterials,
+        { ...currentMaterial, name: `${currentMaterial.name} (Inactive)` },
+      ];
+    }
+    return baseMaterials;
+  }, [meta?.data?.materials, selectedProduct?.material]);
+
+  const productGroups = useMemo(() => {
+    const baseGroups = meta?.data?.productGroups || [];
+    const currentGroup = selectedProduct?.productGroup;
+
+    if (
+      currentGroup &&
+      !baseGroups.some(
+        (group: any) => group.productGroupId === currentGroup.productGroupId
+      )
+    ) {
+      return [
+        ...baseGroups,
+        { ...currentGroup, name: `${currentGroup.name} (Inactive)` },
+      ];
+    }
+    return baseGroups;
+  }, [meta?.data?.productGroups, selectedProduct?.productGroup]);
+
+  const colors = useMemo(() => {
+    const baseColors = meta?.data?.colors || [];
+    const currentColor = selectedProduct?.color;
+
+    if (
+      currentColor &&
+      !baseColors.some((color: any) => color.colorId === currentColor.colorId)
+    ) {
+      return [
+        ...baseColors,
+        { ...currentColor, name: `${currentColor.name} (Inactive)` },
+      ];
+    }
+    return baseColors;
+  }, [meta?.data?.colors, selectedProduct?.color]);
+
   const statuses = meta?.data?.statuses || [];
 
   return (
