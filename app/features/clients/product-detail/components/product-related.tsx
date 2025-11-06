@@ -63,34 +63,45 @@ export default function ProductRelated({
         Sản phẩm liên quan
       </motion.h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-3 gap-y-8 sm:gap-x-4 sm:gap-y-10 md:gap-x-4 md:gap-y-12">
-        {data.data.map((p: Product, index: number) => {
-          const imageUrl =
-            p.primaryImage?.imageUrl || "/placeholder-product.png";
+        {data.data.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="col-span-full text-center py-8 text-gray-600"
+          >
+            Không có sản phẩm liên quan
+          </motion.div>
+        ) : (
+          data.data.map((p: Product, index: number) => {
+            const imageUrl =
+              p.primaryImage?.imageUrl || "/placeholder-product.png";
 
-          return (
-            <motion.div
-              key={p.productId}
-              className="w-full"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.4,
-                delay: index * 0.05,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
-            >
-              <ProductCard
-                id={p.productId}
-                title={p.name}
-                slug={p.slug}
-                image={imageUrl}
-                price={p.sellingPrice}
-                oldPrice={p.basePrice}
-                discount={p.discountPercentage}
-              />
-            </motion.div>
-          );
-        })}
+            return (
+              <motion.div
+                key={p.productId}
+                className="w-full"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.05,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
+              >
+                <ProductCard
+                  id={p.productId}
+                  title={p.name}
+                  slug={p.slug}
+                  image={imageUrl}
+                  price={p.sellingPrice}
+                  oldPrice={p.basePrice}
+                  discount={p.discountPercentage}
+                />
+              </motion.div>
+            );
+          })
+        )}
       </div>
     </div>
   );

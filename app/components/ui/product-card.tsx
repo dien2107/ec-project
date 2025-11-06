@@ -10,6 +10,7 @@ type ProductCard = {
   price: number;
   oldPrice: number;
   discount: number;
+  outOfStock?: boolean;
 };
 
 export default function ProductCard({
@@ -20,6 +21,7 @@ export default function ProductCard({
   oldPrice,
   discount,
   image,
+  outOfStock,
 }: ProductCard) {
   const formattedPrice = useMemo(() => formatVND(price), [price]);
   const formattedOldPrice = useMemo(() => formatVND(oldPrice), [oldPrice]);
@@ -27,19 +29,37 @@ export default function ProductCard({
   return (
     <NavLink
       to={`/products/${slug}`}
-      className="block relative overflow-hidden rounded-md group"
+      className="block relative overflow-hidden rounded-md group hover:no-underline"
     >
       <div className="aspect-[3/4] relative overflow-hidden">
         <img
           src={image}
           alt={title}
-          className="object-cover w-full h-full transition-transform duration-300 ease-in-out group-hover:scale-110"
+          className={`object-cover w-full h-full transition-transform duration-300 ease-in-out ${
+            outOfStock ? "filter grayscale opacity-70" : "group-hover:scale-110"
+          }`}
           loading="lazy"
         />
+
+        {/* Discount badge */}
         {discount > 0 && (
           <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-[#d93333] rounded-md text-white font-semibold text-xs hover:bg-black transition-colors duration-200">
             -{discount}%
           </div>
+        )}
+
+        {/* Out of stock overlay (UI only) */}
+        {outOfStock && (
+          <>
+            {/* subtle dim layer over image */}
+            <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            {/* centered red badge */}
+            <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+              <span className="inline-block bg-red-600 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-md shadow-lg">
+                HẾT HÀNG
+              </span>
+            </div>
+          </>
         )}
       </div>
 

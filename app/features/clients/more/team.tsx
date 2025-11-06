@@ -5,39 +5,39 @@ export default function TeamPage() {
   const teamMembers = [
     {
       name: "Lữ Quang Minh",
-      role: "FullStack Developer",
+      role: "Tổng Giám Đốc Điều Hành (CEO)",
       image: "/luquangminh.jpg",
-      description: "Trưởng nhóm",
+      description: "Giám sát toàn bộ hoạt động và định hướng phát triển MEYA",
     },
     {
       name: "Nguyễn Thanh Điền",
-      role: "FullStack Developer",
+      role: "Giám Đốc Vận Hành (COO)",
       image: "/nguyenthanhdien.jpg",
-      description: "Phó trưởng nhóm",
+      description: "Quản lý hoạt động bán hàng, quy trình và quản trị cửa hàng",
     },
     {
       name: "Nguyễn Thế Ngọc",
-      role: "FullStack Developer",
+      role: "Giám Đốc Công Nghệ (CTO)",
       image: "/nguyenthengoc.jpg",
-      description: "Thư ký",
+      description: "Phụ trách nền tảng công nghệ, website và hệ thống bảo mật",
     },
     {
-      name: "Đặng Huy Hoàng 19",
-      role: "FullStack Developer",
+      name: "Đặng Huy Hoàng",
+      role: "Giám Đốc Marketing (CMO)",
       image: "/danghuyhoang-19.jpg",
-      description: "Thành viên",
+      description: "Xây dựng thương hiệu, quảng cáo và truyền thông sản phẩm",
     },
     {
-      name: "Đặng Huy Hoàng 20",
-      role: "FullStack Developer",
+      name: "Đặng Huy Hoàng",
+      role: "Giám Đốc Kho Vận (Logistics Director)",
       image: "/danghuyhoang-20.jpg",
-      description: "Thành viên",
+      description: "Quản lý kho, vận chuyển và điều phối đơn hàng",
     },
     {
       name: "Trần Minh Trí",
-      role: "FullStack Developer",
+      role: "Giám Đốc Chăm Sóc Khách Hàng (Customer Service Director)",
       image: "/logo-icon.png",
-      description: "Thành viên",
+      description: "Chăm sóc khách hàng, hỗ trợ và xử lý khiếu nại",
     },
   ];
 

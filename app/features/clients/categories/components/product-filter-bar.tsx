@@ -239,12 +239,12 @@ export default function ProductFilterBar({
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
             {/* Bộ lọc */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-800">
-              <span className="text-xs sm:text-sm text-gray-400">Bộ lọc:</span>
+              <span className="text-sm sm:text-sm text-gray-400">Bộ lọc:</span>
 
               {filterOptions.map((f) => (
                 <Popover key={f.label}>
                   <PopoverTrigger asChild>
-                    <Button className="flex items-center gap-1 text-xs sm:text-sm text-gray-700 hover:text-black hover:underline px-2 sm:px-3 h-8 sm:h-9">
+                    <Button className="flex items-center gap-1 text-sm sm:text-sm text-gray-700 hover:text-black hover:underline px-2 sm:px-3 h-8 sm:h-9">
                       {f.label}
                       <ChevronDown size={14} className="hidden sm:block" />
                       <ChevronDown size={12} className="sm:hidden" />
@@ -256,7 +256,7 @@ export default function ProductFilterBar({
                   >
                     {f.type === "price" ? (
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center justify-between text-sm text-gray-500">
                           <span>Chọn khoảng giá</span>
                           <button
                             className="cursor-pointer text-gray-500 hover:text-gray-800 hover:underline"
@@ -270,7 +270,7 @@ export default function ProductFilterBar({
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="relative">
-                            <span className="absolute left-2 top-2 text-gray-500 text-xs">
+                            <span className="absolute left-2 top-2 text-gray-500 text-sm">
                               ₫
                             </span>
                             <Input
@@ -316,7 +316,7 @@ export default function ProductFilterBar({
                             />
                           </div>
                           <div className="relative">
-                            <span className="absolute left-2 top-2 text-gray-500 text-xs">
+                            <span className="absolute left-2 top-2 text-gray-500 text-sm">
                               ₫
                             </span>
                             <Input
@@ -363,14 +363,14 @@ export default function ProductFilterBar({
                           </div>
                         </div>
                         {priceError && (
-                          <p className="text-xs text-red-500 mt-1">
+                          <p className="text-sm text-red-500 mt-1">
                             {priceError}
                           </p>
                         )}
                       </div>
                     ) : (
                       <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center justify-between text-sm text-gray-500">
                           <span>Chọn {f.label.toLowerCase()}</span>
                         </div>
                         <Select
@@ -429,7 +429,7 @@ export default function ProductFilterBar({
               ))}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button className="flex items-center gap-1 text-xs sm:text-sm text-gray-700 hover:text-black hover:underline px-2 sm:px-3 h-8 sm:h-9">
+                  <Button className="flex items-center gap-1 text-sm sm:text-sm text-gray-700 hover:text-black hover:underline px-2 sm:px-3 h-8 sm:h-9">
                     Còn hàng
                     <ChevronDown size={14} className="hidden sm:block" />
                     <ChevronDown size={12} className="sm:hidden" />
@@ -440,7 +440,7 @@ export default function ProductFilterBar({
                   className="inline-block p-3 rounded-xl shadow-md bg-white overflow-visible w-[280px] sm:w-auto"
                 >
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-sm text-gray-500">
                       <span>Chọn trạng thái hàng</span>
                     </div>
                     <Select<{ label: string; value: boolean }, true>
@@ -473,7 +473,7 @@ export default function ProductFilterBar({
 
             {/* Sort */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-              <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+              <span className="text-sm sm:text-sm text-gray-400 whitespace-nowrap">
                 Sắp xếp theo:
               </span>
               <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
@@ -493,7 +493,7 @@ export default function ProductFilterBar({
                   classNamePrefix="react-select"
                   styles={reactSelectStyles}
                 />
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                <div className="flex items-center gap-2 text-sm sm:text-sm text-gray-400 whitespace-nowrap">
                   {isFiltering ? (
                     <Loader2 className="animate-spin w-3 h-3 sm:w-4 sm:h-4" />
                   ) : (

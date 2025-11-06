@@ -1,13 +1,12 @@
-import { useParams } from "react-router";
-import ProductImageGallery from "./components/product-image-gallery";
-import ProductDetail from "./components/product-detail";
-import TabsInfo from "./components/tabs-info";
-import ProductRelated from "./components/product-related";
-import { dataTagSymbol, useQuery } from "@tanstack/react-query";
-import type { Product } from "~/types/product/product";
-import { getProductDetailBySlug } from "~/services/products";
-import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import { useParams } from "react-router";
+import { getProductDetailBySlug } from "~/services/products";
+import ProductDetail from "./components/product-detail";
+import ProductImageGallery from "./components/product-image-gallery";
+import ProductRelated from "./components/product-related";
+import TabsInfo from "./components/tabs-info";
 
 export default function Product() {
   const { slug } = useParams<string>();

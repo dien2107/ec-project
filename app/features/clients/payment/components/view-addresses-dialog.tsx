@@ -96,9 +96,23 @@ export default function ViewAddressesDialog({
 
           <div className="max-h-[500px] overflow-y-auto scrollbar-custom">
             {addresses.length === 0 ? (
-              <div className="py-6 text-center text-sm text-gray-500">
-                Không có địa chỉ
-              </div>
+              <>
+                <div className="py-6 text-center text-sm text-gray-500">
+                  Không có địa chỉ
+                </div>
+                <div className="mt-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      actualSetOpen(false);
+                      onOpenAdd?.();
+                    }}
+                  >
+                    Thêm địa chỉ
+                  </Button>
+                </div>
+              </>
             ) : (
               <>
                 <RadioGroup

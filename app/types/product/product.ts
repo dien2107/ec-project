@@ -21,6 +21,7 @@ export type Product = {
   productGroup: ProductGroup;
   status: Status;
   primaryImage: PrimaryImage;
+  outOfStock: boolean
 };
 
 export type ProductDetail = {
