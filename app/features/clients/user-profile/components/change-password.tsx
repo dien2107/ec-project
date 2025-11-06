@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { changeUserPassword } from "~/services/customers";
+import { useAppSelector } from "~/redux/store";
+import toast from "react-hot-toast";
 
 // Types
 interface FormData {
@@ -33,6 +36,8 @@ interface ValidationResult {
 }
 
 const ChangePassword = () => {
+  const user = useAppSelector((state) => state.auth.user);
+
   const [form, setForm] = useState<FormData>({
     oldPassword: "",
     newPassword: "",
@@ -115,18 +120,34 @@ const ChangePassword = () => {
 
     if (!isFormValid) return;
 
+    // Kiểm tra user
+    if (!user?.data?.userId) {
+      toast.error("Không tìm thấy thông tin người dùng");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Tạo FormData để gửi lên API
+      const formData = new FormData();
+      formData.append("userId", String(user.data.userId));
+      formData.append("oldPassword", form.oldPassword);
+      formData.append("newPassword", form.newPassword);
+      formData.append("confirmPassword", form.confirmPassword);
+
+      // Call API
+      await changeUserPassword(formData);
 
       // Success handling
-      alert("Mật khẩu đã được cập nhật thành công!");
+      toast.success("Mật khẩu đã được cập nhật thành công!");
       setForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
       setShowValidation(false);
-    } catch (error) {
-      alert("Có lỗi xảy ra. Vui lòng thử lại!");
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      toast.error(
+        error?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!"
+      );
     } finally {
       setIsSubmitting(false);
     }

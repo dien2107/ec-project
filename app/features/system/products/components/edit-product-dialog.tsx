@@ -145,10 +145,6 @@ export default function EditProductDialog({
   const colors = meta?.data?.colors || [];
   const statuses = meta?.data?.statuses || [];
 
-  console.log("CATEGORIES:", categories);
-  console.log("COLORS:", colors);
-  console.log("Selected Product Color:", selectedProduct);
-
   return (
     <Dialog open={open} onOpenChange={setIsOpen}>
       <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] flex flex-col justify-start">

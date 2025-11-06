@@ -23,11 +23,6 @@ import { renderStars } from "~/libs/renderStars";
 import type { Review } from "~/types/review";
 import { formatDate } from "~/libs";
 
-const IMAGES = [
-  "https://down-vn.img.susercontent.com/file/vn-11134103-7ras8-mc6cvummrbsaa1.webp",
-  "https://down-vn.img.susercontent.com/file/vn-11134103-7ras8-mclrdyvpibot8d.webp",
-];
-
 export default function CardReview({ review }: { review: Review }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -46,8 +41,11 @@ export default function CardReview({ review }: { review: Review }) {
     <div className="border-b-2 border-gray-200 pb-4 mb-4">
       <div className="px-6 flex items-start justify-start">
         <div className="w-12">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src="/logo-icon.png" alt="Avatar" />
+          <Avatar className="w-12 h-12 object-fit">
+            <AvatarImage
+              src={`${review.avatarImage ? review.avatarImage : "/logo-icon.png"}`}
+              alt="Avatar"
+            />
           </Avatar>
         </div>
         <div className="w-full">
@@ -62,8 +60,10 @@ export default function CardReview({ review }: { review: Review }) {
                 </span>
               </div>
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-lg font-bold text-black">4.8</span>
-                <div className="flex">{renderStars(4.8, 5, 16)}</div>
+                <span className="text-lg font-bold text-black">
+                  {review.rating}
+                </span>
+                <div className="flex">{renderStars(review.rating, 5, 16)}</div>
               </div>
             </div>
             <span className="text-xs text-gray-400 mb-2">

@@ -16,6 +16,10 @@ export default [
       "/payment/online",
       "features/clients/payment/components/payment-handle.tsx"
     ),
+    route("/about", "features/clients/more/about.tsx"),
+    route("brand-story", "features/clients/more/brand-story.tsx"),
+    route("/team", "features/clients/more/team.tsx"),
+    route("contact", "features/clients/more/contact.tsx"),
 
     // route("products", "features/products/index.tsx"),
   ]),

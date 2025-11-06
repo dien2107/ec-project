@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "~/helper/safeLocalStorage";
 import instance from "./customize-axios";
 
 type LoginPayload = { username: string; password: string };
@@ -46,13 +45,12 @@ export const logout = async () => {
   } catch {
     // ignore
   }
-  safeLocalStorage.removeItem("accessToken");
-  safeLocalStorage.removeItem("refreshToken");
+  // Token sẽ được xóa bởi redux-persist khi dispatch logoutLocal action
 };
 export const getAuthVerify = async (token: string) => {
-   console.log(token);
+  console.log(token);
   const res = await instance.get("/auth/verify", {
     params: { token },
   });
   return res.data;
-}
+};

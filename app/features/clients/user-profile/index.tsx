@@ -29,7 +29,7 @@ export default function UserProfilePage() {
   const [editOpen, setEditOpen] = useState(false);
   const user = useAppSelector((state: RootState) => state.auth.user);
 
-  const { orderList } = useAppSelector(state => state.orderList);
+  const { orderList } = useAppSelector((state) => state.orderList);
   const [listOrder, setListOrder] = useState<OrderItem[]>([]);
   const [showAll, setShowAll] = useState(false);
   const ITEMS_PER_PAGE = 5;
@@ -102,7 +102,7 @@ export default function UserProfilePage() {
   const filteredOrders = useMemo(() => {
     return statusFilter === "Tất cả"
       ? listOrder
-      : listOrder.filter(o => o.status === statusFilter);
+      : listOrder.filter((o) => o.status === statusFilter);
   }, [statusFilter, listOrder]);
 
   // 🔹 Hiển thị có giới hạn hoặc tất cả
@@ -111,6 +111,18 @@ export default function UserProfilePage() {
   }, [showAll, filteredOrders]);
 
   const hasMore = filteredOrders.length > ITEMS_PER_PAGE;
+
+  // 🔹 Loading state khi chưa có user
+  if (!user?.data) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Đang tải thông tin người dùng...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -130,6 +142,7 @@ export default function UserProfilePage() {
               activeTab={activeTab}
               onChangeTab={setActiveTab}
               totalOrders={listOrder.length}
+              user={user.data}
             />
           </div>
 
@@ -155,7 +168,7 @@ export default function UserProfilePage() {
                   ) : (
                     <>
                       <div className="space-y-4">
-                        {displayedOrders.map(order => (
+                        {displayedOrders.map((order) => (
                           <OrderCard
                             key={order.id}
                             order={order}

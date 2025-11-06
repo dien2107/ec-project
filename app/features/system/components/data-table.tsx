@@ -37,6 +37,7 @@ interface DataTableProps<TData, TValue> {
   filterPlaceholder?: string;
   expandedRowContent?: (product: TData) => React.ReactNode;
   globalFilterFn?: (row: any, columnId: string, filterValue: string) => boolean;
+  isLoading?: boolean;
 }
 
 export function SortableHeader({
@@ -75,6 +76,7 @@ export default function DataTable<TData, TValue>({
   onPageChange,
   expandedRowContent,
   globalFilterFn,
+  isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -111,7 +113,7 @@ export default function DataTable<TData, TValue>({
       <div className="overflow-hidden border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header, idx) => {
                   const sticky = header.column.columnDef.sticky;
@@ -135,8 +137,21 @@ export default function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
+            {isLoading ? (
+              // show 2 skeleton rows while loading
+              <>
+                {Array.from({ length: 2 }).map((_, rIdx) => (
+                  <TableRow key={`loading-${rIdx}`}>
+                    {columns.map((_, cIdx) => (
+                      <TableCell key={cIdx}>
+                        <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </>
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
                 <React.Fragment key={row.id}>
                   <TableRow
                     data-state={row.getIsSelected() && "selected"}

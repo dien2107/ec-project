@@ -11,9 +11,11 @@ export const getReviewById = async (reviewId: number) => {
   }
 };
 
-export const hideReviewById = async (reviewId: number) => {
+export const toggleStatusReviewById = async (reviewId: number) => {
   try {
-    const response = await instance.patch(`/reviews/${reviewId}/status`);
+    const response = await instance.patch(
+      `/reviews/${reviewId}/toggle-visibility`
+    );
     return response.data;
   } catch (error) {
     console.error("Error hiding review:", error);

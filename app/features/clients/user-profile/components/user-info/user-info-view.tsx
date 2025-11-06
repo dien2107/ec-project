@@ -135,9 +135,6 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
           <h2 className="text-2xl font-semibold tracking-tight">
             Thông tin cá nhân
           </h2>
-          <div className="text-sm text-gray-500 relative right-14">
-            Tên đăng nhập: <span className="font-medium">{user.username}</span>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
