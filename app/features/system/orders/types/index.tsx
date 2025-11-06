@@ -22,11 +22,11 @@ export const statusMap: Record<
 > = {
   Pending: { label: "Đang chờ xác nhận", color: "bg-amber-500" },
   Confirmed: { label: "Đã xác nhận", color: "bg-teal-500" },
-  Processing: { label: "Đang giao", color: "bg-blue-500" },
+  Processing: { label: "Đang xử lý", color: "bg-blue-500" },
+  Shipping: { label: "Đang vận chuyển", color: "bg-purple-500" },
   Delivered: { label: "Đã giao", color: "bg-green-500" },
   Cancelled: { label: "Đã hủy", color: "bg-red-500" },
   Returned: { label: "Đã hoàn trả", color: "bg-gray-500" },
-  Shipping: { label: "Đang vận chuyển", color: "bg-purple-500" },
 };
 export type discount = {
   id: number;
@@ -89,6 +89,9 @@ export type OrderItem = {
   price: number;
   subTotal: number;
 };
+export type paymentDto = {
+  paymentId: number;
+};
 
 export type Order = {
   orderId: number;
@@ -101,6 +104,7 @@ export type Order = {
   ship: Ship;
   status: Status;
   items: OrderItem[];
+  payment: paymentDto | null;
 };
 
 export const getColumns = (
