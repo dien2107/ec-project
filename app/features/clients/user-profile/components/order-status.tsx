@@ -13,6 +13,8 @@ export default function OrderStatusTabs({
   const statusTabs: StatusType[] = [
     "Tất cả",
     "Chờ xác nhận",
+    "Đã xác nhận",
+    "Đang xử lý",
     "Đang giao",
     "Đã giao",
     "Đã hủy",
@@ -20,7 +22,7 @@ export default function OrderStatusTabs({
 
   return (
     <div className="flex space-x-8 overflow-x-auto border-b mb-6">
-      {statusTabs.map((s) => (
+      {statusTabs.map(s => (
         <Button
           key={s}
           onClick={() => onChange(s)}

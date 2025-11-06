@@ -1,6 +1,13 @@
 import { ChevronRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { Clock, Truck, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Clock,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  PackageCheck,
+  Package,
+} from "lucide-react";
 import type {
   OrderItem,
   OrderStatus,
@@ -8,8 +15,10 @@ import type {
 
 const statusIconMap: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
+  "Đã xác nhận": <CheckCircle2 className="h-4 w-4 text-blue-500" />,
+  "Đang xử lý": <Package className="h-4 w-4 text-purple-500" />,
   "Đang giao": <Truck className="h-4 w-4 text-blue-500" />,
-  "Đã giao": <CheckCircle2 className="h-4 w-4 text-green-500" />,
+  "Đã giao": <PackageCheck className="h-4 w-4 text-green-500" />,
   "Đã hủy": <XCircle className="h-4 w-4 text-red-500" />,
 };
 
@@ -19,10 +28,16 @@ const statusBadgeClass = (status: OrderStatus) => {
       return "bg-green-100 text-green-800";
     case "Đang giao":
       return "bg-blue-100 text-blue-800";
+    case "Đang xử lý":
+      return "bg-purple-100 text-purple-800";
+    case "Đã xác nhận":
+      return "bg-cyan-100 text-cyan-800";
     case "Chờ xác nhận":
       return "bg-yellow-100 text-yellow-800";
-    default:
+    case "Đã hủy":
       return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
 };
 
