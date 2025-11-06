@@ -7,6 +7,7 @@ import ViewAddressesDialog from "./view-addresses-dialog";
 import type { Address } from "~/types/address/address";
 import { fetchAddressesByUserId } from "~/redux/slices/addresses";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { Button } from "~/components/ui/button";
 
 export default function AddressSection({
   selectedAddress,
@@ -16,7 +17,7 @@ export default function AddressSection({
   onSelectAddress: (address: Address | null) => void;
 }) {
   const dispatch = useAppDispatch();
-  const { addresses = [] } = useAppSelector(state => state.addresses);
+  const { addresses = [] } = useAppSelector((state) => state.addresses);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function AddressSection({
   const [deletingAddress, setDeletingAddress] = useState<Address | null>(null);
   const [reopenViewAfterEdit, setReopenViewAfterEdit] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const { user } = useAppSelector(state => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
 
   // Fetch địa chỉ nếu chưa có
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function AddressSection({
 
   // Lấy địa chỉ mặc định nếu chưa có selectedAddress
   const defaultAddress = useMemo(
-    () => addresses.find(a => a.isDefault) || null,
+    () => addresses.find((a) => a.isDefault) || null,
     [addresses]
   );
 
@@ -50,42 +51,64 @@ export default function AddressSection({
       <div className="border rounded-md p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-bold text-lg">Địa chỉ giao hàng</h2>
-          {/* Button to open view addresses dialog (moved here from AddressCard) */}
-          <div>
-            <ViewAddressesDialog
-              externalOpen={isViewOpen}
-              setExternalOpen={setIsViewOpen}
-              selectedId={
-                selectedAddress?.addressId
-                  ? String(selectedAddress.addressId)
-                  : null
-              }
-              onSelectAddressId={id => {
-                const found =
-                  addresses.find(a => String(a.addressId) === id) ?? null;
-                onSelectAddress(found);
-              }}
-              onOpenAdd={() => {
-                setIsViewOpen(false);
-                setReopenViewAfterEdit(true);
-                setIsAddOpen(true);
-              }}
-              onEdit={(addr, closeView) => {
-                setEditingAddress(addr ?? selectedAddress);
-                setIsEditOpen(true);
-                setReopenViewAfterEdit(!!closeView);
-                closeView?.();
-              }}
-              onDelete={(addr, closeView) => {
-                setDeletingAddress(addr ?? selectedAddress);
-                setIsDeleteOpen(true);
-                setReopenViewAfterEdit(!!closeView);
-                closeView?.();
-              }}
-            />
-          </div>
+
+          {addresses.length > 0 && (
+            <div>
+              <ViewAddressesDialog
+                externalOpen={isViewOpen}
+                setExternalOpen={setIsViewOpen}
+                selectedId={
+                  selectedAddress?.addressId
+                    ? String(selectedAddress.addressId)
+                    : null
+                }
+                onSelectAddressId={(id) => {
+                  const found =
+                    addresses.find((a) => String(a.addressId) === id) ?? null;
+                  onSelectAddress(found);
+                }}
+                onOpenAdd={() => {
+                  setIsViewOpen(false);
+                  setReopenViewAfterEdit(true);
+                  setIsAddOpen(true);
+                }}
+                onEdit={(addr, closeView) => {
+                  setEditingAddress(addr ?? selectedAddress);
+                  setIsEditOpen(true);
+                  setReopenViewAfterEdit(!!closeView);
+                  closeView?.();
+                }}
+                onDelete={(addr, closeView) => {
+                  setDeletingAddress(addr ?? selectedAddress);
+                  setIsDeleteOpen(true);
+                  setReopenViewAfterEdit(!!closeView);
+                  closeView?.();
+                }}
+              />
+            </div>
+          )}
         </div>
 
+        {/* Empty state */}
+        {addresses.length === 0 && (
+          <div className="border-2 border-dashed border-gray-200 rounded-md p-6 text-center">
+            <h3 className="font-medium mb-2">Chưa có địa chỉ giao hàng</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Vui lòng thêm địa chỉ giao hàng hoặc chọn địa chỉ hiện có.
+            </p>
+            <div className="flex items-center justify-center">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => setIsAddOpen(true)}
+              >
+                Thêm địa chỉ mới
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Selected address preview */}
         {selectedAddress && (
           <AddressCard
             address={selectedAddress}
@@ -108,9 +131,9 @@ export default function AddressSection({
                 ? String(selectedAddress.addressId)
                 : null
             }
-            onSelectAddressId={id => {
+            onSelectAddressId={(id) => {
               const found =
-                addresses.find(a => String(a.addressId) === id) ?? null;
+                addresses.find((a) => String(a.addressId) === id) ?? null;
               onSelectAddress(found);
             }}
           />
