@@ -29,7 +29,7 @@ export default function UserProfilePage() {
   const [editOpen, setEditOpen] = useState(false);
   const user = useAppSelector((state: RootState) => state.auth.user);
 
-  const { orderList } = useAppSelector((state) => state.orderList);
+  const { orderList } = useAppSelector(state => state.orderList);
   const [listOrder, setListOrder] = useState<OrderItem[]>([]);
   const [showAll, setShowAll] = useState(false);
   const ITEMS_PER_PAGE = 5;
@@ -92,6 +92,7 @@ export default function UserProfilePage() {
             image: item.productImage,
             size: item.size,
           })),
+          payment: order.payment || null,
         };
       });
 
@@ -102,7 +103,7 @@ export default function UserProfilePage() {
   const filteredOrders = useMemo(() => {
     return statusFilter === "Tất cả"
       ? listOrder
-      : listOrder.filter((o) => o.status === statusFilter);
+      : listOrder.filter(o => o.status === statusFilter);
   }, [statusFilter, listOrder]);
 
   // 🔹 Hiển thị có giới hạn hoặc tất cả
@@ -168,7 +169,7 @@ export default function UserProfilePage() {
                   ) : (
                     <>
                       <div className="space-y-4">
-                        {displayedOrders.map((order) => (
+                        {displayedOrders.map(order => (
                           <OrderCard
                             key={order.id}
                             order={order}

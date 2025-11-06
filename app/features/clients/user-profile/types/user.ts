@@ -1,4 +1,4 @@
-import type { User } from "~/features/system/orders/types";
+import type { paymentDto, User } from "~/features/system/orders/types";
 
 export type OrderStatus =
   | "Chờ xác nhận"
@@ -24,6 +24,7 @@ export type OrderItem = {
     image: string;
     size: string;
   }[];
+  payment: paymentDto | null;
 };
 
 export type UserAddress = {

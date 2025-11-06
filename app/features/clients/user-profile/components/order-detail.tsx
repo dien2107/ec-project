@@ -319,7 +319,9 @@ export default function OrderDetailsModal({
                   </h3>
                   <div className="bg-white border rounded-lg p-4 text-sm">
                     <p className="text-gray-900 font-medium">
-                      Thanh toán khi nhận hàng
+                      {order.payment == null
+                        ? "Thanh toán khi nhận hàng (COD)"
+                        : "Thanh toán qua SEPAY"}
                     </p>
                   </div>
                 </div>

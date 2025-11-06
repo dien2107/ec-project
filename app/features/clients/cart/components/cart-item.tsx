@@ -95,7 +95,7 @@ const CartItem: React.FC<CartItemProps> = ({
                       value={String(variant.productVariantId)}
                       disabled={variant.stockQuantity === 0}
                     >
-                      {`${variant.sizeName}  (Tồn kho: ${variant.stockQuantity})`}
+                      {variant.sizeName}
                       {variant.stockQuantity === 0 && " (Hết hàng)"}
                     </SelectItem>
                   ))}
@@ -144,33 +144,38 @@ const CartItem: React.FC<CartItemProps> = ({
       </div>
 
       {/* Quantity controls */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <Button
-          variant="outline"
-          size="icon"
-          className="w-8 h-8 rounded-full"
-          onClick={() => onQuantityChange(item.id, item.quantity - 1)}
-          disabled={item.quantity <= 1 || isOutOfStock}
-        >
-          <Minus size={14} />
-        </Button>
-        <span className="w-8 text-center text-sm font-medium">
-          {item.quantity}
-        </span>
-        <Button
-          variant="outline"
-          size="icon"
-          className="w-8 h-8 rounded-full"
-          onClick={() => onQuantityChange(item.id, item.quantity + 1)}
-          disabled={
-            isOutOfStock ||
-            (currentVariant
-              ? item.quantity >= currentVariant.stockQuantity
-              : false)
-          }
-        >
-          <Plus size={14} />
-        </Button>
+      <div className=" flex flex-col items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="w-8 h-8 rounded-full"
+            onClick={() => onQuantityChange(item.id, item.quantity - 1)}
+            disabled={item.quantity <= 1 || isOutOfStock}
+          >
+            <Minus size={14} />
+          </Button>
+          <span className="w-8 text-center text-sm font-medium">
+            {item.quantity}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            className="w-8 h-8 rounded-full"
+            onClick={() => onQuantityChange(item.id, item.quantity + 1)}
+            disabled={
+              isOutOfStock ||
+              (currentVariant
+                ? item.quantity >= currentVariant.stockQuantity
+                : false)
+            }
+          >
+            <Plus size={14} />
+          </Button>
+        </div>
+        <div className="text-xs text-gray-500">
+          Kho: {currentVariant?.stockQuantity || 0}
+        </div>
       </div>
 
       {/* Remove button */}
