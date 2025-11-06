@@ -62,6 +62,7 @@ export default function ProductDetail({
           slug,
         })
       ).unwrap();
+      toast.success("Thêm sản phẩm vào giỏ hàng thành công!");
     } catch (err) {
       console.error("Add to cart failed:", err);
       toast.error("Thêm sản phẩm thất bại, vui lòng thử lại!");

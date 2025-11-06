@@ -69,8 +69,8 @@ export default function ViewOrderDetailDialog({
         onOrderUpdated();
       }
     } catch (ex) {
-      const error = ex as Error;
-      toast.error(error.message || "Hủy đơn hàng thất bại.");
+      const error = ex as any;
+      toast.error(error.response?.data?.message || "Hủy đơn hàng thất bại.");
     }
   };
   const handleApprove = async () => {
@@ -78,8 +78,7 @@ export default function ViewOrderDetailDialog({
     try {
       const response = await approveOrder(order.orderId);
       if (!response.isSuccess) {
-        toast.error(response.message || "Duyệt đơn hàng thất bại.");
-        return;
+        throw new Error(response.message || "Duyệt đơn hàng thất bại.");
       }
       toast.success("Duyệt đơn hàng thành công.");
       setIsOpen(false);
@@ -87,8 +86,9 @@ export default function ViewOrderDetailDialog({
         onOrderUpdated();
       }
     } catch (ex) {
-      const error = ex as Error;
-      toast.error(error.message || "Duyệt đơn hàng thất bại.");
+      const error = ex as any;
+      // console.log(error.response.data.message);
+      toast.error(error.response?.data?.message || "Duyệt đơn hàng thất bại.");
     }
   };
   return (
@@ -163,7 +163,7 @@ export default function ViewOrderDetailDialog({
                       <CreditCard />
                       Thanh toán:
                     </span>{" "}
-                    COD
+                    {order?.payment == null ? "COD" : "SEPAY"}
                   </p>
                   <p className="flex items-center gap-1">
                     <span className="font-medium flex items-center gap-1">
