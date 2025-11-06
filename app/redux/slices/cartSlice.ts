@@ -85,7 +85,7 @@ export const updateCartItem = createAsyncThunk(
         payload
       );
       if (response.data?.isSuccess) {
-        toast.success("Cập nhật giỏ hàng thành công");
+        // toast.success("Cập nhật giỏ hàng thành công");
 
         // ✅ Sau khi update thành công, fetch lại giỏ hàng từ server
         dispatch(fetchCart(payload.userId));
@@ -114,7 +114,7 @@ export const deleteCartItem = createAsyncThunk(
         `/carts/${payload.userId}/${payload.variantId}`
       );
       if (response.data?.isSuccess) {
-        toast.success("Đã xoá sản phẩm khỏi giỏ hàng");
+        // toast.success("Đã xoá sản phẩm khỏi giỏ hàng");
         return payload.variantId;
       }
       throw new Error("Không thể xoá sản phẩm");
@@ -122,6 +122,26 @@ export const deleteCartItem = createAsyncThunk(
       toast.error("Xoá sản phẩm thất bại");
       return rejectWithValue(
         error.response?.data?.message || "Không thể xoá sản phẩm"
+      );
+    }
+  }
+);
+
+// 🧹 Xóa toàn bộ giỏ hàng
+export const clearCartAsync = createAsyncThunk(
+  "cart/clearCart",
+  async (userId: number, { rejectWithValue }) => {
+    try {
+      const response = await instance.delete<ApiResponse<boolean>>(
+        `/carts/${userId}/clear`
+      );
+      if (response.data?.isSuccess) {
+        return true;
+      }
+      throw new Error("Không thể xóa giỏ hàng");
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Không thể xóa giỏ hàng"
       );
     }
   }
@@ -169,6 +189,15 @@ const cartSlice = createSlice({
         if (state.cart) {
           state.cart.cartItems = state.items;
         }
+      })
+
+      // 🧹 Xóa toàn bộ giỏ hàng
+      .addCase(clearCartAsync.fulfilled, state => {
+        state.cart = null;
+        state.items = [];
+      })
+      .addCase(clearCartAsync.rejected, (state, action) => {
+        console.error("Clear cart failed:", action.payload);
       });
   },
 });

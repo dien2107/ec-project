@@ -18,8 +18,6 @@ export default function ProductRelated({
     enabled: !!categoryId && !!productId,
   });
 
-  console.log(data);
-
   if (isLoading)
     return (
       <motion.div

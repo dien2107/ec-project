@@ -95,7 +95,7 @@ const CartItem: React.FC<CartItemProps> = ({
                       value={String(variant.productVariantId)}
                       disabled={variant.stockQuantity === 0}
                     >
-                      {variant.sizeName}
+                      {`${variant.sizeName}  (Tồn kho: ${variant.stockQuantity})`}
                       {variant.stockQuantity === 0 && " (Hết hàng)"}
                     </SelectItem>
                   ))}

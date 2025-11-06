@@ -86,8 +86,7 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, accessToken } = useAppSelector((state) => state.auth);
-  const cartItems = useAppSelector((state) => state.cart.items);
+  const { user, accessToken } = useAppSelector(state => state.auth);
   const cartCount = useAppSelector(
     (state: RootState) => state.cart.items.length
   );

@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,14 +10,26 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { CheckCircle } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { clearCartAsync } from "~/redux/slices/cartSlice";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  const authUser = useAppSelector(state => state.auth.user);
+  const userId = authUser?.data?.userId;
 
   // Lấy dữ liệu từ navigate("/payment/success", { state: { paymentData } })
   const { paymentData } = location.state || {};
   const { orderId, amount, paidAt, status } = paymentData || {};
+
+  // Xóa giỏ hàng khi vào trang thanh toán thành công
+  useEffect(() => {
+    if (userId) {
+      dispatch(clearCartAsync(userId));
+    }
+  }, [dispatch, userId]);
 
   const handleClose = () => navigate("/profile");
 

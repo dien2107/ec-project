@@ -20,8 +20,6 @@ export default function Product() {
     queryFn: () => getProductDetailBySlug(slug!),
     enabled: !!slug,
   });
-  console.log(JSON.stringify(product));
-  console.log(`=============`);
   if (isLoading)
     return (
       <motion.div
