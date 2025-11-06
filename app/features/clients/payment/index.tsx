@@ -10,7 +10,7 @@ import CartSummary from "~/features/clients/payment/components/cart-summary";
 import SuccessDialog from "~/features/clients/payment/components/success-dialog";
 import { useAppSelector, useAppDispatch } from "~/redux/store";
 import { createOrder } from "~/services/order";
-import { clearCart } from "~/redux/slices/cartSlice";
+import { clearCartAsync } from "~/redux/slices/cartSlice";
 import { createPayment, type CreatePaymentPayload } from "~/services/payment";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import { fetchShipListData } from "~/redux/slices/ships";
@@ -246,11 +246,12 @@ export default function Payment() {
         console.log(`paymentResponse: ${paymentResponse}`);
       } else {
         // 3️⃣ COD (thanh toán khi nhận hàng)
+        // Hiển thị dialog trước, xóa cart sau khi user đóng dialog
         setIsSuccessDialogOpen(true);
         // toast.success("Đặt hàng thành công!");
       }
 
-      // 4️⃣ Xóa giỏ hàng sau khi hoàn tất
+      // 4️⃣ Giỏ hàng đã được xóa ở từng trường hợp riêng
     } catch (err) {
       console.error("Place order failed:", err);
       toast.error("Đặt hàng thất bại!");
@@ -441,8 +442,11 @@ export default function Payment() {
       <SuccessDialog
         open={isSuccessDialogOpen}
         onOpenChange={setIsSuccessDialogOpen}
-        onConfirm={() => {
-          dispatch(clearCart());
+        onConfirm={async () => {
+          // Xóa giỏ hàng khi user bấm confirm
+          if (userId) {
+            await dispatch(clearCartAsync(userId));
+          }
           navigate("/profile");
         }}
       />

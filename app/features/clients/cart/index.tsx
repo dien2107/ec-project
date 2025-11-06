@@ -55,17 +55,31 @@ export default function ShoppingCart() {
   }, [discountList]);
 
   // Fetch product variants for each cart item using React Query
-  const productQueries = useQueries({
-    queries: cartItems
-      .filter(item => item.slug) // Only fetch for items with slug
-      .map(item => ({
-        queryKey: ["product", item.slug],
-        queryFn: () => getProductDetailBySlug(item.slug!),
-        enabled: !!item.slug,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      })),
-  });
+  // const productQueries = useQueries({
+  //   queries: cartItems
+  //     .filter(item => item.slug) // Only fetch for items with slug
+  //     .map(item => ({
+  //       queryKey: ["product", item.slug],
+  //       queryFn: () => getProductDetailBySlug(item.slug!),
+  //       enabled: !!item.slug,
+  //       staleTime: 5 * 60 * 1000, // 5 minutes
+  //     })),
+  // });
+  const queries = useMemo(
+    () =>
+      cartItems
+        .filter(item => !!item.slug)
+        .map(item => ({
+          queryKey: ["product", item.slug],
+          queryFn: () => getProductDetailBySlug(item.slug!),
+          enabled: !!item.slug,
+          staleTime: 5 * 60 * 1000,
+        })),
+    [cartItems]
+  );
 
+  // ✅ useQueries sẽ rerun mỗi khi queries thay đổi
+  const productQueries = useQueries({ queries });
   // Process fetched product data to extract variants using useMemo
   const productVariants = useMemo(() => {
     const variantsMap = new Map<number, AvailableVariant[]>();
@@ -92,7 +106,7 @@ export default function ShoppingCart() {
     });
 
     return variantsMap;
-  }, [cartItems, productQueries.length]);
+  }, [cartItems, ...productQueries.map(q => q.data)]);
 
   // Extract product pricing info from queries
   const productPricingMap = useMemo(() => {
@@ -116,7 +130,7 @@ export default function ShoppingCart() {
     });
 
     return pricingMap;
-  }, [cartItems, productQueries.length]);
+  }, [cartItems, ...productQueries.map(q => q.data)]);
 
   // Đồng bộ Redux → local state (để quản lý chọn/bỏ chọn)
   useEffect(() => {
@@ -347,7 +361,6 @@ export default function ShoppingCart() {
 
       // Refresh lại giỏ hàng
       dispatch(fetchCart(user.data.userId));
-      toast.success("Đã thay đổi kích thước sản phẩm");
     } catch (error) {
       toast.error("Không thể thay đổi kích thước");
     }

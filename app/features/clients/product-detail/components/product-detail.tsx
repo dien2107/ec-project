@@ -27,7 +27,6 @@ export default function ProductDetail({
     image: product.primaryImage,
   });
   const variants = product.productVariants ?? [];
-  console.log(variants);
   const totalAvailableStock = variants.reduce((s, v) => s + v.stockQuantity, 0);
   const noStock = totalAvailableStock === 0;
   const availableStock = selected.productVariant?.stockQuantity ?? 0;

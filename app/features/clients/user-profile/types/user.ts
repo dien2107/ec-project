@@ -1,7 +1,12 @@
 import type { User } from "~/features/system/orders/types";
 
-// export type OrderStatus = "Chờ xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
-export type OrderStatus = "Chờ xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
+export type OrderStatus =
+  | "Chờ xác nhận"
+  | "Đã xác nhận"
+  | "Đang xử lý"
+  | "Đang giao"
+  | "Đã giao"
+  | "Đã hủy";
 
 export type OrderItem = {
   id: number;

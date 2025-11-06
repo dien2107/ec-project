@@ -24,3 +24,8 @@ export const removeCartItem = async (payload: {
   );
   return data;
 };
+
+export const clearUserCart = async (userId: number) => {
+  const { data } = await instance.delete(`/carts/${userId}/clear`);
+  return data;
+};
