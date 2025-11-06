@@ -46,36 +46,54 @@ export default function UserProfilePage() {
 
     const formattedList: OrderItem[] = orderList.data.items
       .flat()
-      .map((order) => ({
-        id: order.orderId,
-        status:
-          order.status.name === "Pending"
-            ? "Chờ xác nhận"
-            : order.status.name === "Confirmed"
-              ? "Đang giao"
-              : order.status.name === "Delivered"
-                ? "Đã giao"
-                : order.status.name === "Cancelled"
-                  ? "Đã hủy"
-                  : "Chờ xác nhận",
-        date: order.createdAt.toString(),
-        total: order.totalAmount,
-        address: order.addressInfo,
-        user: {
-          userId: order.user.userId,
-          fullName: order.user.fullName,
-          phone: order.user.phone,
-        },
-        items: order.items.map((item) => ({
-          orderItemId: item.orderItemId,
-          productVariantId: item.productVariantId, // hoặc item.productVariantId nếu có
-          name: item.productName,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.productImage,
-          size: item.size,
-        })),
-      }));
+      .map(order => {
+        let uiStatus: OrderStatus = "Chờ xác nhận";
+
+        switch (order.status.name) {
+          case "Pending":
+            uiStatus = "Chờ xác nhận";
+            break;
+          case "Confirmed":
+            uiStatus = "Đã xác nhận";
+            break;
+          case "Processing":
+            uiStatus = "Đang xử lý";
+            break;
+          case "Shipping":
+            uiStatus = "Đang giao";
+            break;
+          case "Delivered":
+            uiStatus = "Đã giao";
+            break;
+          case "Cancelled":
+            uiStatus = "Đã hủy";
+            break;
+          default:
+            uiStatus = "Chờ xác nhận";
+        }
+
+        return {
+          id: order.orderId,
+          status: uiStatus,
+          date: order.createdAt.toString(),
+          total: order.totalAmount,
+          address: order.addressInfo,
+          user: {
+            userId: order.user.userId,
+            fullName: order.user.fullName,
+            phone: order.user.phone,
+          },
+          items: order.items.map(item => ({
+            orderItemId: item.orderItemId,
+            productVariantId: item.productVariantId,
+            name: item.productName,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.productImage,
+            size: item.size,
+          })),
+        };
+      });
 
     setListOrder(formattedList);
   }, [orderList]);

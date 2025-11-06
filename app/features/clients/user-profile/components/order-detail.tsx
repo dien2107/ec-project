@@ -12,6 +12,7 @@ import {
   MapPin,
   User,
   Phone,
+  PackageCheck,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
@@ -20,11 +21,15 @@ import type {
   OrderStatus,
 } from "~/features/clients/user-profile/types/user";
 import ReviewForm from "./review-form";
+import { cancelOrder } from "~/services/order";
+import { toast } from "react-hot-toast";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
+  "Đã xác nhận": <CheckCircle2 className="h-4 w-4 text-blue-500" />,
+  "Đang xử lý": <Package className="h-4 w-4 text-purple-500" />,
   "Đang giao": <Truck className="h-4 w-4 text-blue-500" />,
-  "Đã giao": <CheckCircle2 className="h-4 w-4 text-green-500" />,
+  "Đã giao": <PackageCheck className="h-4 w-4 text-green-500" />,
   "Đã hủy": <XCircle className="h-4 w-4 text-red-500" />,
 };
 
@@ -34,22 +39,36 @@ const statusBadgeClass = (status: OrderStatus) => {
       return "bg-green-100 text-green-800";
     case "Đang giao":
       return "bg-blue-100 text-blue-800";
+    case "Đang xử lý":
+      return "bg-purple-100 text-purple-800";
+    case "Đã xác nhận":
+      return "bg-cyan-100 text-cyan-800";
     case "Chờ xác nhận":
       return "bg-yellow-100 text-yellow-800";
-    default:
+    case "Đã hủy":
       return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
 };
 
 const getOrderSteps = (status: OrderStatus) => {
   const steps = [
     { label: "Đơn hàng đã đặt", status: "Chờ xác nhận" },
-    { label: "Đã xác nhận", status: "Đang giao" },
+    { label: "Đã xác nhận", status: "Đã xác nhận" },
+    { label: "Đang xử lý", status: "Đang xử lý" },
     { label: "Đang giao hàng", status: "Đang giao" },
     { label: "Đã giao", status: "Đã giao" },
   ];
 
-  const statusOrder = ["Chờ xác nhận", "Đang giao", "Đã giao", "Đã hủy"];
+  const statusOrder = [
+    "Chờ xác nhận",
+    "Đã xác nhận",
+    "Đang xử lý",
+    "Đang giao",
+    "Đã giao",
+    "Đã hủy",
+  ];
   const currentIndex = statusOrder.indexOf(status);
 
   return steps.map((step, index) => ({
@@ -89,7 +108,21 @@ export default function OrderDetailsModal({
     });
     setShowReviewForm(true);
   };
-
+  const handleCancel = async () => {
+    if (!order) return;
+    try {
+      const response = await cancelOrder(order.id);
+      if (!response.data) {
+        toast.error(response.message || "Hủy đơn hàng thất bại.");
+        return;
+      }
+      toast.success("Hủy đơn hàng thành công.");
+      onClose();
+    } catch (ex) {
+      const error = ex as Error;
+      toast.error(error.message || "Hủy đơn hàng thất bại.");
+    }
+  };
   const orderSteps = getOrderSteps(order.status);
 
   return (
@@ -139,7 +172,7 @@ export default function OrderDetailsModal({
                       className="h-full bg-blue-600 transition-all duration-500"
                       style={{
                         width: `${
-                          (orderSteps.filter((s) => s.completed).length /
+                          (orderSteps.filter(s => s.completed).length /
                             orderSteps.length) *
                           100
                         }%`,
@@ -189,7 +222,7 @@ export default function OrderDetailsModal({
                 </h3>
 
                 <div className="space-y-4">
-                  {order.items.map((item) => (
+                  {order.items.map(item => (
                     <div
                       key={item.orderItemId}
                       className="border rounded-lg p-4 hover:border-gray-400 transition-colors"
@@ -210,9 +243,9 @@ export default function OrderDetailsModal({
                           <h4 className="font-medium text-gray-900 line-clamp-2">
                             {item.name}
                           </h4>
-                          {item.variant && (
+                          {item.size && (
                             <p className="text-sm text-gray-500 mt-1">
-                              {item.variant}
+                              {item.size}
                             </p>
                           )}
                           <div className="mt-2 flex items-center justify-between">
@@ -333,7 +366,12 @@ export default function OrderDetailsModal({
                 {/* Action Buttons */}
                 {order.status === "Chờ xác nhận" && (
                   <div className="mt-4 space-y-2">
-                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                    <Button
+                      className="w-full bg-red-600 hover:bg-red-700 text-white"
+                      onClick={() => {
+                        handleCancel();
+                      }}
+                    >
                       Hủy đơn hàng
                     </Button>
                   </div>
