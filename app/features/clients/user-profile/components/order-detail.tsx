@@ -113,6 +113,7 @@ const renderReviewButton = (
     );
   }
 
+  if (item.review.isEdited) return null;
   // Nếu đã có review
   return (
     <Button
@@ -314,6 +315,7 @@ export default function OrderDetailsModal({
                           {order.status === "Đã giao" &&
                             renderReviewButton(
                               order.date,
+                              // item.review,
                               item,
                               handleReviewProduct
                             )}

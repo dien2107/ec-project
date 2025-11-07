@@ -27,7 +27,7 @@ export type OrderItem = {
     quantity: number;
     image: string;
     size: string;
-    review: reviewOrder[] | null;
+    review: reviewOrder | null;
   }[];
   payment: paymentDto | null;
 };
