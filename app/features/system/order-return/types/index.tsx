@@ -28,6 +28,7 @@ export type Order = {
 export type Return = {
   id: string;
   orderId: string;
+  orderItemId: number;
   type: ReturnType;
   customer: Customer;
   product: Product;

@@ -22,7 +22,7 @@ import {
 } from "~/services/product-return";
 import { createProductReturnV2 } from "~/services/product-return";
 import type { AxiosError } from "axios";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 // ============= Main Component =============
 export default function OrderReturn() {
@@ -66,6 +66,7 @@ export default function OrderReturn() {
 
     return {
       id: String(pr.returnId ?? pr.returnId),
+      orderItemId: pr.orderItemId,
       orderId: String(pr.orderDto?.orderId ?? ""),
       type,
       customer: { name: pr.userOrderDto?.fullName ?? "", phone: "" },
@@ -199,15 +200,14 @@ export default function OrderReturn() {
     async (payload: MinimalProductReturnRequest) => {
       console.log("==> Gọi handleAddReturn");
       try {
-        await createProductReturnV2(payload);
-        console.log("==> Gọi toast.success");
+        const response = await createProductReturnV2(payload);
+        // createProductReturnV2 trả về ProductReturnResponse trực tiếp, không có isSuccess/message
         toast.success("Tạo phiếu đổi/trả thành công");
-        // refresh list from server
         dispatch(fetchProductReturnList());
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error("==> Gọi toast.error", err);
-        toast.error("Tạo phiếu đổi/trả thất bại");
+      } catch (err: any) {
+        toast.error(
+          err.response?.data?.message || "Tạo phiếu đổi/trả thất bại"
+        );
       } finally {
         setIsAddOpen(false);
       }
@@ -235,12 +235,10 @@ export default function OrderReturn() {
             : r
         )
       );
-      console.log("Đang ở đây");
+
       // refresh list from server to keep in sync
+      dispatch(fetchProductReturnList());
       toast.success("Duyệt đơn đổi / trả thành công");
-      setInterval(() => {
-        dispatch(fetchProductReturnList());
-      }, 5000);
     } catch (err) {
       const ex = err as AxiosError;
 

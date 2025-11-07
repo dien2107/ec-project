@@ -2,33 +2,7 @@
 import React, { useMemo } from "react";
 import DataTable from "~/features/system/components/data-table";
 import { getReturnColumns } from "../columns/return-column";
-import type { ReturnStatus } from "../types";
-type ReturnType = "exchange" | "return";
-
-interface Customer {
-  name: string;
-  phone: string;
-}
-
-interface Product {
-  name: string;
-  sku: string;
-  price: number;
-  image: string;
-}
-
-interface Return {
-  id: string;
-  orderId: string;
-  type: ReturnType;
-  customer: Customer;
-  product: Product;
-  reason: string;
-  description: string;
-  status: ReturnStatus;
-  requestDate: string;
-  quantity: number;
-}
+import type { Return } from "../types";
 
 interface ReturnTableProps {
   data: Return[];

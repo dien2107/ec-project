@@ -88,9 +88,17 @@ export type OrderItem = {
   quantity: number;
   price: number;
   subTotal: number;
+  review: reviewOrder[] | null;
 };
 export type paymentDto = {
   paymentId: number;
+};
+
+export type reviewOrder = {
+  reviewId: number;
+  rating: number;
+  comment: string;
+  isEdited: boolean;
 };
 
 export type Order = {
