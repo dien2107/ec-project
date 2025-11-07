@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/select";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItemData } from "../types";
+import { NavLink } from "react-router";
 
 interface CartItemProps {
   item: CartItemData;
@@ -73,9 +74,15 @@ const CartItem: React.FC<CartItemProps> = ({
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-base md:text-lg text-gray-800 truncate">
-          {item.name}
-        </h3>
+        <NavLink
+          to={`/products/${item.slug}`}
+          className="block relative overflow-hidden rounded-md group hover:no-underline
+          hover:opacity-50 transition"
+        >
+          <h3 className="font-semibold text-base md:text-lg text-gray-800  truncate">
+            {item.name}
+          </h3>
+        </NavLink>
 
         <div className="text-sm text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
           {item.availableVariants && item.availableVariants.length > 1 ? (

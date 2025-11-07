@@ -88,6 +88,7 @@ export default function Payment() {
         dispatch(
           fetchShipListData({
             statusId: activeStatus.statusId,
+            PageSize: 1000,
           })
         );
       }

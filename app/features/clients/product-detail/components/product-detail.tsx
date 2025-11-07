@@ -1,4 +1,4 @@
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { NavLink } from "react-router";
@@ -40,7 +40,6 @@ export default function ProductDetail({
     setSelected((prev) => ({ ...prev, quantity }));
   };
 
-  // 🧩 Hàm thêm vào giỏ hàng (đã dùng API thật)
   const handleAddToCart = async () => {
     if (!user?.data?.userId) {
       toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
@@ -174,11 +173,26 @@ export default function ProductDetail({
                   to={`/products/${p.slug}`}
                   className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden shadow-sm cursor-pointer hover:scale-105 hover:shadow-md hover:border-black`}
                 >
-                  <img
-                    src={imageUrl}
-                    alt={p.name}
-                    className="object-cover w-full h-full rounded-full"
-                  />
+                  <div className="relative w-full h-full">
+                    <img
+                      src={imageUrl}
+                      alt={p.name}
+                      className={`object-cover w-full h-full rounded-full transition-transform duration-200 ease-in-out ${
+                        p.outOfStock
+                          ? "filter grayscale opacity-60"
+                          : "group-hover:scale-105"
+                      }`}
+                    />
+
+                    {/* Out of stock overlay UI only */}
+                    {p.outOfStock && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                        <div className="flex items-center gap-1 bg-red-600 text-white text-[8px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded shadow">
+                          <span>Hết hàng</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </NavLink>
               );
             })}
