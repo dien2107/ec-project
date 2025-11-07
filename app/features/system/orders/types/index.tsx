@@ -79,6 +79,7 @@ export type Ship = {
 };
 
 export type OrderItem = {
+  reviewOrder: reviewOrder[] | null;
   orderItemId: number;
   productVariantId: number;
   productName: string;
@@ -88,7 +89,6 @@ export type OrderItem = {
   quantity: number;
   price: number;
   subTotal: number;
-  review: reviewOrder[] | null;
 };
 export type paymentDto = {
   paymentId: number;

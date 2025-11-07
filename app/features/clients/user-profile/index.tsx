@@ -87,7 +87,7 @@ export default function UserProfilePage() {
             quantity: item.quantity,
             image: item.productImage,
             size: item.size,
-            review: item.reviewOrder[0] || null,
+            review: item.reviewOrder?.[0] || null,
           })),
           payment: order.payment || null,
         };
