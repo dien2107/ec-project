@@ -23,6 +23,7 @@ import type {
 import ReviewForm from "./review-form";
 import { cancelOrder } from "~/services/order";
 import { toast } from "react-hot-toast";
+import ReturnForm from "./return-form";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -144,6 +145,13 @@ export default function OrderDetailsModal({
     image: string;
   } | null>(null);
 
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [returningProduct, setReturningProduct] = useState<{
+    orderItemId: number;
+    name: string;
+    image: string;
+  } | null>(null);
+
   if (!isOpen || !order) return null;
   console.log(order);
   const handleReviewProduct = (
@@ -157,6 +165,19 @@ export default function OrderDetailsModal({
       image: productImage,
     });
     setShowReviewForm(true);
+  };
+
+  const handleReturnProduct = (
+    orderItemId: number,
+    productName: string,
+    productImage: string
+  ) => {
+    setReturningProduct({
+      orderItemId: orderItemId,
+      name: productName,
+      image: productImage,
+    });
+    setShowReturnForm(true);
   };
   const handleCancel = async () => {
     if (!order) return;
@@ -408,7 +429,7 @@ export default function OrderDetailsModal({
                 </div>
 
                 {/* Action Buttons */}
-                {order.status === "Chờ xác nhận" && (
+                {(order.status === "Chờ xác nhận" && (
                   <div className="mt-4 space-y-2">
                     <Button
                       className="w-full bg-red-600 hover:bg-red-700 text-white"
@@ -419,7 +440,42 @@ export default function OrderDetailsModal({
                       Hủy đơn hàng
                     </Button>
                   </div>
-                )}
+                )) ||
+                  (order.status === "Đang giao" && (
+                    <div className="mt-4 space-y-2">
+                      <Button
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => {
+                          toast.success(
+                            "Cảm ơn bạn đã nhận hàng! Vui lòng đánh giá sản phẩm."
+                          );
+                          onClose();
+                        }}
+                      >
+                        Xác nhận đã nhận hàng
+                      </Button>
+                    </div>
+                  )) ||
+                  (order.status === "Đã giao" && (
+                    <div className="mt-4 space-y-2">
+                      <Button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          // Mở ReturnForm với thông tin sản phẩm đầu tiên (hoặc cho user chọn)
+                          if (order.items.length > 0) {
+                            const firstItem = order.items[0];
+                            handleReturnProduct(
+                              firstItem.orderItemId,
+                              firstItem.name,
+                              firstItem.image
+                            );
+                          }
+                        }}
+                      >
+                        Đổi / Trả hàng
+                      </Button>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
@@ -434,6 +490,18 @@ export default function OrderDetailsModal({
           onClose={() => {
             setShowReviewForm(false);
             setReviewingProduct(null);
+          }}
+        />
+      )}
+
+      {showReturnForm && returningProduct && (
+        <ReturnForm
+          orderItemId={returningProduct.orderItemId}
+          productName={returningProduct.name}
+          productImage={returningProduct.image}
+          onClose={() => {
+            setShowReturnForm(false);
+            setReturningProduct(null);
           }}
         />
       )}
