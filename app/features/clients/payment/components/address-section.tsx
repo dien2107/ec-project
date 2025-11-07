@@ -46,6 +46,28 @@ export default function AddressSection({
     }
   }, [selectedAddress, defaultAddress, onSelectAddress]);
 
+  // Khi addresses thay đổi (sau update/delete/fetch) — đảm bảo selectedAddress hợp lệ và tươi
+  useEffect(() => {
+    if (!selectedAddress) return;
+
+    // tìm object tương ứng trong danh sách mới
+    const found = addresses.find(
+      (a) => String(a.addressId) === String(selectedAddress.addressId)
+    );
+
+    if (!found) {
+      // nếu bị xóa -> chọn default hoặc null
+      const fallback = addresses.find((a) => a.isDefault) || null;
+      onSelectAddress(fallback);
+      return;
+    }
+
+    // Nếu tìm thấy nhưng reference khác (mới được fetch) -> cập nhật prop bằng object mới
+    if (found !== selectedAddress) {
+      onSelectAddress(found);
+    }
+  }, [addresses, selectedAddress, onSelectAddress]);
+
   return (
     <>
       <div className="border rounded-md p-6 mb-6">
