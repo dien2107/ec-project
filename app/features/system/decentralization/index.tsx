@@ -286,14 +286,18 @@ const PermissionManagement: React.FC = () => {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [loadingPermissions, setLoadingPermissions] = useState(false);
 
+  // Get data arrays directly from API response
+  const rolesArray = roleList?.data || [];
+  const permissionsArray = permissionList?.data || [];
+
   useEffect(() => {
-    if (!activeRoleId && roleList?.data?.length > 0) {
-      setActiveRoleId(roleList.data[0].roleId);
+    if (!activeRoleId && rolesArray.length > 0) {
+      setActiveRoleId(rolesArray[0].roleId);
     }
   }, [roleList, activeRoleId]);
 
   useEffect(() => {
-    const activeRole = roleList?.data?.find(
+    const activeRole = rolesArray.find(
       (r: RoleList) => r.roleId === activeRoleId
     );
     setSelectedPermissionIds(activeRole?.permissionIds ?? []);
@@ -304,7 +308,7 @@ const PermissionManagement: React.FC = () => {
     dispatch(fetchRoleListData({}));
   }, [dispatch]);
 
-  const activeRole = roleList?.data?.find(
+  const activeRole = rolesArray.find(
     (r: RoleList) => r.roleId === activeRoleId
   );
 
@@ -484,20 +488,20 @@ const PermissionManagement: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <button
+                {/* <button
                   onClick={handleAddGroup}
                   className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
                   title="Thêm nhóm mới"
                   disabled={loadingGroup}
                 >
                   <Plus className="w-5 h-5" />
-                </button>
+                </button> */}
               </div>
               <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
                 {isRoleLoading ? (
                   <div>Đang tải nhóm quyền...</div>
-                ) : roleList?.data?.length > 0 ? (
-                  roleList.data.map((group: RoleList) => (
+                ) : rolesArray.length > 0 ? (
+                  rolesArray.map((group: RoleList) => (
                     <div
                       key={group.roleId}
                       className={`group relative flex items-center p-4 rounded-xl cursor-pointer transition-all duration-300
@@ -595,8 +599,8 @@ const PermissionManagement: React.FC = () => {
               <div className="p-6">
                 {isPermissionLoading ? (
                   <div>Đang tải danh sách quyền...</div>
-                ) : permissionList?.data?.length > 0 ? (
-                  permissionList.data.map(
+                ) : permissionsArray.length > 0 ? (
+                  permissionsArray.map(
                     (resource: PermissionList, idx: number) => (
                       <PermissionRow
                         key={resource.resourceId}

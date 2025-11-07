@@ -19,7 +19,6 @@ export const fetchHomePageData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await instance.get<HomeResponse>("/homepage");
-      console.log("Homepage API trả về:", response.data);
       return response.data.data; 
     } catch (error: any) {
       console.error("Lỗi khi tải dữ liệu trang chủ:", error);

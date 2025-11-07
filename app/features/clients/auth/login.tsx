@@ -91,9 +91,9 @@ export default function LoginPage() {
       toast.success("Đăng nhập thành công");
 
       // Small delay to ensure Redux state is updated
-      setTimeout(() => {
-        navigate("/");
-      }, 100);
+      // setTimeout(() => {
+      //   navigate("/");
+      // }, 100);
     } catch (err: any) {
       const message =
         err?.response?.data?.message ||

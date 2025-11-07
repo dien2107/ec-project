@@ -9,7 +9,6 @@ export default function UserInfo() {
   const load = useSelector((state: RootState) => state.auth.user);
   const user = load?.data ?? null;
   const [editOpen, setEditOpen] = useState(false);
-  console.log("UserInfo render with user:", user);
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
