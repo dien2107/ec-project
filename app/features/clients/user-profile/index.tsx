@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import UserInfo from "./components/user-info";
-import { Package, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type {
   OrderItem,
   OrderStatus,
@@ -13,11 +13,7 @@ import AddressManagement from "../address";
 import ChangePassword from "~/features/clients/user-profile/components/change-password";
 import PaymentCards from "./components/payment-cards";
 import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
-import {
-  fetchOrderListData,
-  fetchOrderListDataByUserId,
-} from "~/redux/slices/orders";
-import { useSelector } from "react-redux";
+import { fetchOrderListDataByUserId } from "~/redux/slices/orders";
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("thong-tin");
@@ -91,11 +87,11 @@ export default function UserProfilePage() {
             quantity: item.quantity,
             image: item.productImage,
             size: item.size,
+            review: item.reviewOrder[0] || null,
           })),
           payment: order.payment || null,
         };
       });
-
     setListOrder(formattedList);
   }, [orderList]);
 
@@ -124,7 +120,6 @@ export default function UserProfilePage() {
       </div>
     );
   }
-
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8">

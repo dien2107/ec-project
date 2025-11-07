@@ -1,4 +1,8 @@
-import type { paymentDto, User } from "~/features/system/orders/types";
+import type {
+  paymentDto,
+  reviewOrder,
+  User,
+} from "~/features/system/orders/types";
 
 export type OrderStatus =
   | "Chờ xác nhận"
@@ -23,6 +27,7 @@ export type OrderItem = {
     quantity: number;
     image: string;
     size: string;
+    review: reviewOrder[] | null;
   }[];
   payment: paymentDto | null;
 };
