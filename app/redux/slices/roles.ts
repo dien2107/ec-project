@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
 import type { RoleList } from "~/features/system/decentralization";
-import type { ApiPagedResponse } from "~/types/api-response";
+import type { ApiResponse } from "~/types/api-response";
 
 interface RoleListDataState {
-  roleList: ApiPagedResponse<RoleList[]> | null;
+  roleList: ApiResponse<RoleList[]> | null;
   isLoading: boolean;
   isError: boolean;
 }
@@ -17,13 +17,10 @@ const initialState: RoleListDataState = {
 
 export const fetchRoleListData = createAsyncThunk(
   "roles/fetchRoleListData",
-  async (params: {
-    StatusName?: string;
-  }) => {
-    const response = await instance.get<ApiPagedResponse<RoleList[]>>(
-      "/roles",
-      { params }
-    );
+  async (params: { StatusName?: string }) => {
+    const response = await instance.get<ApiResponse<RoleList[]>>("/roles", {
+      params,
+    });
     return response.data;
   }
 );
