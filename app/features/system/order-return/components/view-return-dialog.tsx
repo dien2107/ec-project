@@ -28,6 +28,7 @@ interface Product {
 interface Return {
   id: string;
   orderId: string;
+  orderItemId: number;
   type: ReturnType;
   customer: Customer;
   product: Product;
@@ -163,9 +164,9 @@ export default function ViewReturnDialog({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Mã SKU:</span>
+                    <span className="text-sm text-slate-600">Mã:</span>
                     <span className="text-sm font-medium">
-                      {returnData.product.sku}
+                      {returnData.orderItemId}
                     </span>
                   </div>
                   <div className="flex justify-between">

@@ -10,34 +10,7 @@ import {
   Printer,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
-
-type ReturnType = "exchange" | "return";
-type ReturnStatus = "pending" | "processing" | "approved" | "rejected";
-
-interface Customer {
-  name: string;
-  phone: string;
-}
-
-interface Product {
-  name: string;
-  sku: string;
-  price: number;
-  image: string;
-}
-
-interface Return {
-  id: string;
-  orderId: string;
-  type: ReturnType;
-  customer: Customer;
-  product: Product;
-  reason: string;
-  description: string;
-  status: ReturnStatus;
-  requestDate: string;
-  quantity: number;
-}
+import type { Return, ReturnType, ReturnStatus } from "../types";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("vi-VN", {
@@ -142,11 +115,18 @@ export const getReturnColumns = (
     header: () => <div className="text-center w-[120px]">Trạng thái</div>,
     cell: ({ row }) => {
       const status = row.original.status;
-      const statusConfig = {
+      const statusConfig: Record<
+        ReturnStatus,
+        { label: string; color: string }
+      > = {
         pending: { label: "Chờ xử lý", color: "bg-yellow-100 text-yellow-800" },
-        processing: { label: "Đang xử lý", color: "bg-blue-100 text-blue-800" },
+        processing: {
+          label: "Đang xử lý",
+          color: "bg-blue-100 text-blue-800",
+        },
         approved: { label: "Đã duyệt", color: "bg-green-100 text-green-800" },
         rejected: { label: "Từ chối", color: "bg-red-100 text-red-800" },
+        draft: { label: "Nháp", color: "bg-gray-100 text-gray-800" },
       };
       return (
         <div className="flex justify-center">

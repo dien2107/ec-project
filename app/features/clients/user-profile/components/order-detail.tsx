@@ -78,6 +78,56 @@ const getOrderSteps = (status: OrderStatus) => {
   }));
 };
 
+// Helper function để render nút đánh giá
+const renderReviewButton = (
+  orderDate: string,
+  item: OrderItem["items"][0],
+  handleReviewProduct: (
+    orderItemId: number,
+    productName: string,
+    productImage: string
+  ) => void
+) => {
+  // Kiểm tra đã quá 7 ngày chưa
+  const orderDateTime = new Date(orderDate);
+  const currentDate = new Date();
+  const daysDiff = Math.floor(
+    (currentDate.getTime() - orderDateTime.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const isExpired = daysDiff > 7;
+
+  if (isExpired) return null;
+
+  // Nếu chưa có review
+  if (item.review == null) {
+    return (
+      <Button
+        onClick={() => {
+          handleReviewProduct(item.orderItemId, item.name, item.image);
+        }}
+        className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 flex items-center space-x-2"
+      >
+        <Star className="h-4 w-4" />
+        <span>Viết đánh giá</span>
+      </Button>
+    );
+  }
+
+  if (item.review.isEdited) return null;
+  // Nếu đã có review
+  return (
+    <Button
+      onClick={() => {
+        handleReviewProduct(item.orderItemId, item.name, item.image);
+      }}
+      className="mt-3 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm px-4 py-2 flex items-center space-x-2"
+    >
+      <Star className="h-4 w-4 fill-blue-600" />
+      <span>Sửa đánh giá</span>
+    </Button>
+  );
+};
+
 export default function OrderDetailsModal({
   order,
   isOpen,
@@ -95,7 +145,7 @@ export default function OrderDetailsModal({
   } | null>(null);
 
   if (!isOpen || !order) return null;
-
+  console.log(order);
   const handleReviewProduct = (
     orderItemId: number,
     productName: string,
@@ -262,21 +312,13 @@ export default function OrderDetailsModal({
                             </p>
                           </div>
 
-                          {order.status === "Đã giao" && (
-                            <Button
-                              onClick={() =>
-                                handleReviewProduct(
-                                  item.orderItemId,
-                                  item.name,
-                                  item.image
-                                )
-                              }
-                              className="mt-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm px-4 py-2 flex items-center space-x-2"
-                            >
-                              <Star className="h-4 w-4" />
-                              <span>Viết đánh giá</span>
-                            </Button>
-                          )}
+                          {order.status === "Đã giao" &&
+                            renderReviewButton(
+                              order.date,
+                              // item.review,
+                              item,
+                              handleReviewProduct
+                            )}
                         </div>
                       </div>
                     </div>
