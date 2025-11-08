@@ -10,7 +10,7 @@ export default function TabsInfo({ product }: { product: ProductDetail }) {
     <div>
       <Tabs defaultValue="product" className="w-full">
         {/* Tabs Navigation - Scrollable on mobile/tablet, left-aligned on laptop */}
-        <div className="overflow-x-auto scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0">
+        <div className="scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0">
           <TabsList className="bg-transparent inline-flex min-w-max md:w-full md:justify-start">
             <TabsTrigger
               value="product"
