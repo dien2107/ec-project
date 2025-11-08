@@ -53,3 +53,18 @@ export const createReview = async (orderItemId: number, formData: FormData) => {
     throw error;
   }
 };
+
+export const updateReview = async (reviewId: number, formData: FormData) => {
+  try {
+    const response = await instance.patch(`/reviews/${reviewId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creating review:", error);
+    throw error;
+  }
+};

@@ -1,29 +1,26 @@
 import {
-  X,
-  Clock,
-  Truck,
   CheckCircle2,
-  XCircle,
-  Star,
-  Camera,
-  Video,
-  Send,
-  Package,
+  Clock,
   MapPin,
-  User,
-  Phone,
+  Package,
   PackageCheck,
+  Phone,
+  Star,
+  Truck,
+  User,
+  X,
+  XCircle,
 } from "lucide-react";
-import { Button } from "~/components/ui/button";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { Button } from "~/components/ui/button";
 import type {
   OrderItem,
   OrderStatus,
 } from "~/features/clients/user-profile/types/user";
-import ReviewForm from "./review-form";
 import { cancelOrder } from "~/services/order";
-import { toast } from "react-hot-toast";
 import ReturnForm from "./return-form";
+import ReviewForm from "./review/review-form";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -83,11 +80,7 @@ const getOrderSteps = (status: OrderStatus) => {
 const renderReviewButton = (
   orderDate: string,
   item: OrderItem["items"][0],
-  handleReviewProduct: (
-    orderItemId: number,
-    productName: string,
-    productImage: string
-  ) => void
+  handleReviewProduct: (item: OrderItem["items"][0]) => void
 ) => {
   // Kiểm tra đã quá 7 ngày chưa
   const orderDateTime = new Date(orderDate);
@@ -104,7 +97,7 @@ const renderReviewButton = (
     return (
       <Button
         onClick={() => {
-          handleReviewProduct(item.orderItemId, item.name, item.image);
+          handleReviewProduct(item);
         }}
         className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 flex items-center space-x-2"
       >
@@ -114,12 +107,24 @@ const renderReviewButton = (
     );
   }
 
-  if (item.review.isEdited) return null;
+  if (item.review.isEdited)
+    return (
+      <Button
+        onClick={() => {
+          handleReviewProduct(item);
+        }}
+        className="mt-3 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm px-4 py-2 flex items-center space-x-2"
+      >
+        <Star className="h-4 w-4 fill-blue-600" />
+        <span>Xem đánh giá</span>
+      </Button>
+    );
+
   // Nếu đã có review
   return (
     <Button
       onClick={() => {
-        handleReviewProduct(item.orderItemId, item.name, item.image);
+        handleReviewProduct(item);
       }}
       className="mt-3 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm px-4 py-2 flex items-center space-x-2"
     >
@@ -139,44 +144,24 @@ export default function OrderDetailsModal({
   onClose: () => void;
 }) {
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewingProduct, setReviewingProduct] = useState<{
-    orderItemId: number;
-    name: string;
-    image: string;
-  } | null>(null);
-
+  const [reviewingProduct, setReviewingProduct] = useState<
+    OrderItem["items"][0] | null
+  >(null);
+  console.log(order);
   const [showReturnForm, setShowReturnForm] = useState(false);
-  const [returningProduct, setReturningProduct] = useState<{
-    orderItemId: number;
-    name: string;
-    image: string;
-  } | null>(null);
+  const [returningProduct, setReturningProduct] = useState<
+    OrderItem["items"][0] | null
+  >(null);
 
   if (!isOpen || !order) return null;
-  console.log(order);
-  const handleReviewProduct = (
-    orderItemId: number,
-    productName: string,
-    productImage: string
-  ) => {
-    setReviewingProduct({
-      orderItemId: orderItemId,
-      name: productName,
-      image: productImage,
-    });
+  // accept whole item to simplify calls and allow future expansion (mode, reviewId inside item.review)
+  const handleReviewProduct = (item: OrderItem["items"][0]) => {
+    setReviewingProduct(item);
     setShowReviewForm(true);
   };
 
-  const handleReturnProduct = (
-    orderItemId: number,
-    productName: string,
-    productImage: string
-  ) => {
-    setReturningProduct({
-      orderItemId: orderItemId,
-      name: productName,
-      image: productImage,
-    });
+  const handleReturnProduct = (item: OrderItem["items"][0]) => {
+    setReturningProduct(item);
     setShowReturnForm(true);
   };
   const handleCancel = async () => {
@@ -243,7 +228,7 @@ export default function OrderDetailsModal({
                       className="h-full bg-blue-600 transition-all duration-500"
                       style={{
                         width: `${
-                          (orderSteps.filter(s => s.completed).length /
+                          (orderSteps.filter((s) => s.completed).length /
                             orderSteps.length) *
                           100
                         }%`,
@@ -293,7 +278,7 @@ export default function OrderDetailsModal({
                 </h3>
 
                 <div className="space-y-4">
-                  {order.items.map(item => (
+                  {order.items.map((item) => (
                     <div
                       key={item.orderItemId}
                       className="border rounded-lg p-4 hover:border-gray-400 transition-colors"
@@ -336,7 +321,6 @@ export default function OrderDetailsModal({
                           {order.status === "Đã giao" &&
                             renderReviewButton(
                               order.date,
-                              // item.review,
                               item,
                               handleReviewProduct
                             )}
@@ -461,14 +445,8 @@ export default function OrderDetailsModal({
                       <Button
                         className="w-full bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => {
-                          // Mở ReturnForm với thông tin sản phẩm đầu tiên (hoặc cho user chọn)
                           if (order.items.length > 0) {
-                            const firstItem = order.items[0];
-                            handleReturnProduct(
-                              firstItem.orderItemId,
-                              firstItem.name,
-                              firstItem.image
-                            );
+                            handleReturnProduct(order.items[0]);
                           }
                         }}
                       >
@@ -484,9 +462,14 @@ export default function OrderDetailsModal({
 
       {showReviewForm && reviewingProduct && (
         <ReviewForm
-          orderItemId={reviewingProduct.orderItemId}
-          productName={reviewingProduct.name}
-          productImage={reviewingProduct.image}
+          item={reviewingProduct}
+          mode={
+            reviewingProduct.review?.isEdited
+              ? "view"
+              : reviewingProduct.review
+                ? "edit"
+                : "create"
+          }
           onClose={() => {
             setShowReviewForm(false);
             setReviewingProduct(null);
