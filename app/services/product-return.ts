@@ -66,10 +66,8 @@ export const createProductReturn = async (
 // New minimal payload type requested by UI: only these fields are required
 export type MinimalProductReturnRequest = {
   orderItemId: number;
-  returnType: number; // backend may accept 0/1/2; keep as number
+  returnType: number; // 1 = trả hàng, 2 = đổi hàng
   returnReason: string;
-  returnAmount?: number | null;
-  returnProductVariantId?: number | null;
 };
 
 export const createProductReturnV2 = async (
@@ -115,6 +113,26 @@ export const rejectProductReturn = async (returnId: number) => {
     return response.data;
   } catch (error) {
     console.error("Error rejecting order:", error);
+    throw error;
+  }
+};
+export const completedProductReturnforRefund = async (returnId: number) => {
+  try {
+    const response = await instance.put(`/returns/complete-refund/${returnId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error completing order:", error);
+    throw error;
+  }
+};
+export const completedProductReturnforExchange = async (returnId: number) => {
+  try {
+    const response = await instance.put(
+      `/returns/complete-exchange/${returnId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error completing order:", error);
     throw error;
   }
 };

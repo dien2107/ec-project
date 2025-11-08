@@ -5,6 +5,7 @@ import { Input } from "~/components/ui/input";
 
 interface Filters {
   status: string;
+  returnType: string;
   dateFrom: string;
   dateTo: string;
   productSearch: string;
@@ -20,9 +21,15 @@ interface ReturnFilterProps {
 const statusOptions = [
   { value: "all", label: "Tất cả" },
   { value: "pending", label: "Chờ xử lý" },
-  { value: "processing", label: "Đang xử lý" },
   { value: "approved", label: "Đã duyệt" },
   { value: "rejected", label: "Từ chối" },
+  { value: "completed", label: "Hoàn thành" },
+];
+
+const returnTypeOptions = [
+  { value: "all", label: "Tất cả loại" },
+  { value: "2", label: "Đổi hàng" },
+  { value: "1", label: "Trả hàng" },
 ];
 
 export default function ReturnFilter({
@@ -46,6 +53,31 @@ export default function ReturnFilter({
               }`}
             >
               {status.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Return Type Filter Buttons */}
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="text-sm font-semibold text-slate-700">
+          Loại phiếu:
+        </span>
+        <div className="flex gap-2 flex-wrap">
+          {returnTypeOptions.map(type => (
+            <Button
+              key={type.value}
+              onClick={() => setFilters({ ...filters, returnType: type.value })}
+              variant={
+                filters.returnType === type.value ? "default" : "outline"
+              }
+              className={`px-4 py-2 text-sm font-medium transition-all ${
+                filters.returnType === type.value
+                  ? "bg-purple-600 text-white shadow-md"
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {type.label}
             </Button>
           ))}
         </div>
@@ -73,14 +105,14 @@ export default function ReturnFilter({
 
       {/* Search Fields */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
+        {/* <Input
           placeholder="Tìm theo sản phẩm (tên hoặc SKU)..."
           value={filters.productSearch}
           onChange={e =>
             setFilters({ ...filters, productSearch: e.target.value })
           }
           className="w-full"
-        />
+        /> */}
         <Input
           placeholder="Tìm theo tên khách hàng..."
           value={filters.customerSearch}
