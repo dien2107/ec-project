@@ -66,8 +66,8 @@ export default function ViewAddressesDialog({
       await setDefaultAddress(address.addressId);
       await dispatch(fetchAddressesByUserId(user.data.userId));
       const id = String(address.addressId);
-      setLocalSelectedId(id);
-      onSelectAddressId?.(id);
+      // setLocalSelectedId(id);
+      // onSelectAddressId?.(id);
       toast.success("Đã đặt địa chỉ mặc định thành công!");
     } catch (error: any) {
       if (error?.response?.data?.message) {
