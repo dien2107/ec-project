@@ -55,27 +55,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 const queryClient = new QueryClient();
 
-// Component để tự động fetch user khi có token (sau khi rehydrate)
-function AuthInitializer() {
-  const dispatch = useAppDispatch();
-  const { accessToken, user } = useAppSelector((state) => state.auth);
+// // Component để tự động fetch user khi có token (sau khi rehydrate)
+// function AuthInitializer() {
+//   const dispatch = useAppDispatch();
+//   const { accessToken, user } = useAppSelector((state) => state.auth);
 
-  useEffect(() => {
-    // Chỉ fetch user nếu có token nhưng chưa có thông tin user
-    if (accessToken && !user) {
-      dispatch(fetchCurrentUser());
-    }
-  }, [dispatch, accessToken, user]);
+//   useEffect(() => {
+//     // Chỉ fetch user nếu có token nhưng chưa có thông tin user
+//     if (accessToken && !user) {
+//       dispatch(fetchCurrentUser());
+//     }
+//   }, [dispatch, accessToken, user]);
 
-  return null;
-}
+//   return null;
+// }
 
 export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <QueryClientProvider client={queryClient}>
-          <AuthInitializer />
+          {/* <AuthInitializer /> */}
           <Outlet />
           <Toaster />
           <ReactQueryDevtools initialIsOpen={false} />

@@ -64,7 +64,10 @@ export default function ViewAddressesDialog({
   const handleSetAsDefault = async (address: Address) => {
     try {
       await setDefaultAddress(address.addressId);
-      dispatch(fetchAddressesByUserId(user.data.userId));
+      await dispatch(fetchAddressesByUserId(user.data.userId));
+      const id = String(address.addressId);
+      // setLocalSelectedId(id);
+      // onSelectAddressId?.(id);
       toast.success("Đã đặt địa chỉ mặc định thành công!");
     } catch (error: any) {
       if (error?.response?.data?.message) {
