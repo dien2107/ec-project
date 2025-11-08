@@ -21,7 +21,7 @@ import type {
   OrderStatus,
 } from "~/features/clients/user-profile/types/user";
 import ReviewForm from "./review-form";
-import { cancelOrder } from "~/services/order";
+import { cancelOrder, completeOrder } from "~/services/order";
 import { toast } from "react-hot-toast";
 import ReturnForm from "./return-form";
 
@@ -130,10 +130,12 @@ const renderReviewButton = (
 };
 
 export default function OrderDetailsModal({
+  setSearchParams,
   order,
   isOpen,
   onClose,
 }: {
+  setSearchParams: (params: URLSearchParams) => void;
   order: OrderItem | null;
   isOpen: boolean;
   onClose: () => void;
@@ -146,14 +148,8 @@ export default function OrderDetailsModal({
   } | null>(null);
 
   const [showReturnForm, setShowReturnForm] = useState(false);
-  const [returningProduct, setReturningProduct] = useState<{
-    orderItemId: number;
-    name: string;
-    image: string;
-  } | null>(null);
 
   if (!isOpen || !order) return null;
-  console.log(order);
   const handleReviewProduct = (
     orderItemId: number,
     productName: string,
@@ -167,16 +163,7 @@ export default function OrderDetailsModal({
     setShowReviewForm(true);
   };
 
-  const handleReturnProduct = (
-    orderItemId: number,
-    productName: string,
-    productImage: string
-  ) => {
-    setReturningProduct({
-      orderItemId: orderItemId,
-      name: productName,
-      image: productImage,
-    });
+  const handleOpenReturnForm = () => {
     setShowReturnForm(true);
   };
   const handleCancel = async () => {
@@ -184,14 +171,31 @@ export default function OrderDetailsModal({
     try {
       const response = await cancelOrder(order.id);
       if (!response.data) {
-        toast.error(response.message || "Hủy đơn hàng thất bại.");
-        return;
+        throw new Error(response.message || "Hủy đơn hàng thất bại.");
       }
       toast.success("Hủy đơn hàng thành công.");
       onClose();
+      // Reload trang để refresh danh sách đơn hàng
+      window.location.reload();
     } catch (ex) {
       const error = ex as Error;
       toast.error(error.message || "Hủy đơn hàng thất bại.");
+    }
+  };
+  const handleComplete = async () => {
+    if (!order) return;
+    try {
+      const response = await completeOrder(order.id);
+      if (!response.data) {
+        throw new Error(response.message || "Hoàn tất đơn hàng thất bại.");
+      }
+      toast.success("Hoàn tất đơn hàng thành công.");
+      onClose();
+      // Reload trang để refresh danh sách đơn hàng
+      window.location.reload();
+    } catch (ex) {
+      const error = ex as Error;
+      toast.error(error.message || "Hoàn tất đơn hàng thất bại.");
     }
   };
   const orderSteps = getOrderSteps(order.status);
@@ -398,31 +402,59 @@ export default function OrderDetailsModal({
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Tạm tính</span>
-                      <span className="text-gray-900">
-                        {order.total.toLocaleString("vi-VN")}₫
+                      <span className="text-gray-900 font-medium">
+                        {(
+                          order.total -
+                          order.shippingFee +
+                          (order.discount ? order.discount.discountValue : 0)
+                        ).toLocaleString("vi-VN")}
+                        ₫
                       </span>
                     </div>
 
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Phí vận chuyển</span>
-                      <span className="text-green-600 font-medium">
-                        Miễn phí
-                      </span>
+                      {order.shippingFee && order.shippingFee > 0 ? (
+                        <span className="text-gray-900">
+                          {order.shippingFee.toLocaleString("vi-VN")}₫
+                        </span>
+                      ) : (
+                        <span className="text-green-600 font-medium">
+                          Miễn phí
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Giảm giá</span>
-                      <span className="text-gray-900">0₫</span>
-                    </div>
+                    {order.discount && order.discount.discountValue > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Giảm giá</span>
+                        <span className="text-red-600 font-medium">
+                          -
+                          {order.discount.discountValue.toLocaleString("vi-VN")}
+                          ₫
+                        </span>
+                      </div>
+                    )}
 
                     <div className="pt-3 mt-3 border-t">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-gray-900">
                           Tổng cộng
                         </span>
-                        <span className="font-bold text-xl text-blue-600">
-                          {order.total.toLocaleString("vi-VN")}₫
-                        </span>
+                        <div className="text-right">
+                          {order.discount &&
+                            order.discount.discountValue > 0 && (
+                              <div className="text-sm text-gray-400 line-through mb-1">
+                                {(
+                                  order.total + order.discount.discountValue
+                                ).toLocaleString("vi-VN")}
+                                ₫
+                              </div>
+                            )}
+                          <span className="font-bold text-xl text-blue-600">
+                            {order.total.toLocaleString("vi-VN")}₫
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -446,10 +478,7 @@ export default function OrderDetailsModal({
                       <Button
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                         onClick={() => {
-                          toast.success(
-                            "Cảm ơn bạn đã nhận hàng! Vui lòng đánh giá sản phẩm."
-                          );
-                          onClose();
+                          handleComplete();
                         }}
                       >
                         Xác nhận đã nhận hàng
@@ -460,17 +489,7 @@ export default function OrderDetailsModal({
                     <div className="mt-4 space-y-2">
                       <Button
                         className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => {
-                          // Mở ReturnForm với thông tin sản phẩm đầu tiên (hoặc cho user chọn)
-                          if (order.items.length > 0) {
-                            const firstItem = order.items[0];
-                            handleReturnProduct(
-                              firstItem.orderItemId,
-                              firstItem.name,
-                              firstItem.image
-                            );
-                          }
-                        }}
+                        onClick={handleOpenReturnForm}
                       >
                         Đổi / Trả hàng
                       </Button>
@@ -494,14 +513,12 @@ export default function OrderDetailsModal({
         />
       )}
 
-      {showReturnForm && returningProduct && (
+      {showReturnForm && (
         <ReturnForm
-          orderItemId={returningProduct.orderItemId}
-          productName={returningProduct.name}
-          productImage={returningProduct.image}
+          order={order}
           onClose={() => {
             setShowReturnForm(false);
-            setReturningProduct(null);
+            onClose();
           }}
         />
       )}

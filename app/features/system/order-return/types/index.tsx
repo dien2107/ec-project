@@ -1,11 +1,6 @@
 // ============= Types =============
 export type ReturnType = "exchange" | "return";
-export type ReturnStatus =
-  | "pending"
-  | "processing"
-  | "approved"
-  | "rejected"
-  | "draft";
+export type ReturnStatus = "pending" | "approved" | "rejected" | "completed";
 
 export type Customer = {
   name: string;
@@ -41,6 +36,7 @@ export type Return = {
 
 export type Filters = {
   status: string;
+  returnType: string;
   dateFrom: string;
   dateTo: string;
   productSearch: string;

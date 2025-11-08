@@ -31,7 +31,7 @@ export default function PaymentSuccess() {
     }
   }, [dispatch, userId]);
 
-  const handleClose = () => navigate("/profile");
+  const handleClose = () => navigate("/profile?tab=don-hang");
 
   return (
     <Dialog open={true} onOpenChange={handleClose}>

@@ -14,9 +14,12 @@ import ChangePassword from "~/features/clients/user-profile/components/change-pa
 import PaymentCards from "./components/payment-cards";
 import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
 import { fetchOrderListDataByUserId } from "~/redux/slices/orders";
+import { useSearchParams } from "react-router";
 
 export default function UserProfilePage() {
-  const [activeTab, setActiveTab] = useState("thong-tin");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "thong-tin");
   const [statusFilter, setStatusFilter] = useState<"Tất cả" | OrderStatus>(
     "Tất cả"
   );
@@ -30,6 +33,13 @@ export default function UserProfilePage() {
   const [showAll, setShowAll] = useState(false);
   const ITEMS_PER_PAGE = 5;
 
+  // Đọc tab từ URL khi component mount
+  useEffect(() => {
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
   useEffect(() => {
     if (user?.data?.userId) {
       dispatch(fetchOrderListDataByUserId(user.data.userId));
@@ -39,7 +49,7 @@ export default function UserProfilePage() {
   // 🔹 Khi orderList từ Redux có dữ liệu -> format lại cho UI
   useEffect(() => {
     if (!orderList?.data) return;
-
+    console.log(orderList);
     const formattedList: OrderItem[] = orderList.data.items
       .flat()
       .map(order => {
@@ -88,8 +98,11 @@ export default function UserProfilePage() {
             image: item.productImage,
             size: item.size,
             review: item.reviewOrder?.[0] || null,
+            return: item.return,
           })),
           payment: order.payment || null,
+          shippingFee: order.shippingFee || 0,
+          discount: order.discount || null,
         };
       });
     setListOrder(formattedList);
@@ -136,7 +149,10 @@ export default function UserProfilePage() {
           <div className="lg:col-span-3">
             <Sidebar
               activeTab={activeTab}
-              onChangeTab={setActiveTab}
+              onChangeTab={tab => {
+                setActiveTab(tab);
+                setSearchParams({ tab });
+              }}
               totalOrders={listOrder.length}
               user={user.data}
             />
@@ -212,6 +228,7 @@ export default function UserProfilePage() {
         </div>
 
         <OrderDetailsModal
+          setSearchParams={setSearchParams}
           order={selectedOrder}
           isOpen={!!selectedOrder}
           onClose={() => setSelectedOrder(null)}

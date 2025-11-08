@@ -72,6 +72,15 @@ export const cancelOrder = async (orderId: number) => {
     throw error;
   }
 };
+export const completeOrder = async (orderId: number) => {
+  try {
+    const response = await instance.put(`/orders/complete/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error completing order:", error);
+    throw error;
+  }
+};
 
 export default {
   createOrder,

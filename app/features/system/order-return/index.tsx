@@ -1,14 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Package, Repeat2 } from "lucide-react";
-
-// Data will be loaded from redux (product-return service)
-
-// ============= Components =============
 import StatsCard from "./components/stats-card";
 import ReturnFilter from "./components/return-filter";
 import ReturnTable from "./components/return-table";
-import AddReturnDialog from "./components/add-return-dialog";
-import type { MinimalProductReturnRequest } from "./components/add-return-dialog";
 import ViewReturnDialog from "./components/view-return-dialog";
 import ApproveReturnDialog from "./components/approve-return-dialog";
 import RejectReturnDialog from "./components/reject-return-dialog";
@@ -18,83 +12,61 @@ import type { ProductReturnResponse } from "~/services/product-return";
 import { fetchProductReturnList } from "~/redux/slices/product-return";
 import {
   approveProductReturn,
+  completedProductReturnforExchange,
+  completedProductReturnforRefund,
   rejectProductReturn,
 } from "~/services/product-return";
-import { createProductReturnV2 } from "~/services/product-return";
 import type { AxiosError } from "axios";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
+const mapPR = (pr: ProductReturnResponse): Return => {
+  const type: Return["type"] = pr.returnType === 2 ? "exchange" : "return";
+  const lowerStatus = (pr.statusName || "").toLowerCase();
+  let status: ReturnStatus = "pending";
 
-// ============= Main Component =============
-export default function OrderReturn() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
-  const dispatch = useAppDispatch();
-  const { data, isLoading, isError } = useAppSelector(
-    state => state.productReturn
-  );
+  if (lowerStatus.includes("pending") || lowerStatus.includes("chờ")) {
+    status = "pending";
+  } else if (
+    lowerStatus.includes("approved") ||
+    lowerStatus.includes("đồng ý")
+  ) {
+    status = "approved";
+  } else if (lowerStatus.includes("reject") || lowerStatus.includes("hủy")) {
+    status = "rejected";
+  } else if (
+    lowerStatus.includes("completed") ||
+    lowerStatus.includes("hoàn thành")
+  ) {
+    status = "completed";
+  }
 
-  useEffect(() => {
-    dispatch(fetchProductReturnList());
-  }, [dispatch]);
-
-  // returns used by UI are mapped to local `Return` type
-  const [returns, setReturns] = useState<Return[]>([]);
-
-  // map ProductReturnResponse -> UI Return
-  const mapPR = (pr: ProductReturnResponse): Return => {
-    const type: Return["type"] = pr.returnType === 2 ? "exchange" : "return";
-    const lowerStatus = (pr.statusName || "").toLowerCase();
-    let status: ReturnStatus = "processing";
-    if (
-      lowerStatus.includes("pending") ||
-      lowerStatus.includes("chờ") ||
-      lowerStatus.includes("draft")
-    )
-      status = "pending";
-    else if (
-      lowerStatus.includes("approved") ||
-      lowerStatus.includes("đồng ý") ||
-      lowerStatus.includes("approved")
-    )
-      status = "approved";
-    else if (
-      lowerStatus.includes("reject") ||
-      lowerStatus.includes("hủy") ||
-      lowerStatus.includes("rejected")
-    )
-      status = "rejected";
-
-    return {
-      id: String(pr.returnId ?? pr.returnId),
-      orderItemId: pr.orderItemId,
-      orderId: String(pr.orderDto?.orderId ?? ""),
-      type,
-      customer: { name: pr.userOrderDto?.fullName ?? "", phone: "" },
-      product: {
-        name: pr.productName ?? "",
-        sku: pr.returnProductVariantId ? String(pr.returnProductVariantId) : "",
-        price: pr.returnAmount ?? pr.orderDto?.totalAmount ?? 0,
-        image: pr.productImageUrl ?? "",
-      },
-      reason: pr.returnReason ?? "",
-      description: pr.returnProductName ?? "",
-      status,
-      requestDate: pr.createdAt ?? "",
-      quantity: 1,
-    };
+  return {
+    id: String(pr.returnId ?? pr.returnId),
+    orderItemId: pr.orderItemId,
+    orderId: String(pr.orderDto?.orderId ?? ""),
+    type,
+    customer: { name: pr.userOrderDto?.fullName ?? "", phone: "" },
+    product: {
+      name: pr.productName ?? "",
+      sku: pr.returnProductVariantId ? String(pr.returnProductVariantId) : "",
+      price: pr.returnAmount ?? pr.orderDto?.totalAmount ?? 0,
+      image: pr.productImageUrl ?? "",
+    },
+    reason: pr.returnReason ?? "",
+    description: pr.returnProductName ?? "",
+    status,
+    requestDate: pr.createdAt ?? "",
+    quantity: 1,
   };
+};
+export default function OrderReturn() {
+  const dispatch = useAppDispatch();
+  const { productReturnList } = useAppSelector(state => state.productReturn);
 
-  // whenever product-return data updates, map into UI shape
-  useEffect(() => {
-    if (Array.isArray(data) && data.length > 0) {
-      setReturns(data.map(mapPR));
-    } else {
-      setReturns([]);
-    }
-  }, [data]);
-
+  const PAGE_SIZE = 3;
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     status: "all",
+    returnType: "all",
     dateFrom: "",
     dateTo: "",
     productSearch: "",
@@ -102,9 +74,45 @@ export default function OrderReturn() {
     phoneSearch: "",
   });
 
+  // Load product returns when filters or pagination changes
+  useEffect(() => {
+    dispatch(
+      fetchProductReturnList({
+        PageNumber: currentPage,
+        PageSize: PAGE_SIZE,
+        Search: filters.productSearch || filters.customerSearch || undefined,
+        StatusName: filters.status !== "all" ? filters.status : undefined,
+        ReturnType:
+          filters.returnType !== "all" ? filters.returnType : undefined,
+      })
+    );
+  }, [
+    dispatch,
+    currentPage,
+    filters.status,
+    filters.returnType,
+    filters.productSearch,
+    filters.customerSearch,
+  ]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    filters.status,
+    filters.returnType,
+    filters.productSearch,
+    filters.customerSearch,
+  ]);
+
+  // Map API data to UI Return type
+  const returns = useMemo(() => {
+    const data = productReturnList?.data?.items ?? [];
+    return data.map(mapPR);
+  }, [productReturnList]);
+
   // Dialog states
   const [selectedReturn, setSelectedReturn] = useState<Return | null>(null);
-  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
@@ -134,43 +142,8 @@ export default function OrderReturn() {
     [returns]
   );
 
-  // Filter logic
-  const filteredReturns = useMemo(() => {
-    return returns.filter(r => {
-      if (filters.status !== "all" && r.status !== filters.status) return false;
-      if (
-        filters.dateFrom &&
-        new Date(r.requestDate) < new Date(filters.dateFrom)
-      )
-        return false;
-      if (filters.dateTo && new Date(r.requestDate) > new Date(filters.dateTo))
-        return false;
-      if (filters.productSearch) {
-        const keyword = filters.productSearch.toLowerCase().trim();
-        if (
-          !r.product.name.toLowerCase().includes(keyword) &&
-          !r.product.sku.toLowerCase().includes(keyword)
-        )
-          return false;
-      }
-      if (filters.customerSearch) {
-        const keyword = filters.customerSearch.toLowerCase().trim();
-        if (!r.customer.name.toLowerCase().includes(keyword)) return false;
-      }
-      if (filters.phoneSearch) {
-        const keyword = filters.phoneSearch.trim();
-        if (!r.customer.phone.includes(keyword)) return false;
-      }
-      return true;
-    });
-  }, [returns, filters]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredReturns.length / pageSize);
-  const paginatedReturns = filteredReturns.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  // Get pagination info from API response
+  const totalPages = productReturnList?.data?.totalPages ?? 1;
 
   // Handlers
   const handleView = useCallback((ret: Return) => {
@@ -191,28 +164,62 @@ export default function OrderReturn() {
     setIsRejectOpen(true);
   }, []);
 
-  const handlePrint = useCallback((ret: Return) => {
-    console.log("Print:", ret);
-    // TODO: Implement print functionality
-  }, []);
-
-  const handleAddReturn = useCallback(
-    async (payload: MinimalProductReturnRequest) => {
-      console.log("==> Gọi handleAddReturn");
+  const handleCompleteForExchange = useCallback(
+    async (ret: Return) => {
       try {
-        const response = await createProductReturnV2(payload);
-        // createProductReturnV2 trả về ProductReturnResponse trực tiếp, không có isSuccess/message
-        toast.success("Tạo phiếu đổi/trả thành công");
-        dispatch(fetchProductReturnList());
-      } catch (err: any) {
-        toast.error(
-          err.response?.data?.message || "Tạo phiếu đổi/trả thất bại"
+        // TODO: Call API to complete exchange (đã gửi lại cho khách)
+        const response = await completedProductReturnforExchange(
+          Number(ret.id)
         );
-      } finally {
-        setIsAddOpen(false);
+        if (!response.isSuccess)
+          throw new Error(response.message || "Lỗi khi hoàn thành đổi hàng");
+        console.log("Hoàn thành đổi hàng cho:", ret.id);
+        toast.success("Đã hoàn thành đổi hàng - Đã gửi lại cho khách");
+
+        // Refresh list
+        dispatch(
+          fetchProductReturnList({
+            PageNumber: currentPage,
+            PageSize: PAGE_SIZE,
+            Search:
+              filters.productSearch || filters.customerSearch || undefined,
+            StatusName: filters.status !== "all" ? filters.status : undefined,
+          })
+        );
+      } catch (err) {
+        const ex = err as AxiosError;
+        toast.error("Không thể hoàn thành đổi hàng: " + ex.message);
       }
     },
-    [dispatch]
+    [dispatch, currentPage, filters]
+  );
+
+  const handleCompleteForReturn = useCallback(
+    async (ret: Return) => {
+      try {
+        // TODO: Call API to complete return (đã hoàn tiền)
+        const response = await completedProductReturnforRefund(Number(ret.id));
+        if (!response.isSuccess)
+          throw new Error(response.message || "Lỗi khi hoàn thành trả hàng");
+        console.log("Hoàn thành trả hàng cho:", ret.id);
+        toast.success("Đã hoàn thành trả hàng - Đã hoàn tiền cho khách");
+
+        // Refresh list
+        dispatch(
+          fetchProductReturnList({
+            PageNumber: currentPage,
+            PageSize: PAGE_SIZE,
+            Search:
+              filters.productSearch || filters.customerSearch || undefined,
+            StatusName: filters.status !== "all" ? filters.status : undefined,
+          })
+        );
+      } catch (err) {
+        const ex = err as AxiosError;
+        toast.error("Không thể hoàn thành trả hàng: " + ex.message);
+      }
+    },
+    [dispatch, currentPage, filters]
   );
 
   const handleConfirmApprove = useCallback(async () => {
@@ -227,18 +234,16 @@ export default function OrderReturn() {
       if (!res) {
         throw new Error("Huỷ duyệt đơn đổi/trả thất bại");
       }
-      // optimistically update local state
-      setReturns(prev =>
-        prev.map(r =>
-          r.id === selectedReturn.id
-            ? { ...r, status: "approved" as ReturnStatus }
-            : r
-        )
-      );
-
       // refresh list from server to keep in sync
-      dispatch(fetchProductReturnList());
       toast.success("Duyệt đơn đổi / trả thành công");
+      dispatch(
+        fetchProductReturnList({
+          PageNumber: currentPage,
+          PageSize: PAGE_SIZE,
+          Search: filters.productSearch || filters.customerSearch || undefined,
+          StatusName: filters.status !== "all" ? filters.status : undefined,
+        })
+      );
     } catch (err) {
       const ex = err as AxiosError;
 
@@ -261,18 +266,16 @@ export default function OrderReturn() {
       if (!res) {
         throw new Error("Huỷ duyệt đơn đổi/trả thất bại");
       }
-      // optimistically update local state
-      setReturns(prev =>
-        prev.map(r =>
-          r.id === selectedReturn.id
-            ? { ...r, status: "rejected" as ReturnStatus }
-            : r
-        )
-      );
-
       // refresh list from server to keep in sync
       toast.success("Huỷ duyệt đơn đổi/trả thành công");
-      dispatch(fetchProductReturnList());
+      dispatch(
+        fetchProductReturnList({
+          PageNumber: currentPage,
+          PageSize: PAGE_SIZE,
+          Search: filters.productSearch || filters.customerSearch || undefined,
+          StatusName: filters.status !== "all" ? filters.status : undefined,
+        })
+      );
     } catch (err) {
       const ex = err as AxiosError;
       toast.error("Failed to reject/cancel return: " + ex.message);
@@ -281,11 +284,6 @@ export default function OrderReturn() {
     }
   }, [selectedReturn, dispatch]);
 
-  const handleReloadReturns = useCallback(() => {
-    // TODO: Fetch from API
-    console.log("Reload returns list");
-  }, []);
-
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -293,11 +291,6 @@ export default function OrderReturn() {
         <h3 className="text-2xl font-bold text-slate-800">
           Quản lý đổi/trả hàng
         </h3>
-        <AddReturnDialog
-          open={isAddOpen}
-          setIsOpen={setIsAddOpen}
-          onAdded={handleAddReturn}
-        />
       </div>
 
       {/* Stats */}
@@ -312,7 +305,7 @@ export default function OrderReturn() {
 
       {/* Table */}
       <ReturnTable
-        data={paginatedReturns}
+        data={returns}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
@@ -328,6 +321,8 @@ export default function OrderReturn() {
             open={isViewOpen}
             setIsOpen={setIsViewOpen}
             returnData={selectedReturn}
+            onCompleteExchange={handleCompleteForExchange}
+            onCompleteReturn={handleCompleteForReturn}
           />
           <ApproveReturnDialog
             open={isApproveOpen}
