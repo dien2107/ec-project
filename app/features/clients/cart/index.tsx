@@ -93,18 +93,27 @@ export default function ShoppingCart() {
         const currentColor = cartItem.color;
 
         const sameColorVariants = product.productVariants
-          .filter((v: ProductVariant) => v.color.name === currentColor)
-          .map((v: ProductVariant) => ({
-            productVariantId: v.productVariantId,
-            sizeId: v.size.sizeId,
-            sizeName: v.size.name,
-            stockQuantity: v.stockQuantity,
-          }));
-
+          .filter(
+            (v: ProductVariant) =>
+              v.color.name === currentColor && v.status.name === "Active"
+          )
+          .map((v: ProductVariant) => {
+            console.log(v);
+            return {
+              productVariantId: v.productVariantId,
+              sizeId: v.size.sizeId,
+              sizeName: v.size.name,
+              stockQuantity: v.stockQuantity,
+            };
+          });
+        console.log(
+          `sameColorVariants for variantId ${cartItem.productVariantId}:`,
+          sameColorVariants
+        );
         variantsMap.set(cartItem.productVariantId, sameColorVariants);
       }
     });
-
+    console.log(variantsMap);
     return variantsMap;
   }, [cartItems, ...productQueries.map(q => q.data)]);
 

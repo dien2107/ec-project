@@ -49,7 +49,6 @@ export default function UserProfilePage() {
   // 🔹 Khi orderList từ Redux có dữ liệu -> format lại cho UI
   useEffect(() => {
     if (!orderList?.data) return;
-    console.log(orderList);
     const formattedList: OrderItem[] = orderList.data.items
       .flat()
       .map(order => {
@@ -89,17 +88,20 @@ export default function UserProfilePage() {
             fullName: order.user.fullName,
             phone: order.user.phone,
           },
-          items: order.items.map(item => ({
-            orderItemId: item.orderItemId,
-            productVariantId: item.productVariantId,
-            name: item.productName,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.productImage,
-            size: item.size,
-            review: item.reviewOrder?.[0] || null,
-            return: item.return,
-          })),
+          items: order.items.map(item => {
+            console.log(item);
+            return {
+              orderItemId: item.orderItemId,
+              productVariantId: item.productVariantId,
+              name: item.productName,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.productImage,
+              size: item.size,
+              review: item.reviewOrder?.[0] || null,
+              return: item.returnOrderDto,
+            };
+          }),
           payment: order.payment || null,
           shippingFee: order.shippingFee || 0,
           discount: order.discount || null,

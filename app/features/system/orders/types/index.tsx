@@ -95,7 +95,7 @@ export type OrderItem = {
   quantity: number;
   price: number;
   subTotal: number;
-  return: boolean;
+  returnOrderDto: boolean;
 };
 export type paymentDto = {
   paymentId: number;
