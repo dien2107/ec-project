@@ -49,7 +49,8 @@ export default function EditProductVariantDialog({
     statusId: variant.status.statusId,
     sizeId: variant.size.sizeId,
   });
-
+  console.log(variant);
+  console.log(variants);
   useEffect(() => {
     if (!sizeOptions || sizeOptions.length === 0) {
       dispatch(fetchSizeOptions());
@@ -99,11 +100,33 @@ export default function EditProductVariantDialog({
     }
   };
 
-  const usedSizeIds = variants
-    .filter((v) => v.productVariantId !== variant.productVariantId)
-    .map((v) => v.size.sizeId);
-  const availableSizes = sizeOptions.filter(
-    (size) => !usedSizeIds.includes(size.sizeId)
+  // include current variant size even when it's not present in sizeOptions (Inactive)
+  const sizesWithCurrent = useMemo(() => {
+    const base = sizeOptions ?? [];
+    const currentSize = variant?.size;
+    if (currentSize && !base.some((s) => s.sizeId === currentSize.sizeId)) {
+      return [
+        ...base,
+        { ...currentSize, name: `${currentSize.name} (Inactive)` },
+      ];
+    }
+    return base;
+  }, [sizeOptions, variant]);
+
+  const usedSizeIds = useMemo(
+    () =>
+      variants
+        .filter((v) => v.productVariantId !== variant.productVariantId)
+        .map((v) => v.size.sizeId),
+    [variants, variant.productVariantId]
+  );
+
+  const availableSizes = useMemo(
+    () =>
+      (sizesWithCurrent || []).filter(
+        (size) => !usedSizeIds.includes(size.sizeId)
+      ),
+    [sizesWithCurrent, usedSizeIds]
   );
 
   return (
