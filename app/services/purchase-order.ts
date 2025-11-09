@@ -20,6 +20,16 @@ export const getPurchaseOrderById = async (id: string) => {
   }
 };
 
+export const getPurchaseOrderDetail = async (id: number | string) => {
+  try {
+    const response = await instance.get(`/purchase-orders/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching purchase order detail:", error);
+    throw error;
+  }
+};
+
 export const updatePurchaseOrder = async (id: string, data: any) => {
   try {
     const response = await instance.put(`/purchase-orders/${id}`, data);

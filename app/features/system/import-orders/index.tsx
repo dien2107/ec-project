@@ -14,6 +14,7 @@ import { AddImportOrderModal } from "./components/add-modal";
 import { EditImportOrderModal } from "./components/edit-modal";
 import { DeleteImportOrderModal } from "./components/delete-modal";
 import { ChangeStatusModal } from "./components/change-status-modal";
+import { DetailImportOrderModal } from "./components/detail-modal";
 import { ImportOrderStats } from "./components/stats-cards";
 import { getImportOrderColumns } from "./types";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
@@ -44,6 +45,7 @@ export default function ImportOrders() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isChangeStatusOpen, setIsChangeStatusOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("orders");
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -198,10 +200,16 @@ export default function ImportOrders() {
     }
   };
 
+  const handleViewDetail = (order: ImportOrder) => {
+    setSelectedOrder(order);
+    setIsDetailOpen(true);
+  };
+
   const columns = getImportOrderColumns(
     handleEdit,
     handleDelete,
-    handleChangeStatus
+    handleChangeStatus,
+    handleViewDetail
   );
 
   const isInitialLoading = isLoading && !purchaseOrderList?.data;
@@ -296,6 +304,14 @@ export default function ImportOrders() {
         order={selectedOrder}
         onClose={() => setIsChangeStatusOpen(false)}
         onSuccess={handleChangeStatusConfirm}
+      />
+      <DetailImportOrderModal
+        open={isDetailOpen}
+        orderId={selectedOrder?.purchaseOrderId ?? null}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedOrder(null);
+        }}
       />
     </div>
   );

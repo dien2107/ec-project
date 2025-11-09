@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "~/components/ui/button";
 import { SortableHeader } from "../../components/data-table";
-import { Edit, FilePenLine, Trash2 } from "lucide-react";
+import { Edit, FilePenLine, Trash2, Eye } from "lucide-react";
 import { formatVND } from "~/libs";
 import type { Product as SharedProduct } from "~/types/product/product";
 
@@ -138,7 +138,8 @@ export const STATUS_TRANSITIONS: Record<string, string[]> = {
 export const getImportOrderColumns = (
   handleEdit: (order: ImportOrder) => void,
   handleDelete: (order: ImportOrder) => void,
-  handleChangeStatus: (order: ImportOrder) => void
+  handleChangeStatus: (order: ImportOrder) => void,
+  handleViewDetail: (order: ImportOrder) => void
 ): ColumnDef<ImportOrder>[] => [
   {
     accessorKey: "purchaseOrderId",
@@ -232,6 +233,15 @@ export const getImportOrderColumns = (
 
       return (
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewDetail(order)}
+            className="h-8 w-8 p-0 hover:bg-blue-100"
+            title="Xem chi tiết"
+          >
+            <Eye className="h-4 w-4 text-blue-600" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
