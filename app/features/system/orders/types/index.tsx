@@ -77,6 +77,12 @@ export type Ship = {
   shipId: number;
   corpName: string;
 };
+export type Discount = {
+  discountId: number;
+  code: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+};
 
 export type OrderItem = {
   reviewOrder: reviewOrder[] | null;
@@ -89,6 +95,7 @@ export type OrderItem = {
   quantity: number;
   price: number;
   subTotal: number;
+  return: boolean;
 };
 export type paymentDto = {
   paymentId: number;
@@ -113,6 +120,7 @@ export type Order = {
   status: Status;
   items: OrderItem[];
   payment: paymentDto | null;
+  discount: Discount | null;
 };
 
 export const getColumns = (
@@ -193,18 +201,63 @@ export const getColumns = (
     cell: ({ row }) => {
       const status = row.original.status as Status;
 
-      const info = statusMap[status.name] || {
+      const statusConfig: Record<
+        Status["name"],
+        { label: string; color: string; dotColor: string }
+      > = {
+        Pending: {
+          label: "Đang chờ xác nhận",
+          color: "bg-amber-500 text-white",
+          dotColor: "bg-amber-200",
+        },
+        Confirmed: {
+          label: "Đã xác nhận",
+          color: "bg-teal-500 text-white",
+          dotColor: "bg-teal-200",
+        },
+        Processing: {
+          label: "Đang xử lý",
+          color: "bg-blue-500 text-white",
+          dotColor: "bg-blue-200",
+        },
+        Shipping: {
+          label: "Đang vận chuyển",
+          color: "bg-purple-500 text-white",
+          dotColor: "bg-purple-200",
+        },
+        Delivered: {
+          label: "Đã giao",
+          color: "bg-green-500 text-white",
+          dotColor: "bg-green-200",
+        },
+        Cancelled: {
+          label: "Đã hủy",
+          color: "bg-red-500 text-white",
+          dotColor: "bg-red-200",
+        },
+        Returned: {
+          label: "Đã hoàn trả",
+          color: "bg-gray-500 text-white",
+          dotColor: "bg-gray-200",
+        },
+      };
+
+      const info = statusConfig[status.name] || {
         label: "Không xác định",
-        color: "bg-gray-400",
+        color: "bg-gray-400 text-white",
+        dotColor: "bg-gray-200",
       };
 
       return (
         <div className="flex justify-center">
-          <span
-            className={`${info.color} text-white text-xs md:text-sm font-medium py-1.5 px-3 rounded-full shadow-sm`}
+          <div
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm ${info.color}`}
           >
+            <div
+              className={`w-2 h-2 ${info.dotColor} rounded-full animate-pulse`}
+            ></div>
             {info.label}
-          </span>
+          </div>
         </div>
       );
     },

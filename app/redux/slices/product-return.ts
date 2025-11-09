@@ -1,28 +1,45 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "~/services/customize-axios";
-import type {
-  ProductReturnListResponse,
-  ProductReturnResponse,
-} from "~/services/product-return";
+import type { ProductReturnResponse } from "~/services/product-return";
+import type { ApiPagedResponse } from "~/types/api-response";
 
 interface ProductReturnListState {
-  data: ProductReturnResponse[]; // Mảng dữ liệu trả hàng
+  productReturnList: ApiPagedResponse<ProductReturnResponse> | null;
   isLoading: boolean;
-  isError: boolean;
+  error: string | null;
 }
 
 const initialState: ProductReturnListState = {
-  data: [],
+  productReturnList: null,
   isLoading: false,
-  isError: false,
+  error: null,
 };
 
 export const fetchProductReturnList = createAsyncThunk(
   "productReturn/fetchProductReturnList",
-  async () => {
-    const response =
-      await instance.get<ProductReturnListResponse>("/product-returns");
-    return response.data.data;
+  async (
+    params: {
+      Search?: string;
+      StatusName?: string;
+      ReturnType?: string;
+      PageNumber?: number;
+      PageSize?: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await instance.get<
+        ApiPagedResponse<ProductReturnResponse>
+      >("/product-returns", {
+        params,
+      });
+      console.log("✅ Product Returns API response:", response.data);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || "Lỗi khi tải danh sách đổi trả"
+      );
+    }
   }
 );
 
@@ -34,16 +51,17 @@ const productReturnSlice = createSlice({
     builder
       .addCase(fetchProductReturnList.pending, state => {
         state.isLoading = true;
-        state.isError = false;
+        state.error = null;
       })
       .addCase(fetchProductReturnList.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.isError = false;
-        state.data = action.payload;
+        state.error = null;
+        state.productReturnList = action.payload;
       })
-      .addCase(fetchProductReturnList.rejected, state => {
+      .addCase(fetchProductReturnList.rejected, (state, action) => {
         state.isLoading = false;
-        state.isError = true;
+        state.error =
+          (action.payload as string) || "Không thể tải dữ liệu đổi trả";
       });
   },
 });

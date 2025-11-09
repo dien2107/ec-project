@@ -1,4 +1,5 @@
 import type {
+  Discount,
   paymentDto,
   reviewOrder,
   User,
@@ -28,8 +29,11 @@ export type OrderItem = {
     image: string;
     size: string;
     review: reviewOrder | null;
+    return: boolean;
   }[];
   payment: paymentDto | null;
+  shippingFee: number;
+  discount: Discount | null;
 };
 
 export type UserAddress = {
