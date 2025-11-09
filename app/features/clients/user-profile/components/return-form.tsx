@@ -22,6 +22,7 @@ export default function ReturnForm({
   const selectedItem = order.items.find(
     item => item.orderItemId === selectedProductId
   );
+  console.log(order);
 
   // Kiểm tra có sản phẩm nào có thể đổi/trả không
   const availableItems = order.items.filter(item => !item.return);

@@ -12,13 +12,11 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import type {
   OrderItem,
   OrderStatus,
 } from "~/features/clients/user-profile/types/user";
-import ReviewForm from "./review-form";
 import { cancelOrder, completeOrder } from "~/services/order";
 import { toast } from "react-hot-toast";
 import ReturnForm from "./return-form";
@@ -151,7 +149,6 @@ export default function OrderDetailsModal({
   const [reviewingProduct, setReviewingProduct] = useState<
     OrderItem["items"][0] | null
   >(null);
-  console.log(order);
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [returningProduct, setReturningProduct] = useState<
     OrderItem["items"][0] | null
@@ -249,7 +246,7 @@ export default function OrderDetailsModal({
                       className="h-full bg-blue-600 transition-all duration-500"
                       style={{
                         width: `${
-                          (orderSteps.filter((s) => s.completed).length /
+                          (orderSteps.filter(s => s.completed).length /
                             orderSteps.length) *
                           100
                         }%`,
@@ -299,7 +296,7 @@ export default function OrderDetailsModal({
                 </h3>
 
                 <div className="space-y-4">
-                  {order.items.map((item) => (
+                  {order.items.map(item => (
                     <div
                       key={item.orderItemId}
                       className="border rounded-lg p-4 hover:border-gray-400 transition-colors"
