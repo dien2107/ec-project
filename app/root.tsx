@@ -10,15 +10,11 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import {
   store,
-  persistor,
-  useAppDispatch,
-  useAppSelector,
+  persistor
 } from "~/redux/store";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useEffect } from "react";
-import { fetchCurrentUser } from "./redux/slices/auth";
 import type { Route } from "./+types/root";
 import "./app.css";
 
