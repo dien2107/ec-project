@@ -86,11 +86,11 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
           onScroll={checkScroll}
           className="overflow-x-auto scrollbar-hide scroll-smooth"
         >
-          <div className="flex gap-6 md:gap-6">
+          <div className="flex gap-4 md:gap-6 snap-x snap-mandatory">
             {products.map((product, index) => (
               <div
                 key={product.productId}
-                className="flex-shrink-0 w-full sm:w-64 md:w-64 opacity-0 animate-fadeInUp"
+                className="snap-start flex-shrink-0 w-3/4 sm:w-1/2 md:w-1/3 lg:w-64 opacity-0 animate-fadeInUp"
                 style={{
                   animationDelay: `${index * 100}ms`,
                 }}

@@ -50,17 +50,20 @@ export default function OrderCard({
 }) {
   return (
     <div className="border rounded-lg overflow-hidden">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
+      <div className="p-4 sm:p-6">
+        {/* header: stack on mobile, inline on tablet+ */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+          <div className="flex items-start sm:items-center space-x-4">
             {statusIconMap[order.status]}
-            <div>
-              <h3 className="font-semibold">Đơn hàng #{order.id}</h3>
-              <p className="text-sm text-gray-500">Ngày đặt: {order.date}</p>
+            <div className="min-w-0">
+              <h3 className="font-semibold truncate">Đơn hàng #{order.id}</h3>
+              <p className="text-sm text-gray-500 truncate">
+                Ngày đặt: {order.date}
+              </p>
             </div>
           </div>
           <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(
+            className={`px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto ${statusBadgeClass(
               order.status
             )}`}
           >
@@ -68,24 +71,27 @@ export default function OrderCard({
           </span>
         </div>
 
+        {/* items summary: column on mobile, row on sm+ */}
         <div className="border-t border-b py-4 my-4">
-          <div className="flex items-start space-x-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <img
               src={order.items[0].image}
               alt={order.items[0].name}
-              className="h-16 w-16 rounded-md object-cover border"
+              className="h-16 w-16 rounded-md object-cover border flex-shrink-0 block"
             />
-            <div className="flex-1">
-              <h4 className="font-medium">{order.items[0].name}</h4>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-medium break-words">{order.items[0].name}</h4>
               {order.items[0].size && (
-                <p className="text-sm text-gray-500">{order.items[0].size}</p>
+                <p className="text-sm text-gray-500 truncate">
+                  {order.items[0].size}
+                </p>
               )}
               <p className="text-sm mt-1">
                 {order.items[0].price.toLocaleString("vi-VN")}₫ ×{" "}
                 {order.items[0].quantity}
               </p>
             </div>
-            <div className="font-medium">
+            <div className="mt-3 sm:mt-0 sm:ml-auto text-left sm:text-right font-medium text-gray-900">
               {(order.items[0].price * order.items[0].quantity).toLocaleString(
                 "vi-VN"
               )}
@@ -99,7 +105,8 @@ export default function OrderCard({
           )}
         </div>
 
-        <div className="flex justify-between items-center">
+        {/* footer: stack on mobile, inline on sm+ */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <Button
             onClick={onClick}
             className="flex items-center text-blue-600 hover:text-blue-700"

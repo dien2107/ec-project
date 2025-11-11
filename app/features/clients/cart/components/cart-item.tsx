@@ -38,7 +38,7 @@ const CartItem: React.FC<CartItemProps> = ({
 
   // Kiểm tra stock của variant hiện tại
   const currentVariant = item.availableVariants?.find(
-    v => v.productVariantId === item.variantId
+    (v) => v.productVariantId === item.variantId
   );
   const isOutOfStock = currentVariant && currentVariant.stockQuantity === 0;
   const isLowStock =
@@ -46,7 +46,7 @@ const CartItem: React.FC<CartItemProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 border ${
+      className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 border overflow-hidden max-w-[95vw] sm:max-w-full mx-auto ${
         isOutOfStock || isLowStock
           ? "border-red-300 bg-red-50/30"
           : "border-gray-100"
@@ -55,17 +55,17 @@ const CartItem: React.FC<CartItemProps> = ({
       {/* Checkbox */}
       <Checkbox
         checked={item.selected}
-        onCheckedChange={checked => onSelect(item.id, !!checked)}
+        onCheckedChange={(checked) => onSelect(item.id, !!checked)}
         className="flex-shrink-0 mt-1"
       />
 
       {/* Product Image */}
-      <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
+      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
         <img
           src={item.image || "/placeholder.png"}
           alt={item.name}
-          className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-          onError={e => {
+          className="w-full h-full object-cover transition-transform duration-200 hover:scale-105 block"
+          onError={(e) => {
             e.currentTarget.src =
               "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yOCAzNkw0MCAyNEw1MiAzNlY1Nkg0MFY0NEgzMlY1NkgyOFYzNloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+";
           }}
@@ -79,7 +79,7 @@ const CartItem: React.FC<CartItemProps> = ({
           className="block relative overflow-hidden rounded-md group hover:no-underline
           hover:opacity-50 transition"
         >
-          <h3 className="font-semibold text-base md:text-lg text-gray-800  truncate">
+          <h3 className="font-semibold text-base md:text-lg text-gray-800 break-words whitespace-normal leading-tight">
             {item.name}
           </h3>
         </NavLink>
@@ -96,7 +96,7 @@ const CartItem: React.FC<CartItemProps> = ({
                   <SelectValue placeholder={item.size} />
                 </SelectTrigger>
                 <SelectContent>
-                  {item.availableVariants.map(variant => (
+                  {item.availableVariants.map((variant) => (
                     <SelectItem
                       key={variant.productVariantId}
                       value={String(variant.productVariantId)}
@@ -151,7 +151,7 @@ const CartItem: React.FC<CartItemProps> = ({
       </div>
 
       {/* Quantity controls */}
-      <div className=" flex flex-col items-center gap-2 flex-shrink-0">
+      <div className="mt-3 sm:mt-0 flex flex-col sm:flex-col items-start sm:items-center gap-2 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -189,7 +189,7 @@ const CartItem: React.FC<CartItemProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        className="text-gray-400 hover:text-red-500 p-2"
+        className="text-gray-400 hover:text-red-500 p-2 self-end sm:self-center"
         onClick={() => onRemove(item.id)}
       >
         <Trash2 size={16} />

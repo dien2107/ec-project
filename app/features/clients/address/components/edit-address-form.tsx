@@ -150,8 +150,9 @@ const AddAddressForm = ({
 
   return (
     <Dialog open={open} onOpenChange={setIsOpen}>
+      {/* Responsive: full width on mobile, restore desktop with lg: */}
       <DialogContent
-        className="sm:max-w-[600px]"
+        className="w-full lg:max-w-[600px] p-4 lg:p-6"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -161,7 +162,8 @@ const AddAddressForm = ({
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Recipient name and phone number */}
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            {/* mobile-first: 1 column, lg restores 2 columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="recipientName">Họ và tên</Label>
                 <Input
@@ -203,8 +205,8 @@ const AddAddressForm = ({
                 )}
               </div>
             </div>
-            {/* Select combobox province and ward */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Select combobox province and ward - responsive grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Tỉnh/Thành phố</Label>
                 <Controller
@@ -310,10 +312,12 @@ const AddAddressForm = ({
                 Đặt làm địa chỉ mặc định
               </Label>
             </div>
-            <DialogFooter className="pt-4">
+            {/* Footer buttons: stacked on mobile, inline on desktop */}
+            <DialogFooter className="pt-4 flex flex-col gap-2 md:flex-row md:justify-end">
               <Button
                 variant="outline"
                 type="button"
+                className="w-full md:w-auto"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (onCancel) {
@@ -327,7 +331,8 @@ const AddAddressForm = ({
               </Button>
               <Button
                 type="submit"
-                className="bg-[#3770EC] text-white cursor-pointer"
+                variant="edit"
+                className="w-full md:w-auto"
                 disabled={isLoading}
               >
                 {isLoading ? (

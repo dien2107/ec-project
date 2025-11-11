@@ -43,13 +43,13 @@ export default function Payment() {
   }, [state, navigate]);
 
   //Redux
-  const cartItems = useAppSelector(state => state.cart.items);
-  const authUser = useAppSelector(state => state.auth.user);
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const authUser = useAppSelector((state) => state.auth.user);
   const userId = authUser?.data?.userId;
   const statuses = useAppSelector(
-    state => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
+    (state) => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
   );
-  const { shipList } = useAppSelector(state => state.shipList);
+  const { shipList } = useAppSelector((state) => state.shipList);
 
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -83,7 +83,7 @@ export default function Payment() {
   useEffect(() => {
     // Chỉ fetch ship khi đã có statuses
     if (statuses.length > 0) {
-      const activeStatus = statuses.find(s => s.name === "Active");
+      const activeStatus = statuses.find((s) => s.name === "Active");
       if (activeStatus) {
         dispatch(
           fetchShipListData({
@@ -123,14 +123,14 @@ export default function Payment() {
     ) {
       setSelectedItems(state.selectedItems.map((item: any) => item.variantId));
     } else {
-      setSelectedItems(cartItems.map(item => item.productVariantId));
+      setSelectedItems(cartItems.map((item) => item.productVariantId));
     }
   }, [state, cartItems]);
 
   // Tính toán các items được chọn
   const selectedCartItems = useMemo(
     () =>
-      cartItems.filter(item => selectedItems.includes(item.productVariantId)),
+      cartItems.filter((item) => selectedItems.includes(item.productVariantId)),
     [cartItems, selectedItems]
   );
 
@@ -180,7 +180,7 @@ export default function Payment() {
 
   const handleAddAddress = (address: Address) => {
     // add to local addresses list and select it
-    setAddresses(prev => [...prev, address]);
+    setAddresses((prev) => [...prev, address]);
     setSelectedAddress(address);
     setSelectedAddressId(address.addressId);
   };
@@ -201,7 +201,7 @@ export default function Payment() {
       addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
       isFreeShip: shippingFee === 0,
       shippingFee,
-      items: selectedCartItems.map(i => ({
+      items: selectedCartItems.map((i) => ({
         productVariantId: Number(i.productVariantId),
         quantity: i.quantity,
       })),
@@ -319,8 +319,8 @@ export default function Payment() {
                 Sản phẩm ({selectedCartItems.length})
               </h2>
             </div>
-            <div className="p-6 space-y-4">
-              {selectedCartItems.map(item => {
+            <div className="p-4 sm:p-6 space-y-4 max-w-[95vw] sm:max-w-full mx-auto">
+              {selectedCartItems.map((item) => {
                 const itemData = state?.selectedItems?.find(
                   (si: any) => si.variantId === item.productVariantId
                 );
@@ -334,7 +334,9 @@ export default function Payment() {
                 return (
                   <div
                     key={String(item.productVariantId)}
-                    className="flex gap-4 pb-4 border-b last:border-b-0 last:pb-0"
+                    // make image + info (title, size, color) sit in one row on mobile/tablet,
+                    // allow price block to stay at the far right; keep desktop behaviour intact
+                    className="flex flex-row flex-wrap items-center gap-4 pb-4 border-b last:border-b-0 last:pb-0"
                   >
                     <img
                       src={
@@ -345,15 +347,15 @@ export default function Payment() {
                             ""
                       }
                       alt={item.productName}
-                      className="w-20 h-20 object-cover rounded-md border"
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-md border flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 mb-1 truncate">
+                      <h3 className="font-medium text-gray-900 mb-1 break-words whitespace-normal leading-tight">
                         {item.productName || "Sản phẩm"}
                       </h3>
                       <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-2">
                         {item.size && (
-                          <span className="px-2 py-0.5 bg-gray-100 rounded">
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
                             Size:{" "}
                             {typeof item.size === "string"
                               ? item.size
@@ -361,7 +363,7 @@ export default function Payment() {
                           </span>
                         )}
                         {item.color && (
-                          <span className="px-2 py-0.5 bg-gray-100 rounded">
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
                             Màu:{" "}
                             {typeof item.color === "string"
                               ? item.color
@@ -373,7 +375,9 @@ export default function Payment() {
                         Số lượng: {item.quantity}
                       </div>
                     </div>
-                    <div className="text-right flex flex-col justify-between">
+
+                    {/* price block: keep compact, push to far right when space allows */}
+                    <div className="w-full sm:w-auto text-right flex flex-col justify-between mt-2 sm:mt-0 min-w-[6rem] ml-auto">
                       {hasDiscount ? (
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 justify-end">

@@ -25,31 +25,18 @@ type MenuItem = {
   path: string;
   dropdown?: MenuItem[];
 };
+
 const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
-  const grandChildren = category.children
-    ?.flatMap(
-      child => child.children?.filter(grandChild => grandChild.hasProduct) || []
-    )
-    .filter(Boolean);
-
   const filteredChildren = category.children
-    ?.map(child => {
-      const childGrandChildren = child.children?.filter(
-        grandChild => grandChild.hasProduct
-      );
-
-      if (
-        child.hasProduct ||
-        (childGrandChildren && childGrandChildren.length > 0)
-      ) {
-        return {
-          ...child,
-          children: childGrandChildren || [],
-        };
+    ?.map((child) => {
+      const validGrand = child.children?.filter((gc) => gc.hasProduct);
+      if (child.hasProduct || (validGrand && validGrand.length > 0)) {
+        return { ...child, children: validGrand || [] };
       }
       return null;
     })
     .filter(Boolean) as Category[];
+
   if (
     !category.hasProduct &&
     (!filteredChildren || filteredChildren.length === 0)
@@ -57,59 +44,49 @@ const convertCategoryToMenuItem = (category: Category): MenuItem | null => {
     return null;
   }
 
-  const menuItem: MenuItem = {
+  const item: MenuItem = {
     name: category.name,
     path: `/categories/${category.slug}`,
   };
 
   if (filteredChildren && filteredChildren.length > 0) {
-    menuItem.dropdown = filteredChildren.map(child => {
-      const childItem: MenuItem = {
-        name: child.name,
-        path: `/categories/${child.slug}`,
-      };
-
-      if (child.children && child.children.length > 0) {
-        childItem.dropdown = child.children.map(grandChild => ({
-          name: grandChild.name,
-          path: `/categories/${grandChild.slug}`,
-        }));
-      }
-
-      return childItem;
-    });
+    item.dropdown = filteredChildren.map((child) => ({
+      name: child.name,
+      path: `/categories/${child.slug}`,
+      dropdown: child.children?.map((gc) => ({
+        name: gc.name,
+        path: `/categories/${gc.slug}`,
+      })),
+    }));
   }
 
-  return menuItem;
+  return item;
 };
 
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, accessToken } = useAppSelector(state => state.auth);
+  const { user, accessToken } = useAppSelector((state) => state.auth);
   const cartCount = useAppSelector(
     (state: RootState) => state.cart.items.length
   );
+
   useEffect(() => {
-    if (accessToken && !user) {
-      dispatch(fetchCurrentUser());
-    }
-  }, [accessToken, user, dispatch]);
+    if (accessToken && !user) dispatch(fetchCurrentUser());
+  }, [accessToken, user]);
+
   useEffect(() => {
     dispatch(fetchCart(user?.data.userId));
   }, [user]);
+
   const isAuthenticated = !!user;
 
   const categories = useAppSelector(
     (state: RootState) => state.homePage.homeData?.categories || []
   );
 
-  // Static menu items - các menu cố định
   const staticMenuItems: MenuItem[] = [
-    {
-      name: "Trang chủ",
-      path: "/",
-    },
+    { name: "Trang chủ", path: "/" },
     {
       name: "Giới thiệu",
       path: "/about",
@@ -124,17 +101,13 @@ const Header = () => {
   const menuItems = useMemo(() => {
     const dynamicItems = categories
       .map(convertCategoryToMenuItem)
-      .filter((item): item is MenuItem => item !== null);
+      .filter((i): i is MenuItem => i !== null);
 
-    // Thêm các menu tĩnh ở cuối
-    const endStaticItems: MenuItem[] = [
-      {
-        name: "Liên hệ",
-        path: "/contact",
-      },
+    return [
+      ...staticMenuItems,
+      ...dynamicItems,
+      { name: "Liên hệ", path: "/contact" },
     ];
-
-    return [...staticMenuItems, ...dynamicItems, ...endStaticItems];
   }, [categories]);
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -151,68 +124,58 @@ const Header = () => {
     navigate("/");
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  useEffect(
+    () =>
+      window.addEventListener("scroll", () =>
+        setIsScrolled(window.scrollY > 10)
+      ),
+    []
+  );
 
-  // Close profile dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const close = (e: MouseEvent) => {
       if (
         profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target as Node)
+        !profileDropdownRef.current.contains(e.target as Node)
       ) {
         setIsProfileDropdownOpen(false);
       }
     };
-
-    if (isProfileDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    if (isProfileDropdownOpen) document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
   }, [isProfileDropdownOpen]);
 
   const MegaMenuDropdown = ({ item }: { item: MenuItem }) => {
-    const hasNestedDropdown = item.dropdown?.some(sub => sub.dropdown);
-
+    const hasNested = item.dropdown?.some((s) => s.dropdown);
     return (
       <div
         className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white shadow-xl rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50"
-        style={{ minWidth: hasNestedDropdown ? "600px" : "240px" }}
+        style={{ minWidth: hasNested ? "600px" : "240px" }}
       >
-        <div
-          className={`p-4 ${hasNestedDropdown ? "grid grid-cols-2 gap-6" : ""}`}
-        >
-          {item.dropdown?.map((subItem, index) => (
-            <div key={subItem.path} className="space-y-2">
-              {subItem.dropdown && subItem.dropdown.length > 0 ? (
-                <div className="font-semibold text-gray-900 text-sm py-1 cursor-default">
-                  {subItem.name}
+        <div className={`p-4 ${hasNested ? "grid grid-cols-2 gap-6" : ""}`}>
+          {item.dropdown?.map((sub) => (
+            <div key={sub.path} className="space-y-2">
+              {sub.dropdown ? (
+                <div className="font-semibold text-gray-900 text-sm">
+                  {sub.name}
                 </div>
               ) : (
                 <Link
-                  to={subItem.path}
-                  className="block font-semibold text-gray-900 hover:text-blue-600 transition-colors text-sm py-1"
+                  to={sub.path}
+                  className="block font-semibold text-gray-900 hover:text-blue-600 text-sm"
                 >
-                  {subItem.name}
+                  {sub.name}
                 </Link>
               )}
-              {subItem.dropdown && subItem.dropdown.length > 0 && (
+              {sub.dropdown && (
                 <div className="pl-3 space-y-1 border-l-2 border-gray-200">
-                  {subItem.dropdown.map(nestedItem => (
+                  {sub.dropdown.map((n) => (
                     <Link
-                      key={nestedItem.path}
-                      to={nestedItem.path}
-                      className="block text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-2 py-1 rounded transition-colors"
+                      key={n.path}
+                      to={n.path}
+                      className="block text-sm text-gray-600 hover:text-gray-900 px-2 py-1 rounded"
                     >
-                      {nestedItem.name}
+                      {n.name}
                     </Link>
                   ))}
                 </div>
@@ -226,242 +189,292 @@ const Header = () => {
 
   return (
     <header
-      className={`bg-white w-full h-16 sticky top-0 z-50 transition-all duration-300 ${
+      className={`bg-white w-full h-16 sticky top-0 z-50 transition-all ${
         isScrolled ? "shadow-md" : "shadow-sm"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="MEYA Logo"
-              className="h-10 w-auto hover:opacity-80 transition-opacity"
-            />
-          </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* ✅ LOGO */}
+        <Link to="/" className="flex items-center">
+          <img className="h-10 w-auto" src="/logo.png" alt="logo" />
+        </Link>
 
-          {/* Desktop Menu - Center */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {menuItems.map(item =>
-              item.dropdown ? (
-                <div key={item.name} className="relative group">
-                  <button className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors flex items-center gap-1">
-                    {item.name}
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                  <MegaMenuDropdown item={item} />
-                </div>
-              ) : (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors"
-                >
+        {/* ✅ DESKTOP MENU */}
+        <nav className="hidden lg:flex items-center space-x-1">
+          {menuItems.map((item) =>
+            item.dropdown ? (
+              <div key={item.name} className="relative group">
+                <button className="text-sm font-medium text-gray-700 hover:bg-gray-100 px-3 py-2 rounded flex items-center gap-1">
                   {item.name}
-                </Link>
-              )
-            )}
-          </nav>
-
-          {/* Right Icons */}
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden sm:flex"
-              onClick={() => setIsSearchOpen(true)}
-            >
-              <Search className="h-5 w-5 text-gray-700" />
-            </Button>
-
-            {isAuthenticated ? (
-              <>
-                {/* Profile Dropdown when authenticated */}
-                <div
-                  className="relative hidden sm:block"
-                  ref={profileDropdownRef}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative"
-                    onMouseEnter={() => setIsProfileDropdownOpen(true)}
-                  >
-                    <User className="h-5 w-5 text-gray-700" />
-                  </Button>
-
-                  {/* Profile Dropdown Menu */}
-                  {isProfileDropdownOpen && (
-                    <div
-                      className="absolute -right-22 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
-                      onMouseLeave={() => setIsProfileDropdownOpen(false)}
-                    >
-                      {/* Menu Items */}
-                      <Link
-                        to="/profile"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={() => setIsProfileDropdownOpen(false)}
-                      >
-                        <UserCircle className="h-4 w-4" />
-                        <span>Thông tin cá nhân</span>
-                      </Link>
-
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>Đăng xuất</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Cart when authenticated */}
-                <Link to="/cart">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hidden sm:flex relative"
-                  >
-                    <ShoppingBag className="h-5 w-5 text-gray-700" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {cartCount}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
-              </>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <MegaMenuDropdown item={item} />
+              </div>
             ) : (
-              <>
-                {/* Login/Register buttons when not authenticated */}
-                <Link to="/login">
-                  <Button
-                    variant="ghost"
-                    className="hidden sm:flex text-sm font-medium"
-                  >
-                    Đăng nhập
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button className="hidden sm:flex text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white">
-                    Đăng ký
-                  </Button>
-                </Link>
-              </>
-            )}
-
-            {/* Mobile Menu Button */}
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon">
-                  <MenuIcon className="h-6 w-6 text-gray-700" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="w-full sm:w-96 overflow-y-auto"
+              <Link
+                key={item.name}
+                to={item.path}
+                className="text-sm font-medium text-gray-700 hover:bg-gray-100 px-3 py-2 rounded"
               >
-                <div className="flex flex-col space-y-4 mt-8">
-                  {/* Mobile Search */}
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsSearchOpen(true);
-                    }}
-                    className="flex items-center space-x-2 pb-4 border-b w-full text-left"
-                  >
-                    <Search className="h-5 w-5 text-gray-500" />
-                    <span className="flex-1 text-sm text-gray-500">
-                      Tìm kiếm...
-                    </span>
-                  </button>
+                {item.name}
+              </Link>
+            )
+          )}
+        </nav>
 
-                  {/* Mobile Menu Items */}
-                  {menuItems.map(item => (
-                    <div key={item.name} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Link
-                          to={item.path}
-                          className="block text-base font-medium text-gray-900 hover:text-gray-600 flex-1"
-                          onClick={() =>
-                            !item.dropdown && setIsMobileMenuOpen(false)
-                          }
-                        >
-                          {item.name}
-                        </Link>
-                        {item.dropdown && (
-                          <button
-                            onClick={() =>
-                              setOpenDropdown(
-                                openDropdown === item.name ? null : item.name
-                              )
-                            }
-                            className="p-2"
-                          >
-                            <ChevronDown
-                              className={`h-4 w-4 transition-transform ${
-                                openDropdown === item.name ? "rotate-180" : ""
-                              }`}
-                            />
-                          </button>
-                        )}
+        {/* ✅ RIGHT SIDE ICONS */}
+        <div className="flex items-center gap-3">
+          {/* Search Icon */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden sm:flex"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <Search className="h-5 w-5 text-gray-700" />
+          </Button>
+
+          {/* ================= AUTHENTICATED ================= */}
+          {isAuthenticated ? (
+            <>
+              {/* Profile icon only on desktop */}
+              <div
+                className="relative hidden sm:block"
+                ref={profileDropdownRef}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsProfileDropdownOpen((v) => !v)}
+                >
+                  <User className="h-5 w-5 text-gray-700" />
+                </Button>
+
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 bg-white w-56 rounded-lg shadow-xl border py-2">
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <UserCircle className="h-4 w-4" /> Thông tin cá nhân
+                    </Link>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" /> Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Cart icon */}
+              <Link to="/cart" className="hidden sm:flex relative">
+                <ShoppingBag className="h-5 w-5 text-gray-700" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            </>
+          ) : (
+            <>
+              {/* ================= GUEST ================= */}
+              {/* ✅ Hiển thị từ 640px↑ */}
+              <Link to="/login">
+                <Button className="hidden sm:flex text-sm" variant="ghost">
+                  Đăng nhập
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button className="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-sm text-white">
+                  Đăng ký
+                </Button>
+              </Link>
+            </>
+          )}
+
+          {/* ✅ MOBILE MENU BUTTON */}
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild className="lg:hidden">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-10 w-10 bg-gray-50"
+              >
+                <MenuIcon className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+
+            {/* ✅ MOBILE MENU CONTENT */}
+            <SheetContent side="right" className="w-full overflow-y-auto pb-24">
+              <div className="mt-7 px-5 flex flex-col gap-5">
+                {/* Search */}
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsSearchOpen(true);
+                  }}
+                  className="flex items-center gap-3 border-b pb-3"
+                >
+                  <Search className="h-5 w-5 text-gray-500" />
+                  <span className="text-gray-500 text-sm">Tìm kiếm...</span>
+                </button>
+
+                {/* Nếu chưa đăng nhập → hiển thị tại MENU */}
+                {!isAuthenticated && (
+                  // chỉ hiển thị login/register trong mobile menu < 640px
+                  <div className="flex flex-col gap-3 border-b pb-3 sm:hidden">
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="h-11 flex justify-center items-center rounded-md bg-blue-600 text-white text-sm"
+                    >
+                      Đăng nhập
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="h-11 flex justify-center items-center rounded-md bg-gray-100 text-gray-900 text-sm"
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
+                )}
+
+                {/* Authenticated user info */}
+                {isAuthenticated && (
+                  <>
+                    <div className="border-b pb-3 flex items-center gap-3">
+                      <img
+                        src={
+                          user?.data?.imageUrl === null
+                            ? "/logo-icon.png"
+                            : user?.data?.imageUrl
+                        }
+                        className="h-14 w-14 rounded-full object-cover"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">
+                          {user?.data?.fullName}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate">
+                          {user?.data?.email}
+                        </div>
                       </div>
 
-                      {/* Level 1 Dropdown */}
-                      {item.dropdown && openDropdown === item.name && (
-                        <div className="pl-4 space-y-2 border-l-2 border-gray-200">
-                          {item.dropdown.map(subItem => (
-                            <div key={subItem.path} className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                {subItem.dropdown &&
-                                subItem.dropdown.length > 0 ? (
-                                  <div className="block text-sm font-medium text-gray-700 flex-1 cursor-default">
-                                    {subItem.name}
-                                  </div>
-                                ) : (
-                                  <Link
-                                    to={subItem.path}
-                                    className="block text-sm font-medium text-gray-700 hover:text-gray-900 flex-1"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                  >
-                                    {subItem.name}
-                                  </Link>
-                                )}
-                                {subItem.dropdown && (
-                                  <ChevronRight className="h-3 w-3 text-gray-400" />
-                                )}
-                              </div>
+                      {/* Xem hồ sơ on the same row */}
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="ml-auto inline-flex items-center justify-center h-10 px-3 rounded-md text-sm bg-gray-100 text-gray-900 hover:bg-gray-200"
+                      >
+                        Xem hồ sơ
+                      </Link>
+                    </div>
 
-                              {/* Level 2 Dropdown */}
-                              {subItem.dropdown && (
-                                <div className="pl-3 space-y-1">
-                                  {subItem.dropdown.map(nestedItem => (
-                                    <Link
-                                      key={nestedItem.path}
-                                      to={nestedItem.path}
-                                      className="block text-xs text-gray-600 hover:text-gray-900 py-1"
-                                      onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                      • {nestedItem.name}
-                                    </Link>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                    <Link
+                      to="/cart"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 py-2 hover:bg-gray-50"
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      Giỏ hàng
+                      {cartCount > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex justify-center items-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </Link>
+                  </>
+                )}
+
+                {/* MENU ITEMS */}
+                {menuItems.map((item) => (
+                  <div key={item.name} className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <Link
+                        to="#"
+                        className="text-base font-medium text-gray-900"
+                        // onClick={() =>
+                        //   !item.dropdown && setIsMobileMenuOpen(false)
+                        // }
+                      >
+                        {item.name}
+                      </Link>
+
+                      {item.dropdown && (
+                        <button
+                          onClick={() =>
+                            setOpenDropdown(
+                              openDropdown === item.name ? null : item.name
+                            )
+                          }
+                        >
+                          <ChevronDown
+                            className={`h-4 w-4 transition ${openDropdown === item.name ? "rotate-180" : ""}`}
+                          />
+                        </button>
                       )}
                     </div>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+
+                    {item.dropdown && openDropdown === item.name && (
+                      <div className="pl-4 space-y-1 border-l">
+                        {item.dropdown.map((sub) => (
+                          <div key={sub.path}>
+                            <Link
+                              to="#"
+                              className="block text-sm text-gray-700 py-1"
+                              // onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              {sub.name}
+                            </Link>
+
+                            {sub.dropdown && (
+                              <div className="pl-3 space-y-1 border-l">
+                                {sub.dropdown.map((n) => (
+                                  <Link
+                                    key={n.path}
+                                    to={n.path}
+                                    className="text-xs text-gray-600 py-1 block"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                  >
+                                    • {n.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Logout footer */}
+                {isAuthenticated && (
+                  <div className="sticky bottom-0 bg-white border-t pt-3">
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full h-11 bg-red-600 text-white rounded-md"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
+
+      {/* Search modal */}
       <SearchBar isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );

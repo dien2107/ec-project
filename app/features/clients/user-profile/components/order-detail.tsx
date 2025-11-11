@@ -204,25 +204,25 @@ export default function OrderDetailsModal({
       <div className="fixed inset-0 z-50 overflow-y-auto scrollbar-custom">
         <div className="fixed inset-0 bg-black/50" onClick={onClose} />
 
-        <div className="flex min-h-full items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex min-h-full items-center justify-center p-2 lg:p-4">
+          <div className="relative bg-white rounded-md lg:rounded-lg shadow-xl w-full max-w-full lg:max-w-7xl max-h-[90vh] overflow-hidden flex flex-col text-sm lg:text-base mx-2 lg:mx-0">
             {/* Header */}
-            <div className="border-b bg-white p-6 flex-shrink-0">
+            <div className="border-b bg-white p-3 lg:p-6 flex-shrink-0">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3 lg:space-x-4">
                   {statusIcons[order.status]}
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
+                    <h2 className="text-lg lg:text-xl font-semibold text-gray-900">
                       Đơn hàng #{order.id}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs lg:text-sm text-gray-500 mt-1">
                       Ngày đặt: {order.date}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 lg:space-x-3">
                   <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs lg:text-sm font-medium ${statusBadgeClass(
                       order.status
                     )}`}
                   >
@@ -240,95 +240,99 @@ export default function OrderDetailsModal({
 
               {/* Order Progress Timeline */}
               {order.status !== "Đã hủy" && (
-                <div className="flex items-center justify-between mt-6 relative">
-                  <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200">
+                // Overflow-x cho mobile/tablet, giữ layout desktop
+                <div className="mt-4 relative overflow-x-auto -mx-3 lg:mx-0 px-3 lg:px-0 py-2">
+                  <div className="absolute top-7 left-0 right-0 h-0.5 bg-gray-200">
                     <div
                       className="h-full bg-blue-600 transition-all duration-500"
                       style={{
                         width: `${
-                          (orderSteps.filter(s => s.completed).length /
+                          (orderSteps.filter((s) => s.completed).length /
                             orderSteps.length) *
                           100
                         }%`,
                       }}
                     />
                   </div>
-                  {orderSteps.map((step, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col items-center relative z-10"
-                    >
+
+                  <div className="flex items-center space-x-6 lg:space-x-0 lg:justify-between w-max lg:w-full">
+                    {orderSteps.map((step, index) => (
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
-                          step.completed
-                            ? "bg-blue-600 border-blue-600"
-                            : "bg-white border-gray-300"
-                        }`}
+                        key={index}
+                        className="flex flex-col items-center relative z-10 min-w-[64px]"
                       >
-                        {step.completed ? (
-                          <CheckCircle2 className="h-5 w-5 text-white" />
-                        ) : (
-                          <div className="w-3 h-3 rounded-full bg-gray-300" />
-                        )}
+                        <div
+                          className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
+                            step.completed
+                              ? "bg-blue-600 border-blue-600"
+                              : "bg-white border-gray-300"
+                          }`}
+                        >
+                          {step.completed ? (
+                            <CheckCircle2 className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                          ) : (
+                            <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-gray-300" />
+                          )}
+                        </div>
+                        <p
+                          className={`text-xs mt-2 text-center max-w-[70px] lg:max-w-[80px] truncate ${
+                            step.completed
+                              ? "text-gray-900 font-medium"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {step.label}
+                        </p>
                       </div>
-                      <p
-                        className={`text-xs mt-2 text-center max-w-[80px] ${
-                          step.completed
-                            ? "text-gray-900 font-medium"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {step.label}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Content - 2 Columns Layout */}
-            <div className="grid grid-cols-5 divide-x flex-1 overflow-hidden">
-              {/* Left Column - Products (3/5 width) - SCROLLABLE */}
-              <div className="col-span-3 p-6 overflow-y-auto scrollbar-custom">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="grid lg:grid-cols-5 grid-cols-1 lg:divide-x flex-1 overflow-hidden">
+              {/* Left Column - Products (3/5 width on desktop, full width on mobile) - SCROLLABLE */}
+              <div className="col-span-1 lg:col-span-3 p-3 lg:p-6 overflow-y-auto scrollbar-custom">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center text-sm lg:text-base">
                   <Package className="h-5 w-5 mr-2" />
                   Sản phẩm đã đặt ({order.items.length})
                 </h3>
 
-                <div className="space-y-4">
-                  {order.items.map(item => (
+                <div className="space-y-3">
+                  {order.items.map((item) => (
                     <div
                       key={item.orderItemId}
-                      className="border rounded-lg p-4 hover:border-gray-400 transition-colors"
+                      className="border rounded-lg p-2 lg:p-4 hover:border-gray-400 transition-colors"
                     >
-                      <div className="flex items-start space-x-4">
+                      <div className="flex items-start space-x-3 lg:space-x-4">
                         <div className="relative flex-shrink-0">
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="h-20 w-20 rounded-md object-cover border"
+                            className="object-cover h-14 w-14 lg:h-20 lg:w-20 rounded-md border"
                           />
-                          <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">
+                          <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-[10px] lg:text-xs font-medium rounded-full h-4 w-4 lg:h-5 lg:w-5 flex items-center justify-center">
                             {item.quantity}
                           </span>
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 line-clamp-2">
+                          <h4 className="font-medium text-gray-900 line-clamp-2 truncate text-sm lg:text-base">
                             {item.name}
                           </h4>
                           {item.size && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-xs lg:text-sm text-gray-500 mt-1">
                               {item.size}
                             </p>
                           )}
                           <div className="mt-2 flex items-center justify-between">
-                            <div className="flex items-center text-sm text-gray-600">
+                            <div className="flex items-center text-xs lg:text-sm text-gray-600">
                               <span>{item.price.toLocaleString("vi-VN")}₫</span>
                               <span className="mx-2">×</span>
                               <span>{item.quantity}</span>
                             </div>
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-semibold text-gray-900 text-sm lg:text-base">
                               {(item.price * item.quantity).toLocaleString(
                                 "vi-VN"
                               )}
@@ -349,15 +353,15 @@ export default function OrderDetailsModal({
                 </div>
               </div>
 
-              {/* Right Column - Summary & Info (2/5 width) - NO SCROLL */}
-              <div className="col-span-2 p-6 bg-gray-50 overflow-y-auto">
+              {/* Right Column - Summary & Info (2/5 width on desktop, stacked below on mobile) - NO SCROLL */}
+              <div className="col-span-1 lg:col-span-2 p-3 lg:p-6 bg-gray-50 overflow-y-auto">
                 {/* Delivery Address */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <div className="mb-4 lg:mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm lg:text-base">
                     <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
                     Địa chỉ nhận hàng
                   </h3>
-                  <div className="bg-white border rounded-lg p-4 space-y-2.5 text-sm">
+                  <div className="bg-white border rounded-lg p-3 lg:p-4 space-y-2.5 text-sm">
                     <div className="flex items-start space-x-2">
                       <User className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
                       <span className="font-medium text-gray-900">
@@ -370,7 +374,7 @@ export default function OrderDetailsModal({
                     </div>
                     <div className="flex items-start space-x-2">
                       <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                      <p className="text-gray-600 leading-relaxed">
+                      <p className="text-gray-600 leading-relaxed text-xs lg:text-sm">
                         123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh
                       </p>
                     </div>
@@ -378,12 +382,12 @@ export default function OrderDetailsModal({
                 </div>
 
                 {/* Payment Method */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-3">
+                <div className="mb-4 lg:mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-sm lg:text-base">
                     Phương thức thanh toán
                   </h3>
-                  <div className="bg-white border rounded-lg p-4 text-sm">
-                    <p className="text-gray-900 font-medium">
+                  <div className="bg-white border rounded-lg p-3 lg:p-4 text-sm">
+                    <p className="text-gray-900 font-medium text-xs lg:text-sm">
                       {order.payment == null
                         ? "Thanh toán khi nhận hàng (COD)"
                         : "Thanh toán qua SEPAY"}
@@ -392,13 +396,13 @@ export default function OrderDetailsModal({
                 </div>
 
                 {/* Order Summary */}
-                <div className="bg-white border rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-4">
+                <div className="bg-white border rounded-lg p-3 lg:p-4">
+                  <h3 className="font-semibold text-gray-900 mb-4 text-sm lg:text-base">
                     Chi tiết thanh toán
                   </h3>
 
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
+                  <div className="space-y-3 text-sm lg:text-base">
+                    <div className="flex justify-between text-xs lg:text-sm">
                       <span className="text-gray-600">Tạm tính</span>
                       <span className="text-gray-900 font-medium">
                         {(
@@ -410,21 +414,21 @@ export default function OrderDetailsModal({
                       </span>
                     </div>
 
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs lg:text-sm">
                       <span className="text-gray-600">Phí vận chuyển</span>
                       {order.shippingFee && order.shippingFee > 0 ? (
-                        <span className="text-gray-900">
+                        <span className="text-gray-900 text-xs lg:text-sm">
                           {order.shippingFee.toLocaleString("vi-VN")}₫
                         </span>
                       ) : (
-                        <span className="text-green-600 font-medium">
+                        <span className="text-green-600 font-medium text-xs lg:text-sm">
                           Miễn phí
                         </span>
                       )}
                     </div>
 
                     {order.discount && order.discount.discountValue > 0 && (
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs lg:text-sm">
                         <span className="text-gray-600">Giảm giá</span>
                         <span className="text-red-600 font-medium">
                           -
@@ -436,7 +440,7 @@ export default function OrderDetailsModal({
 
                     <div className="pt-3 mt-3 border-t">
                       <div className="flex justify-between items-center">
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-semibold text-gray-900 text-sm lg:text-base">
                           Tổng cộng
                         </span>
                         <div className="text-right">
@@ -449,7 +453,7 @@ export default function OrderDetailsModal({
                                 ₫
                               </div>
                             )}
-                          <span className="font-bold text-xl text-blue-600">
+                          <span className="font-bold text-lg lg:text-xl text-blue-600">
                             {order.total.toLocaleString("vi-VN")}₫
                           </span>
                         </div>

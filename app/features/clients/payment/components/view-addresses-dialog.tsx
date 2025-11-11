@@ -92,12 +92,17 @@ export default function ViewAddressesDialog({
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="min-w-[600px] max-w-[600px]">
+        <DialogContent
+          className={
+            // base (mobile/tablet): fluid, centered and compact; lg (desktop) keeps original fixed size
+            "w-[90vw] max-w-[90vw] md:max-w-[85vw] lg:min-w-[600px] lg:max-w-[600px] rounded-lg shadow-lg p-4 sm:p-6"
+          }
+        >
           <DialogHeader>
             <DialogTitle>Chọn địa chỉ giao hàng</DialogTitle>
           </DialogHeader>
 
-          <div className="max-h-[500px] overflow-y-auto scrollbar-custom">
+          <div className="max-h-[60vh] lg:max-h-[500px] overflow-y-auto scrollbar-custom space-y-3 pr-2">
             {addresses.length === 0 ? (
               <>
                 <div className="py-6 text-center text-sm text-gray-500">
@@ -130,7 +135,8 @@ export default function ViewAddressesDialog({
                   {addresses.map((a) => (
                     <div
                       key={a.addressId}
-                      className="flex items-start gap-3  cursor-pointer hover:bg-gray-50"
+                      // base: mobile/tablet spacing and rounded card look; lg: revert to original (no extra padding)
+                      className="flex items-start gap-3 cursor-pointer hover:bg-gray-50 p-3 rounded-md lg:p-0 lg:rounded-none"
                     >
                       {/* native radio for accessibility, visually hidden */}
                       <RadioGroupItem
@@ -178,7 +184,7 @@ export default function ViewAddressesDialog({
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col gap-2 lg:flex-row lg:items-center">
             <Button variant="outline" onClick={() => actualSetOpen(false)}>
               Đóng
             </Button>
