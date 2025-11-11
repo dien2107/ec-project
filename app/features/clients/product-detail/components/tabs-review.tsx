@@ -204,11 +204,29 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <TabsList className="bg-transparent gap-1 mb-6">
+          <TabsList
+            className="
+              flex flex-wrap items-center justify-center
+              gap-2 mb-10 bg-transparent text-muted-foreground
+              lg:flex-wrap lg:mb-16 lg:gap-3 xl:mb-0
+            "
+          >
             {/* All reviews */}
             <TabsTrigger
               value="all-stars"
-              className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-all duration-200 hover:bg-gray-100"
+              className="
+                inline-flex items-center justify-center
+                px-3 py-1 h-9
+                text-sm font-medium
+                whitespace-nowrap
+                rounded-md transition-all
+                border border-transparent
+                hover:bg-gray-100
+                flex-shrink-0
+                cursor-pointer
+                max-sm:text-xs max-sm:px-2 max-sm:h-7
+                data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none
+              "
             >
               Tất cả ({product.reviewCount || 0})
             </TabsTrigger>
@@ -218,7 +236,19 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
               <TabsTrigger
                 key={star}
                 value={`${star}-star`}
-                className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-all duration-200 hover:bg-gray-100"
+                className="
+                  inline-flex items-center justify-center
+                  px-3 py-1 h-9
+                  text-sm font-medium
+                  whitespace-nowrap
+                  rounded-md transition-all
+                  border border-transparent
+                  hover:bg-gray-100
+                  flex-shrink-0
+                  cursor-pointer
+                  max-sm:text-xs max-sm:px-2 max-sm:h-7
+                  data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none
+                "
               >
                 {star} sao ({product.reviewDetails?.[star] ?? 0})
               </TabsTrigger>
@@ -227,7 +257,19 @@ export default function TabsReview({ product }: { product: ProductDetail }) {
             {/* Has images */}
             <TabsTrigger
               value="has-images"
-              className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none rounded-md cursor-pointer px-3 h-9 transition-all duration-200 hover:bg-gray-100"
+              className="
+                inline-flex items-center justify-center
+                px-3 py-1 h-9
+                text-sm font-medium
+                whitespace-nowrap
+                rounded-md transition-all
+                border border-transparent
+                hover:bg-gray-100
+                flex-shrink-0
+                cursor-pointer
+                max-sm:text-xs max-sm:px-2 max-sm:h-7
+                data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none
+              "
             >
               Có hình ảnh ({product.hasImageCount ?? 0})
             </TabsTrigger>

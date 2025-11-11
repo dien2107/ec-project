@@ -130,17 +130,18 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
 
   return (
     <div className="flex-1">
-      <div className="bg-white rounded-xl shadow-sm border p-6 min-h-[70vh]">
+      <div className="bg-white rounded-xl shadow-sm border p-4 lg:p-6 min-h-[50vh] lg:min-h-[70vh]">
         <div className="flex items-center justify-between w-full mb-4">
           <h2 className="text-2xl font-semibold tracking-tight">
             Thông tin cá nhân
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <div className="lg:col-span-2 space-y-4">
+        {/* mobile-first: single column, restore desktop with lg:grid-cols-3 */}
+        <div className="grid grid-cols-1 gap-6 items-start lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
             <div className="flex items-center">
-              <div className="w-40 text-gray Burmese-500 text-sm">
+              <div className="w-28 lg:w-40 text-gray-500 text-sm">
                 Họ và tên
               </div>
               <div className="flex-1 font-medium">
@@ -149,19 +150,23 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
             </div>
 
             <div className="flex items-center">
-              <div className="w-40 text-gray-500 text-sm">Email</div>
+              <div className="w-28 lg:w-40 text-gray-500 text-sm">Email</div>
               <div className="flex-1 font-medium">{user.email}</div>
             </div>
 
             <div className="flex items-center">
-              <div className="w-40 text-gray-500 text-sm">Số điện thoại</div>
+              <div className="w-28 lg:w-40 text-gray-500 text-sm">
+                Số điện thoại
+              </div>
               <div className="flex-1 font-medium">
                 {user.phone || "Không có thông tin"}
               </div>
             </div>
 
             <div className="flex items-center">
-              <div className="w-40 text-gray-500 text-sm">Trạng thái</div>
+              <div className="w-28 lg:w-40 text-gray-500 text-sm">
+                Trạng thái
+              </div>
               <div className="flex gap-2">
                 <Badge
                   variant={statusStyle.variant}
@@ -179,7 +184,9 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
             </div>
 
             <div className="flex items-center">
-              <div className="w-40 text-gray-500 text-sm">Ngày sinh</div>
+              <div className="w-28 lg:w-40 text-gray-500 text-sm">
+                Ngày sinh
+              </div>
               <div className="flex-1 font-medium">
                 {user.dateOfBirth
                   ? new Date(user.dateOfBirth).toLocaleDateString("vi-VN")
@@ -187,7 +194,9 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
               </div>
             </div>
             <div className="flex items-center">
-              <div className="w-40 text-gray-500 text-sm">Giới tính</div>
+              <div className="w-28 lg:w-40 text-gray-500 text-sm">
+                Giới tính
+              </div>
               <div className="flex-1 font-medium">
                 {user.gender === "Male"
                   ? "Nam"
@@ -200,14 +209,19 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
             </div>
 
             <div className="pt-4">
-              <Button onClick={onEdit} className="bg-blue-600 text-white">
+              {/* full-width on mobile for easier touch, auto on lg */}
+              <Button
+                onClick={onEdit}
+                className="bg-blue-600 text-white w-full lg:w-auto"
+              >
                 Chỉnh sửa thông tin
               </Button>
             </div>
           </div>
 
-          <div className="flex flex-col items-center border-l pl-6">
-            <div className="relative w-32 h-32 rounded-full bg-gray-100 overflow-visible group">
+          {/* avatar column: no left border on mobile, show on lg */}
+          <div className="flex flex-col items-center lg:border-l lg:pl-6">
+            <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gray-100 overflow-visible group">
               <img
                 src={user.imageUrl || "/logo-icon.png"}
                 alt="Avatar"
@@ -239,7 +253,7 @@ export default function UserInfoView({ user, onEdit }: UserInfoViewProps) {
               disabled={isUploading}
               variant="outline"
               size="sm"
-              className="mt-3 gap-2"
+              className="mt-3 gap-2 w-full lg:w-auto"
             >
               <Upload className="w-4 h-4" />
               {isUploading ? "Đang tải..." : "Tải ảnh lên"}

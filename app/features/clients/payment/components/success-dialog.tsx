@@ -20,15 +20,15 @@ export default function SuccessDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="w-[90vw] max-w-[90vw] sm:max-w-sm md:max-w-md lg:max-w-md rounded-lg p-4 sm:p-6 shadow-lg mx-auto overflow-y-auto max-h-[80vh]">
         <AlertDialogHeader>
-          <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full">
-            <CheckCircle className="w-6 h-6 text-green-600" />
+          <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 bg-green-100 rounded-full">
+            <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
           </div>
-          <AlertDialogTitle className="text-center text-xl">
+          <AlertDialogTitle className="text-center text-lg sm:text-xl">
             Đặt hàng thành công!
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
+          <AlertDialogDescription className="text-center text-sm sm:text-base">
             Cám ơn bạn đã mua hàng tại cửa hàng của chúng tôi. Đơn hàng đang
             được xử lý.
           </AlertDialogDescription>

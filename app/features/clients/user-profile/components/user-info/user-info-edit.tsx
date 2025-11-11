@@ -168,7 +168,7 @@ export default function UserInfoEdit({
             <Button type="button" variant="outline" onClick={onClose}>
               Hủy
             </Button>
-            <Button variant="add" type="submit">
+            <Button variant="edit" type="submit">
               Lưu thay đổi
             </Button>
           </DialogFooter>
