@@ -43,13 +43,13 @@ export default function Payment() {
   }, [state, navigate]);
 
   //Redux
-  const cartItems = useAppSelector((state) => state.cart.items);
-  const authUser = useAppSelector((state) => state.auth.user);
+  const cartItems = useAppSelector(state => state.cart.items);
+  const authUser = useAppSelector(state => state.auth.user);
   const userId = authUser?.data?.userId;
   const statuses = useAppSelector(
-    (state) => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
+    state => state.statuses.data?.[ENTITY_TYPE.SHIP] ?? []
   );
-  const { shipList } = useAppSelector((state) => state.shipList);
+  const { shipList } = useAppSelector(state => state.shipList);
 
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -83,7 +83,7 @@ export default function Payment() {
   useEffect(() => {
     // Chỉ fetch ship khi đã có statuses
     if (statuses.length > 0) {
-      const activeStatus = statuses.find((s) => s.name === "Active");
+      const activeStatus = statuses.find(s => s.name === "Active");
       if (activeStatus) {
         dispatch(
           fetchShipListData({
@@ -123,14 +123,14 @@ export default function Payment() {
     ) {
       setSelectedItems(state.selectedItems.map((item: any) => item.variantId));
     } else {
-      setSelectedItems(cartItems.map((item) => item.productVariantId));
+      setSelectedItems(cartItems.map(item => item.productVariantId));
     }
   }, [state, cartItems]);
 
   // Tính toán các items được chọn
   const selectedCartItems = useMemo(
     () =>
-      cartItems.filter((item) => selectedItems.includes(item.productVariantId)),
+      cartItems.filter(item => selectedItems.includes(item.productVariantId)),
     [cartItems, selectedItems]
   );
 
@@ -180,7 +180,7 @@ export default function Payment() {
 
   const handleAddAddress = (address: Address) => {
     // add to local addresses list and select it
-    setAddresses((prev) => [...prev, address]);
+    setAddresses(prev => [...prev, address]);
     setSelectedAddress(address);
     setSelectedAddressId(address.addressId);
   };
@@ -199,9 +199,11 @@ export default function Payment() {
       shipId: ship ? ship.shipId : null,
       paymentMethod,
       addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
+      receivedName: selectedAddress.recipientName,
+      phoneNumber: selectedAddress.phone,
       isFreeShip: shippingFee === 0,
       shippingFee,
-      items: selectedCartItems.map((i) => ({
+      items: selectedCartItems.map(i => ({
         productVariantId: Number(i.productVariantId),
         quantity: i.quantity,
       })),
@@ -212,6 +214,7 @@ export default function Payment() {
     try {
       // 1️⃣ Tạo đơn hàng trước
       console.log(payload);
+      // return;
       const orderResponse = await createOrder(payload);
       console.log(orderResponse);
 
@@ -320,7 +323,7 @@ export default function Payment() {
               </h2>
             </div>
             <div className="p-4 sm:p-6 space-y-4 max-w-[95vw] sm:max-w-full mx-auto">
-              {selectedCartItems.map((item) => {
+              {selectedCartItems.map(item => {
                 const itemData = state?.selectedItems?.find(
                   (si: any) => si.variantId === item.productVariantId
                 );

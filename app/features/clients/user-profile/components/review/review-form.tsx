@@ -13,10 +13,12 @@ import { fetchOrderListDataByUserId } from "~/redux/slices/orders";
 export default function ReviewForm({
   item,
   mode,
+  onSuccess,
   onClose,
 }: {
   item: OrderItem["items"][0];
   mode: "view" | "edit" | "create";
+  onSuccess?: () => void;
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();
@@ -65,12 +67,12 @@ export default function ReviewForm({
         return;
       }
 
-      setMediaFiles((prev) => [...prev, ...files]);
+      setMediaFiles(prev => [...prev, ...files]);
 
-      files.forEach((file) => {
+      files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          setMediaPreviews((prev) => [...prev, e.target?.result as string]);
+        reader.onload = e => {
+          setMediaPreviews(prev => [...prev, e.target?.result as string]);
         };
         reader.readAsDataURL(file);
       });
@@ -80,8 +82,8 @@ export default function ReviewForm({
 
   const removeMedia = useCallback((index: number) => {
     if (isView) return;
-    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
-    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
+    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+    setMediaPreviews(prev => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -99,13 +101,13 @@ export default function ReviewForm({
         formData.append("comment", reviewText.trim());
       }
       if (mediaFiles.length > 0) {
-        mediaFiles.forEach((file) => {
+        mediaFiles.forEach(file => {
           formData.append("images", file);
         });
       }
 
       if (mode === "edit") {
-        oldImages.forEach((img) => {
+        oldImages.forEach(img => {
           formData.append("keepImageIds", img.reviewImageId.toString());
         });
         await updateReview(reviewId, formData);
@@ -114,6 +116,12 @@ export default function ReviewForm({
         await createReview(item.orderItemId, formData);
         toast.success("Đánh giá sản phẩm thành công!");
       }
+
+      // Gọi callback để reload data trước khi đóng
+      if (onSuccess) {
+        onSuccess();
+      }
+
       onClose();
     } catch (error: any) {
       if (error?.response?.data?.message) {
@@ -191,7 +199,7 @@ export default function ReviewForm({
               </label>
               <textarea
                 value={reviewText}
-                onChange={(e) => !isView && setReviewText(e.target.value)}
+                onChange={e => !isView && setReviewText(e.target.value)}
                 placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
                 className={`w-full h-28 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${isView ? "bg-gray-50 text-gray-600" : ""}`}
                 maxLength={500}
@@ -218,11 +226,9 @@ export default function ReviewForm({
                     preview={img.imageUrl}
                     file={undefined}
                     index={index}
-                    onRemove={(i) => {
+                    onRemove={i => {
                       if (isView) return;
-                      setOldImages((prev) =>
-                        prev.filter((_, idx) => idx !== i)
-                      );
+                      setOldImages(prev => prev.filter((_, idx) => idx !== i));
                     }}
                     mode={mode}
                   />
