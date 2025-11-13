@@ -21,6 +21,8 @@ import { cancelOrder, completeOrder } from "~/services/order";
 import { toast } from "react-hot-toast";
 import ReturnForm from "./return-form";
 import ReviewForm from "./review/review-form";
+import { useAppDispatch, useAppSelector, type RootState } from "~/redux/store";
+import { fetchOrderListDataByUserId } from "~/redux/slices/orders";
 
 const statusIcons: Record<OrderStatus, React.ReactNode> = {
   "Chờ xác nhận": <Clock className="h-4 w-4 text-amber-500" />,
@@ -145,6 +147,8 @@ export default function OrderDetailsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state: RootState) => state.auth.user);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewingProduct, setReviewingProduct] = useState<
     OrderItem["items"][0] | null
@@ -153,6 +157,18 @@ export default function OrderDetailsModal({
   const [returningProduct, setReturningProduct] = useState<
     OrderItem["items"][0] | null
   >(null);
+
+  // Hàm reload lại dữ liệu đơn hàng
+  const reloadOrderData = () => {
+    if (user?.data?.userId) {
+      dispatch(fetchOrderListDataByUserId(user.data.userId));
+    }
+  };
+
+  // Callback để update review sau khi tạo/sửa thành công
+  const handleReviewSuccess = () => {
+    reloadOrderData();
+  };
 
   if (!isOpen || !order) return null;
   // accept whole item to simplify calls and allow future expansion (mode, reviewId inside item.review)
@@ -247,7 +263,7 @@ export default function OrderDetailsModal({
                       className="h-full bg-blue-600 transition-all duration-500"
                       style={{
                         width: `${
-                          (orderSteps.filter((s) => s.completed).length /
+                          (orderSteps.filter(s => s.completed).length /
                             orderSteps.length) *
                           100
                         }%`,
@@ -300,7 +316,7 @@ export default function OrderDetailsModal({
                 </h3>
 
                 <div className="space-y-3">
-                  {order.items.map((item) => (
+                  {order.items.map(item => (
                     <div
                       key={item.orderItemId}
                       className="border rounded-lg p-2 lg:p-4 hover:border-gray-400 transition-colors"
@@ -365,17 +381,17 @@ export default function OrderDetailsModal({
                     <div className="flex items-start space-x-2">
                       <User className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
                       <span className="font-medium text-gray-900">
-                        Nguyễn Văn A
+                        {order.ReceivedName}
                       </span>
                     </div>
                     <div className="flex items-start space-x-2">
                       <Phone className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                      <span className="text-gray-600">0123 456 789</span>
+                      <span className="text-gray-600">{order.PhoneNumber}</span>
                     </div>
                     <div className="flex items-start space-x-2">
                       <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
                       <p className="text-gray-600 leading-relaxed text-xs lg:text-sm">
-                        123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh
+                        {order.address}
                       </p>
                     </div>
                   </div>
@@ -517,6 +533,7 @@ export default function OrderDetailsModal({
                 ? "edit"
                 : "create"
           }
+          onSuccess={handleReviewSuccess}
           onClose={() => {
             setShowReviewForm(false);
             setReviewingProduct(null);

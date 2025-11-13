@@ -76,13 +76,15 @@ export default function UserProfilePage() {
           default:
             uiStatus = "Chờ xác nhận";
         }
-
+        console.log(order);
         return {
           id: order.orderId,
           status: uiStatus,
           date: order.createdAt.toString(),
           total: order.totalAmount,
           address: order.addressInfo,
+          ReceivedName: order.receivedName,
+          PhoneNumber: order.phoneNumber,
           user: {
             userId: order.user.userId,
             fullName: order.user.fullName,
@@ -108,7 +110,15 @@ export default function UserProfilePage() {
         };
       });
     setListOrder(formattedList);
-  }, [orderList]);
+
+    // 🔹 Cập nhật selectedOrder nếu nó đang được mở
+    if (selectedOrder) {
+      const updatedOrder = formattedList.find(o => o.id === selectedOrder.id);
+      if (updatedOrder) {
+        setSelectedOrder(updatedOrder);
+      }
+    }
+  }, [orderList, selectedOrder?.id]);
 
   // 🔹 Lọc theo trạng thái
   const filteredOrders = useMemo(() => {
