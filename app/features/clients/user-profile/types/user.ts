@@ -19,6 +19,8 @@ export type OrderItem = {
   date: string;
   total: number;
   address: string;
+  ReceivedName: string;
+  PhoneNumber: string;
   user: User;
   items: {
     orderItemId: number;

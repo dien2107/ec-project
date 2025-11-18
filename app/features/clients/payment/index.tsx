@@ -199,6 +199,8 @@ export default function Payment() {
       shipId: ship ? ship.shipId : null,
       paymentMethod,
       addressInfo: `${selectedAddress.recipientName} - ${selectedAddress.phone} - ${selectedAddress.streetAddress}, ${selectedAddress.province?.name ?? ""}`,
+      receivedName: selectedAddress.recipientName,
+      phoneNumber: selectedAddress.phone,
       isFreeShip: shippingFee === 0,
       shippingFee,
       items: selectedCartItems.map(i => ({
@@ -212,6 +214,7 @@ export default function Payment() {
     try {
       // 1️⃣ Tạo đơn hàng trước
       console.log(payload);
+      // return;
       const orderResponse = await createOrder(payload);
       console.log(orderResponse);
 
@@ -319,7 +322,7 @@ export default function Payment() {
                 Sản phẩm ({selectedCartItems.length})
               </h2>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4 max-w-[95vw] sm:max-w-full mx-auto">
               {selectedCartItems.map(item => {
                 const itemData = state?.selectedItems?.find(
                   (si: any) => si.variantId === item.productVariantId
@@ -334,7 +337,9 @@ export default function Payment() {
                 return (
                   <div
                     key={String(item.productVariantId)}
-                    className="flex gap-4 pb-4 border-b last:border-b-0 last:pb-0"
+                    // make image + info (title, size, color) sit in one row on mobile/tablet,
+                    // allow price block to stay at the far right; keep desktop behaviour intact
+                    className="flex flex-row flex-wrap items-center gap-4 pb-4 border-b last:border-b-0 last:pb-0"
                   >
                     <img
                       src={
@@ -345,15 +350,15 @@ export default function Payment() {
                             ""
                       }
                       alt={item.productName}
-                      className="w-20 h-20 object-cover rounded-md border"
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-md border flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 mb-1 truncate">
+                      <h3 className="font-medium text-gray-900 mb-1 break-words whitespace-normal leading-tight">
                         {item.productName || "Sản phẩm"}
                       </h3>
                       <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-2">
                         {item.size && (
-                          <span className="px-2 py-0.5 bg-gray-100 rounded">
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
                             Size:{" "}
                             {typeof item.size === "string"
                               ? item.size
@@ -361,7 +366,7 @@ export default function Payment() {
                           </span>
                         )}
                         {item.color && (
-                          <span className="px-2 py-0.5 bg-gray-100 rounded">
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
                             Màu:{" "}
                             {typeof item.color === "string"
                               ? item.color
@@ -373,7 +378,9 @@ export default function Payment() {
                         Số lượng: {item.quantity}
                       </div>
                     </div>
-                    <div className="text-right flex flex-col justify-between">
+
+                    {/* price block: keep compact, push to far right when space allows */}
+                    <div className="w-full sm:w-auto text-right flex flex-col justify-between mt-2 sm:mt-0 min-w-[6rem] ml-auto">
                       {hasDiscount ? (
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 justify-end">

@@ -87,7 +87,7 @@ const Chatbox = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed z-50 bottom-4 right-4 sm:bottom-6 sm:right-6">
         {!open && (
           <Button
             onClick={() => setOpen(true)}
@@ -102,9 +102,17 @@ const Chatbox = () => {
 
         {open && (
           <div
-            className={`chat-shadow rounded-3xl overflow-hidden bg-white transition-all duration-300 animate-slideUp ${
-              minimized ? "w-80 h-16" : "w-96 h-[32rem]"
-            }`}
+            className={`chat-shadow rounded-3xl overflow-hidden bg-white transition-all duration-300 animate-slideUp
+              fixed left-1/2 -translate-x-1/2 bottom-4
+              sm:relative sm:left-auto sm:translate-x-0 sm:bottom-auto
+              shadow-lg border-0 ring-0 focus:outline-none
+              ${
+                minimized
+                  ? "max-w-[90vw] w-[90vw] sm:w-80 h-16"
+                  : "max-w-[90vw] w-[90vw] sm:w-96 sm:p-0"
+              }
+              ${!minimized ? "h-[70vh] md:h-[60vh] lg:h-[32rem] max-h-[90vh]" : ""}
+              `}
           >
             <div className="flex flex-col h-full  ">
               <ChatHeader
@@ -117,7 +125,9 @@ const Chatbox = () => {
                   <div className="flex-1 flex flex-col min-h-0">
                     <ChatMessages messages={messages} />
                   </div>
-                  <ChatInput onSend={handleSend} isTyping={isTyping} />
+                  <div className="px-2 sm:px-0 pb-2 sm:pb-0">
+                    <ChatInput onSend={handleSend} isTyping={isTyping} />
+                  </div>
                 </>
               )}
             </div>

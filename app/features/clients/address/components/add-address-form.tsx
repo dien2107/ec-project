@@ -156,7 +156,7 @@ const AddAddressForm = ({
               if (onOpen) onOpen();
               actualSetOpen(true);
             }}
-            className="ml-auto bg-[#3770EC] text-white cursor-pointer"
+            className="ml-0 lg:ml-auto bg-[#3770EC] text-white cursor-pointer w-auto min-w-[140px] px-3"
           >
             <Plus />
             Thêm địa chỉ
@@ -165,7 +165,7 @@ const AddAddressForm = ({
       )}
 
       <DialogContent
-        className="sm:max-w-[600px]"
+        className="w-full lg:max-w-[600px] p-4 lg:p-6"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -175,7 +175,7 @@ const AddAddressForm = ({
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Recipient name and phone number */}
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="recipientName">Họ và tên</Label>
                 <Input
@@ -222,7 +222,7 @@ const AddAddressForm = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Tỉnh/Thành phố</Label>
                 <Controller
@@ -329,10 +329,11 @@ const AddAddressForm = ({
               </Label>
             </div>
 
-            <DialogFooter className="pt-4">
+            <DialogFooter className="pt-4 flex flex-col gap-2 md:flex-row md:justify-end">
               <Button
                 variant="outline"
                 type="button"
+                className="w-full md:w-auto"
                 onClick={() => {
                   if (onCancel) {
                     onCancel();
@@ -345,7 +346,7 @@ const AddAddressForm = ({
               </Button>
               <Button
                 type="submit"
-                className="bg-[#3770EC] text-white cursor-pointer"
+                className="bg-[#3770EC] text-white cursor-pointer w-full md:w-auto"
                 disabled={isLoading}
               >
                 {isLoading ? (

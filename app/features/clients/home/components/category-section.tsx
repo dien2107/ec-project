@@ -145,12 +145,10 @@ export default function CategorySection() {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className={`overflow-x-auto scrollbar-hide scroll-smooth ${
-            !isScrollable ? "flex justify-center" : ""
-          }`}
+          className={`overflow-x-auto scrollbar-hide scroll-smooth ${!isScrollable ? "flex justify-center" : ""}`}
         >
           <div
-            className={`flex gap-4 md:gap-6 p-2 ${!isScrollable ? "justify-center" : "f"}`}
+            className={`flex gap-4 md:gap-6 p-2 snap-x snap-mandatory ${!isScrollable ? "justify-center" : ""}`}
           >
             {bestSellingCategories.map((category, index) => (
               <CategoryCard
@@ -190,6 +188,31 @@ export default function CategorySection() {
           display: none;
         }
 
+        /* Smooth native swipe on iOS/Android */
+        .overflow-x-auto {
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Ensure consistent snap behavior (used for mobile/tablet) */
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-start { scroll-snap-align: start; }
+
+        /* Category card responsive widths for tablet and mobile:
+           - Tablet (<=1024px): show ~2-3 cards (partial next card)
+           - Mobile (<=768px): show ~1.2-1.5 cards (partial next card)
+           We keep existing Tailwind width classes but override here for the two breakpoints. */
+        @media (max-width: 1024px) {
+          .category-card {
+            width: 40% !important; /* ~2.5 cards visible, shows part of next card */
+          }
+        }
+
+        @media (max-width: 768px) {
+          .category-card {
+            width: 72% !important; /* ~1.35 cards visible, clear hint to swipe */
+          }
+        }
+
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -225,7 +248,7 @@ function CategoryCard({
   return (
     <Link
       to={`/categories/${category.slug}`}
-      className="flex-shrink-0 w-40 sm:w-44 opacity-0 animate-fadeInUp group"
+      className="flex-shrink-0 snap-start category-card w-40 sm:w-44 opacity-0 animate-fadeInUp group"
       style={{
         animationDelay: `${index * 100}ms`,
       }}

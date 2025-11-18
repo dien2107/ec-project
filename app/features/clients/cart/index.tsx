@@ -21,9 +21,9 @@ export default function ShoppingCart() {
   const navigate = useNavigate();
 
   // Redux states
-  const { user } = useAppSelector(state => state.auth);
-  const cartItems = useAppSelector(state => state.cart.items);
-  const isLoading = useAppSelector(state => state.cart.isLoading);
+  const { user } = useAppSelector((state) => state.auth);
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const isLoading = useAppSelector((state) => state.cart.isLoading);
   const { discountList, isLoading: isDiscountLoading } = useAppSelector(
     (state: RootState) => state.discountList
   );
@@ -68,8 +68,8 @@ export default function ShoppingCart() {
   const queries = useMemo(
     () =>
       cartItems
-        .filter(item => !!item.slug)
-        .map(item => ({
+        .filter((item) => !!item.slug)
+        .map((item) => ({
           queryKey: ["product", item.slug],
           queryFn: () => getProductDetailBySlug(item.slug!),
           enabled: !!item.slug,
@@ -84,7 +84,7 @@ export default function ShoppingCart() {
   const productVariants = useMemo(() => {
     const variantsMap = new Map<number, AvailableVariant[]>();
 
-    const cartItemsWithSlug = cartItems.filter(item => item.slug);
+    const cartItemsWithSlug = cartItems.filter((item) => item.slug);
 
     cartItemsWithSlug.forEach((cartItem, index) => {
       const queryResult = productQueries[index];
@@ -106,16 +106,16 @@ export default function ShoppingCart() {
               stockQuantity: v.stockQuantity,
             };
           });
-        console.log(
-          `sameColorVariants for variantId ${cartItem.productVariantId}:`,
-          sameColorVariants
-        );
+        // console.log(
+        //   `sameColorVariants for variantId ${cartItem.productVariantId}:`,
+        //   sameColorVariants
+        // );
         variantsMap.set(cartItem.productVariantId, sameColorVariants);
       }
     });
-    console.log(variantsMap);
+    // console.log(variantsMap);
     return variantsMap;
-  }, [cartItems, ...productQueries.map(q => q.data)]);
+  }, [cartItems, ...productQueries.map((q) => q.data)]);
 
   // Extract product pricing info from queries
   const productPricingMap = useMemo(() => {
@@ -124,7 +124,7 @@ export default function ShoppingCart() {
       { basePrice: number; discountPercentage: number; sellingPrice: number }
     >();
 
-    const cartItemsWithSlug = cartItems.filter(item => item.slug);
+    const cartItemsWithSlug = cartItems.filter((item) => item.slug);
 
     cartItemsWithSlug.forEach((cartItem, index) => {
       const queryResult = productQueries[index];
@@ -139,14 +139,14 @@ export default function ShoppingCart() {
     });
 
     return pricingMap;
-  }, [cartItems, ...productQueries.map(q => q.data)]);
+  }, [cartItems, ...productQueries.map((q) => q.data)]);
 
   // Đồng bộ Redux → local state (để quản lý chọn/bỏ chọn)
   useEffect(() => {
-    setLocalItems(prev => {
-      const prevMap = new Map(prev.map(p => [p.id, p.selected]));
+    setLocalItems((prev) => {
+      const prevMap = new Map(prev.map((p) => [p.id, p.selected]));
 
-      return cartItems.map(ci => {
+      return cartItems.map((ci) => {
         const id = String(ci.productVariantId);
         const variants = productVariants.get(ci.productVariantId) || [];
         const pricing = productPricingMap.get(ci.productVariantId);
@@ -175,11 +175,11 @@ export default function ShoppingCart() {
     if (!discountList?.data) return null;
     return discountList.data.items
       .flat()
-      .find(d => d.code.toLowerCase() === code.trim().toLowerCase());
+      .find((d) => d.code.toLowerCase() === code.trim().toLowerCase());
   };
   // Tính toán tổng giá trị
   const selectedItems = useMemo(
-    () => localItems.filter(i => i.selected),
+    () => localItems.filter((i) => i.selected),
     [localItems]
   );
   const selectedCount = selectedItems.length;
@@ -188,12 +188,12 @@ export default function ShoppingCart() {
 
   // Kiểm tra sản phẩm hết hàng hoặc số lượng không đủ
   const hasOutOfStockItems = useMemo(() => {
-    return selectedItems.some(item => {
+    return selectedItems.some((item) => {
       const variants = productVariants.get(item.variantId);
       if (!variants || variants.length === 0) return false;
 
       const currentVariant = variants.find(
-        v => v.productVariantId === item.variantId
+        (v) => v.productVariantId === item.variantId
       );
       if (!currentVariant) return false;
 
@@ -292,13 +292,13 @@ export default function ShoppingCart() {
 
   // Chọn tất cả
   const handleSelectAll = (checked: boolean) => {
-    setLocalItems(prev => prev.map(i => ({ ...i, selected: checked })));
+    setLocalItems((prev) => prev.map((i) => ({ ...i, selected: checked })));
   };
 
   // Chọn từng item
   const handleSelectItem = (id: string, checked: boolean) => {
-    setLocalItems(prev =>
-      prev.map(i => (i.id === id ? { ...i, selected: checked } : i))
+    setLocalItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, selected: checked } : i))
     );
   };
 
@@ -306,11 +306,11 @@ export default function ShoppingCart() {
   const handleQuantityChange = async (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
-    const item = localItems.find(i => i.id === id);
+    const item = localItems.find((i) => i.id === id);
     if (!item || !user?.data?.userId) return;
 
-    setLocalItems(prev =>
-      prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
+    setLocalItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, quantity: newQuantity } : i))
     );
 
     await dispatch(
@@ -329,7 +329,7 @@ export default function ShoppingCart() {
 
   // Xóa 1 sản phẩm
   const handleRemoveItem = async (id: string) => {
-    const item = localItems.find(i => i.id === id);
+    const item = localItems.find((i) => i.id === id);
     if (!item || !user?.data?.userId) return;
 
     await dispatch(
@@ -340,12 +340,12 @@ export default function ShoppingCart() {
     );
 
     // Cập nhật lại local
-    setLocalItems(prev => prev.filter(i => i.id !== id));
+    setLocalItems((prev) => prev.filter((i) => i.id !== id));
   };
 
   // Thay đổi size (variant)
   const handleSizeChange = async (id: string, newVariantId: number) => {
-    const item = localItems.find(i => i.id === id);
+    const item = localItems.find((i) => i.id === id);
     if (!item || !user?.data?.userId) return;
 
     try {
@@ -388,7 +388,7 @@ export default function ShoppingCart() {
       );
     }
 
-    setLocalItems(prev => prev.filter(i => !i.selected));
+    setLocalItems((prev) => prev.filter((i) => !i.selected));
     dispatch(fetchCart(user.data.userId));
   };
 
@@ -435,7 +435,7 @@ export default function ShoppingCart() {
             />
 
             <div className="divide-y">
-              {localItems.map(item => (
+              {localItems.map((item) => (
                 <CartItem
                   key={item.id}
                   item={item}
