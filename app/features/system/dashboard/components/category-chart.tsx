@@ -38,13 +38,22 @@ export default function CategoryChart() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
+  // Format date as local "YYYY-MM-DD" to avoid timezone shift when sending to API
+  const formatLocalDate = (d?: Date) =>
+    d
+      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+          d.getDate()
+        ).padStart(2, "0")}`
+      : undefined;
+
   const params = useMemo(() => {
     if (tab === "preset") {
       return { preset };
     }
     return {
-      startDate: startDate ? startDate.toISOString() : undefined,
-      endDate: endDate ? endDate.toISOString() : undefined,
+      // send date-only local strings (YYYY-MM-DD) so server won't get shifted UTC timestamps
+      startDate: formatLocalDate(startDate),
+      endDate: formatLocalDate(endDate),
     };
   }, [tab, preset, startDate, endDate]);
 
@@ -55,8 +64,8 @@ export default function CategoryChart() {
       "category-sales-percentage",
       tab,
       preset,
-      startDate?.toISOString(),
-      endDate?.toISOString(),
+      formatLocalDate(startDate),
+      formatLocalDate(endDate),
     ],
     queryFn: () => getCategorySalesPercentage(params),
     enabled,
