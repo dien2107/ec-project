@@ -101,7 +101,8 @@ export interface SelectedVariant {
   imageUrl?: string;
   currentStock?: number;
   importQuantity: number;
-  importPrice: number;
+  // Price is now at product level, not variant level
+  productBasePrice: number; // Unit price for the product (same for all variants)
   profitMargin: number;
   suggestedPrice: number;
   totalPrice: number;

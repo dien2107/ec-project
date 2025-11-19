@@ -192,7 +192,7 @@ export function AddImportOrderModal({
         imageUrl: v.primaryImage?.imageUrl ?? product.primaryImage?.imageUrl,
         currentStock: v.stockQuantity ?? 0,
         importQuantity: 1,
-        importPrice: 0,
+        productBasePrice: 0, // Price at product level
         profitMargin: 0,
         suggestedPrice: 0,
         totalPrice: 0,
@@ -231,13 +231,14 @@ export function AddImportOrderModal({
         if (v.productVariantId !== id) return v;
         const upd: any = { ...v, [field]: value };
 
-        if (field === "importPrice" || field === "profitMargin") {
-          const price = field === "importPrice" ? value : upd.importPrice;
+        if (field === "productBasePrice" || field === "profitMargin") {
+          const price =
+            field === "productBasePrice" ? value : upd.productBasePrice;
           const margin = field === "profitMargin" ? value : upd.profitMargin;
           upd.suggestedPrice = price * (1 + margin / 100);
         }
-        if (field === "importQuantity" || field === "importPrice") {
-          upd.totalPrice = upd.importPrice * upd.importQuantity;
+        if (field === "importQuantity" || field === "productBasePrice") {
+          upd.totalPrice = upd.productBasePrice * upd.importQuantity;
         }
         return upd as SelectedVariant;
       })
@@ -256,8 +257,8 @@ export function AddImportOrderModal({
   const handleSubmit = () => {
     if (!supplier) return alert("Chọn nhà cung cấp!");
     if (selectedVariants.length === 0) return alert("Chọn ít nhất 1 biến thể!");
-    if (selectedVariants.some((v) => v.importPrice === 0))
-      return alert("Nhập giá nhập cho mọi biến thể!");
+    if (selectedVariants.some((v) => v.productBasePrice === 0))
+      return alert("Nhập giá nhập cho sản phẩm!");
     const now = new Date();
     const selectedSupplier = suppliers.find(
       (s) => (s as any).supplierId === supplier
@@ -269,7 +270,7 @@ export function AddImportOrderModal({
       items: selectedVariants.map((v) => ({
         productVariantId: v.productVariantId,
         quantity: v.importQuantity,
-        unitPrice: v.importPrice,
+        unitPrice: v.productBasePrice, // Use product base price
         profitPercentage: v.profitMargin,
         isPushed: false,
       })),
