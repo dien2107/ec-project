@@ -61,12 +61,12 @@ export default function DeleteCategoryDialog({
       setIsOpen(false);
 
       // 🔹 Bước 5: Hiển thị toast (sau khi đóng dialog)
-      toast.success("Xóa danh mục thành công!");
+      toast.success("Xóa Thể loại thành công!");
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Có lỗi xảy ra khi xóa danh mục!");
+        toast.error("Có lỗi xảy ra khi xóa Thể loại!");
       }
     } finally {
       setIsLoading(false);
@@ -78,14 +78,14 @@ export default function DeleteCategoryDialog({
       <AlertDialogContent className="p-6 rounded-lg shadow-md bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl font-semibold text-gray-800">
-            Xác nhận xóa danh mục
+            Xác nhận xóa Thể loại
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-600 mt-2">
-            Bạn có chắc chắn muốn xóa danh mục{" "}
+            Bạn có chắc chắn muốn xóa Thể loại{" "}
             <span className="font-semibold text-gray-900">
               {selectedCategory.name}
             </span>{" "}
-            (Mã danh mục:{" "}
+            (Mã Thể loại:{" "}
             <span className="font-mono text-gray-500">
               {selectedCategory.categoryId}
             </span>
@@ -117,7 +117,7 @@ export default function DeleteCategoryDialog({
                 Đang xóa...
               </>
             ) : (
-              <>Xóa danh mục</>
+              <>Xóa Thể loại</>
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
