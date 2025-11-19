@@ -17,6 +17,7 @@ export default function ReturnForm({
   );
   const [returnType, setReturnType] = useState<"return" | "exchange" | "">("");
   const [reason, setReason] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedItem = order.items.find(
@@ -58,6 +59,7 @@ export default function ReturnForm({
         orderItemId: selectedProductId,
         returnType: returnType === "return" ? 1 : 2, // 1 = trả hàng, 2 = đổi hàng
         returnReason: reason.trim(),
+        quantity: quantity, // Thêm số lượng vào payload
       };
       console.log(payload);
 
@@ -127,6 +129,7 @@ export default function ReturnForm({
                         if (isDisabled) return;
                         console.log(`item.orderItemId: ${item.orderItemId}`);
                         setSelectedProductId(item.orderItemId);
+                        setQuantity(1); // Reset quantity when selecting product
                       }}
                       className={`flex items-center space-x-3 p-3 rounded-lg border transition-all ${
                         isDisabled
@@ -187,6 +190,31 @@ export default function ReturnForm({
                 })}
               </div>
             </div>
+
+            {/* Quantity Input (only show if selected item has quantity >= 2) */}
+            {selectedItem && selectedItem.quantity >= 2 && (
+              <div className="mb-6">
+                <label className="text-gray-900 mb-2 font-medium block">
+                  Số lượng muốn đổi/trả
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={selectedItem.quantity}
+                  value={quantity}
+                  onChange={e => {
+                    const val = parseInt(e.target.value);
+                    if (val >= 1 && val <= selectedItem.quantity) {
+                      setQuantity(val);
+                    }
+                  }}
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Tối đa: {selectedItem.quantity} sản phẩm
+                </p>
+              </div>
+            )}
 
             {/* Type Select */}
             <div className="mb-6">

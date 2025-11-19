@@ -111,6 +111,8 @@ export type reviewOrder = {
 export type Order = {
   orderId: number;
   addressInfo: string;
+  receivedName: string;
+  phoneNumber: string;
   isFreeShip: boolean;
   shippingFee: number;
   totalAmount: number;

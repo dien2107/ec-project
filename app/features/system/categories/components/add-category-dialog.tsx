@@ -238,62 +238,67 @@ export default function AddCategoryDialog({
             )}
           </div>
 
-          {/* Slug */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Slug</label>
-            <Input
-              type="text"
-              placeholder="slug-tu-dong-tao"
-              disabled={isLoading}
-              {...register("slug", {
-                required: "Vui lòng nhập slug",
-                pattern: {
-                  value: /^[a-z0-9-]+$/,
-                  message: "Slug chỉ chứa chữ thường, số và dấu gạch ngang",
-                },
-              })}
-            />
-            {errors.slug && (
-              <span className="text-red-500 text-xs">
-                {errors.slug.message}
-              </span>
-            )}
+          {/* Slug + Parent */}
+          <div className="flex gap-4">
+            {/* Slug */}
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-1 block">Slug</label>
+              <Input
+                type="text"
+                placeholder="slug-tu-dong-tao"
+                disabled={isLoading}
+                {...register("slug", {
+                  required: "Vui lòng nhập slug",
+                  pattern: {
+                    value: /^[a-z0-9-]+$/,
+                    message: "Slug chỉ chứa chữ thường, số và dấu gạch ngang",
+                  },
+                })}
+              />
+              {errors.slug && (
+                <span className="text-red-500 text-xs">
+                  {errors.slug.message}
+                </span>
+              )}
+            </div>
+
+            {/* Parent */}
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-1 block">Thể loại cha</label>
+              <Controller
+                name="parentId"
+                control={control}
+                rules={{ required: "Vui lòng chọn thể loại cha" }}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Select
+                      {...field}
+                      options={categories.map((c) => ({
+                        value: c.id,
+                        label: c.name,
+                      }))}
+                      styles={reactSelectStyles}
+                      placeholder="Chọn thể loại cha"
+                      isDisabled={isLoading}
+                      onChange={(opt) => field.onChange(opt?.value ?? null)}
+                      value={
+                        categories
+                          .map((c) => ({ value: c.id, label: c.name }))
+                          .find((opt) => opt.value === field.value) || null
+                      }
+                    />
+
+                    {fieldState.error && (
+                      <span className="text-red-500 text-xs">
+                        {fieldState.error.message}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            </div>
           </div>
 
-          {/* Parent */}
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Thể loại cha</label>
-            <Controller
-              name="parentId"
-              control={control}
-              rules={{ required: "Vui lòng chọn thể loại cha" }}
-              render={({ field, fieldState }) => (
-                <>
-                  <Select
-                    {...field}
-                    options={categories.map((c) => ({
-                      value: c.id,
-                      label: c.name,
-                    }))}
-                    styles={reactSelectStyles}
-                    placeholder="Chọn thể loại cha"
-                    isDisabled={isLoading}
-                    onChange={(opt) => field.onChange(opt?.value ?? null)}
-                    value={
-                      categories
-                        .map((c) => ({ value: c.id, label: c.name }))
-                        .find((opt) => opt.value === field.value) || null
-                    }
-                  />
-                  {fieldState.error && (
-                    <span className="text-red-500 text-xs">
-                      {fieldState.error.message}
-                    </span>
-                  )}
-                </>
-              )}
-            />
-          </div>
 
           {/* Description */}
           <div className="flex flex-col gap-1">
@@ -315,11 +320,10 @@ export default function AddCategoryDialog({
             </label>
             <div
               {...getRootProps()}
-              className={`border-dashed min-h-48 border-2 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
-                selectedFile
-                  ? "border-gray-500 bg-blue-50"
-                  : "border-gray-300 hover:border-blue-400"
-              }`}
+              className={`border-dashed min-h-48 border-2 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${selectedFile
+                ? "border-gray-500 bg-blue-50"
+                : "border-gray-300 hover:border-blue-400"
+                }`}
             >
               <input {...getInputProps()} disabled={isLoading} />
               {!selectedFile ? (

@@ -130,7 +130,7 @@ export function EditImportOrderModal({
             String(it.productVariantId ?? it.purchaseOrderItemId ?? ""),
           name: it.productName ?? it.name ?? "",
           importQuantity: it.quantity ?? it.importQuantity ?? 0,
-          importPrice: it.unitPrice ?? it.importPrice ?? 0,
+          productBasePrice: it.unitPrice ?? it.importPrice ?? 0, // Use productBasePrice
           profitMargin: it.profitPercentage ?? it.profitMargin ?? 0,
           suggestedPrice: it.unitPrice * (1 + it.profitPercentage / 100),
           totalPrice: it.totalPrice ?? (it.quantity ?? 0) * (it.unitPrice ?? 0),
@@ -325,11 +325,11 @@ export function EditImportOrderModal({
     const toAdd: any[] = variants
       .filter((v: any) => pickerSelectedIds.includes(v.productVariantId))
       .map((v: any) => {
-        const importPrice = Math.round(
+        const basePrice = Math.round(
           (product.price ?? product.retailPrice ?? 0) * 0.7
         );
         const importQuantity = 1;
-        const totalPrice = importPrice * importQuantity;
+        const totalPrice = basePrice * importQuantity;
 
         return {
           productId: product.productId ?? product.id,
@@ -337,9 +337,9 @@ export function EditImportOrderModal({
           code: v.sku ?? "",
           name: product.name ?? product.productName,
           importQuantity,
-          importPrice,
+          productBasePrice: basePrice, // Use productBasePrice
           profitMargin: 30,
-          suggestedPrice: importPrice * 1.3,
+          suggestedPrice: basePrice * 1.3,
           totalPrice,
           price: product.price ?? product.retailPrice ?? 0,
           imageUrl: v.primaryImage?.imageUrl ?? product.primaryImage?.imageUrl,
@@ -379,14 +379,15 @@ export function EditImportOrderModal({
 
         const upd: any = { ...p, [field]: value };
 
-        if (field === "importPrice" || field === "profitMargin") {
-          const price = field === "importPrice" ? value : upd.importPrice;
+        if (field === "productBasePrice" || field === "profitMargin") {
+          const price =
+            field === "productBasePrice" ? value : upd.productBasePrice;
           const margin = field === "profitMargin" ? value : upd.profitMargin;
           upd.suggestedPrice = price * (1 + margin / 100);
         }
 
-        if (field === "importQuantity" || field === "importPrice") {
-          upd.totalPrice = upd.importPrice * upd.importQuantity;
+        if (field === "importQuantity" || field === "productBasePrice") {
+          upd.totalPrice = upd.productBasePrice * upd.importQuantity;
         }
 
         return upd;
@@ -427,8 +428,8 @@ export function EditImportOrderModal({
           productVariantId: p.productVariantId ?? p.id,
           sku: p.sku ?? p.code ?? "",
           quantity: p.importQuantity,
-          unitPrice: p.importPrice,
-          totalPrice: p.totalPrice ?? p.importPrice * p.importQuantity,
+          unitPrice: p.productBasePrice, // Use productBasePrice
+          totalPrice: p.totalPrice ?? p.productBasePrice * p.importQuantity,
           profitPercentage: p.profitMargin,
           isPushed: p.isPushed ?? false,
         }));

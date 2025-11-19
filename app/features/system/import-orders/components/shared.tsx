@@ -165,10 +165,26 @@ export function SelectedProductsTable({
   onUpdate: (id: any, field: any, value: number) => void;
   onSelect: (p: any | null) => void;
 }) {
+  // Group variants by product to display product-level price
+  const groupedByProduct = selected.reduce((acc: any, variant: any) => {
+    const productId = variant.productId;
+    if (!acc[productId]) {
+      acc[productId] = {
+        productId,
+        productName: variant.name ?? variant.productName,
+        productBasePrice: variant.productBasePrice ?? variant.importPrice ?? 0,
+        profitMargin: variant.profitMargin ?? 0,
+        variants: [],
+      };
+    }
+    acc[productId].variants.push(variant);
+    return acc;
+  }, {});
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <h3 className="font-semibold text-lg mb-4">
-        Sản phẩm đã chọn ({selected.length})
+        Sản phẩm đã chọn ({selected.length} biến thể)
       </h3>
       {selected.length === 0 ? (
         <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg">
@@ -176,150 +192,180 @@ export function SelectedProductsTable({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-              <tr>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                  Sản phẩm
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
-                  SL nhập
-                </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
-                  Giá nhập
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
-                  % LN
-                </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
-                  Giá bán ra
-                </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
-                  Thành tiền
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
-                  Thao tác
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {selected.map((product) => (
-                <tr
-                  key={
-                    product.id ??
-                    product.productVariantId ??
-                    product.productId ??
-                    product.code
-                  }
-                  onClick={() => onSelect(product)}
-                  className={`hover:bg-blue-50 cursor-pointer`}
-                >
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-2">
-                      {product?.imageUrl ? (
-                            <img
-                            src={product?.imageUrl }
-                            alt={product?.name}
-                            className="w-16 h-16 object-cover rounded-md"
-                            />
-                        ) : (
-                            <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
-                            Box
-                            </div>
-                        )}
-                      <div>
-                        <div className="font-medium text-sm">
-                          {product.name ?? product.productName}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {product.code ?? product.sku}
-                        </div>
+          {Object.values(groupedByProduct).map((productGroup: any) => (
+            <div key={productGroup.productId} className="mb-6">
+              {/* Product-level price header */}
+              <div className="bg-blue-50 border border-blue-200 rounded-t-lg p-3 mb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="font-semibold text-blue-900">
+                      {productGroup.productName}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-xs text-gray-600">
+                        Giá nhập (Product)
+                      </div>
+                      <Input
+                        type="number"
+                        value={productGroup.productBasePrice}
+                        onChange={(e) => {
+                          const newPrice = parseFloat(e.target.value) || 0;
+                          // Update all variants of this product
+                          productGroup.variants.forEach((v: any) => {
+                            onUpdate(
+                              v.id ?? v.productVariantId ?? v.productId,
+                              "productBasePrice" as any,
+                              newPrice
+                            );
+                          });
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        min={0}
+                        className="w-32 text-right font-semibold text-blue-600"
+                      />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-600">% Lợi nhuận</div>
+                      <Input
+                        type="number"
+                        value={productGroup.profitMargin}
+                        onChange={(e) => {
+                          const newMargin = parseFloat(e.target.value) || 0;
+                          // Update all variants of this product
+                          productGroup.variants.forEach((v: any) => {
+                            onUpdate(
+                              v.id ?? v.productVariantId ?? v.productId,
+                              "profitMargin" as any,
+                              newMargin
+                            );
+                          });
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        min={0}
+                        max={1000}
+                        className="w-20 text-right font-semibold"
+                      />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-600">Giá bán ra</div>
+                      <div className="font-semibold text-green-600">
+                        {Math.round(
+                          productGroup.productBasePrice *
+                            (1 + productGroup.profitMargin / 100)
+                        ).toLocaleString("vi-VN")}
+                        đ
                       </div>
                     </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <Input
-                      type="number"
-                      value={product.importQuantity}
-                      onChange={(e) =>
-                        onUpdate(
-                          product.id ??
-                            product.productVariantId ??
-                            product.productId,
-                          "importQuantity" as any,
-                          parseInt(e.target.value) || 0
-                        )
+                  </div>
+                </div>
+              </div>
+
+              {/* Variants table */}
+              <table className="w-full border border-gray-200 rounded-b-lg">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase">
+                      Biến thể
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase">
+                      SL nhập
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase">
+                      Tồn kho
+                    </th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">
+                      Thành tiền
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {productGroup.variants.map((variant: any) => (
+                    <tr
+                      key={
+                        variant.id ?? variant.productVariantId ?? variant.code
                       }
-                      onClick={(e) => e.stopPropagation()}
-                      min={1}
-                      className="w-20 text-center no-spinner"
-                    />
-                  </td>
-                  <td className="px-3 py-3 text-right">
-                    <Input
-                      type="number"
-                      value={product.importPrice}
-                      onChange={(e) =>
-                        onUpdate(
-                          product.id ??
-                            product.productVariantId ??
-                            product.productId,
-                          "importPrice" as any,
-                          parseFloat(e.target.value) || 0
-                        )
-                      }
-                      onClick={(e) => e.stopPropagation()}
-                      min={0}
-                      className="w-28 text-center no-spinner"
-                    />
-                  </td>
-                  <td className="px-3 py-3">
-                    <Input
-                      type="number"
-                      value={product.profitMargin}
-                      onChange={(e) =>
-                        onUpdate(
-                          product.id ??
-                            product.productVariantId ??
-                            product.productId,
-                          "profitMargin" as any,
-                          parseFloat(e.target.value) || 0
-                        )
-                      }
-                      onClick={(e) => e.stopPropagation()}
-                      min={0}
-                      max={1000}
-                      className="w-16 text-center no-spinner"
-                    />
-                  </td>
-                  <td className="px-3 py-3 text-right font-medium text-green-600">
-                    {Math.round(product.suggestedPrice).toLocaleString("vi-VN")}
-                    đ
-                  </td>
-                  <td className="px-3 py-3 text-right font-bold text-blue-600">
-                    {Math.round(product.totalPrice).toLocaleString("vi-VN")}đ
-                  </td>
-                  <td className="px-3 py-3 text-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-600 hover:bg-red-50"
-                      onClick={(e: any) => {
-                        e.stopPropagation();
-                        onRemove(
-                          product.id ??
-                            product.productVariantId ??
-                            product.productId
-                        );
-                      }}
+                      onClick={() => onSelect(variant)}
+                      className="hover:bg-blue-50 cursor-pointer"
                     >
-                      <Trash2 size={18} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          {variant?.imageUrl ? (
+                            <img
+                              src={variant?.imageUrl}
+                              alt={variant?.name}
+                              className="w-12 h-12 object-cover rounded-md"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs">
+                              Box
+                            </div>
+                          )}
+                          <div>
+                            <div className="font-medium text-sm">
+                              {variant.code ?? variant.sku}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {variant.size && `Size: ${variant.size}`}
+                              {variant.color && ` | Màu: ${variant.color}`}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Input
+                          type="number"
+                          value={variant.importQuantity}
+                          onChange={(e) =>
+                            onUpdate(
+                              variant.id ??
+                                variant.productVariantId ??
+                                variant.productId,
+                              "importQuantity" as any,
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                          min={1}
+                          className="w-20 text-center no-spinner"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-center text-orange-600 font-medium">
+                        {variant.currentStock ?? 0}
+                      </td>
+                      <td className="px-3 py-2 text-right font-bold text-blue-600">
+                        {Math.round(variant.totalPrice ?? 0).toLocaleString(
+                          "vi-VN"
+                        )}
+                        đ
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={(e: any) => {
+                            e.stopPropagation();
+                            onRemove(
+                              variant.id ??
+                                variant.productVariantId ??
+                                variant.productId
+                            );
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -389,7 +435,7 @@ export function ProductDetailPanel({
         <div className="text-center py-4 bg-gray-50 rounded-lg flex justify-center">
           {item?.imageUrl ? (
             <img
-              src={item?.imageUrl }
+              src={item?.imageUrl}
               alt={item?.name}
               className="w-16 h-16 object-cover rounded-md"
             />
@@ -435,9 +481,12 @@ export function ProductDetailPanel({
               <span className="font-bold">{item.importQuantity}</span>
             </div>
             <div className="flex justify-between text-sm mb-1">
-              <span>Giá nhập:</span>
+              <span>Giá nhập (Product):</span>
               <span className="font-bold">
-                {Math.round(item.importPrice ?? 0).toLocaleString("vi-VN")}đ
+                {Math.round(
+                  item.productBasePrice ?? item.importPrice ?? 0
+                ).toLocaleString("vi-VN")}
+                đ
               </span>
             </div>
             <div className="flex justify-between text-sm mb-1">
