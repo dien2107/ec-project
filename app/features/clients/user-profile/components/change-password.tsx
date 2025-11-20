@@ -59,19 +59,19 @@ const ChangePassword = () => {
     let strength: "weak" | "medium" | "strong" = "weak";
 
     if (password.length < 8) {
-      errors.push("Ít nhất 8 ký tự");
+    errors.push("Ít nhất 8 ký tự");
     }
-    if (!/(?=.*[a-z])/.test(password)) {
+    if (!/[a-z]/.test(password)) {
       errors.push("Ít nhất 1 chữ thường");
     }
-    if (!/(?=.*[A-Z])/.test(password)) {
+    if (!/[A-Z]/.test(password)) {
       errors.push("Ít nhất 1 chữ hoa");
     }
-    if (!/(?=.*\d)/.test(password)) {
+    if (!/\d/.test(password)) {
       errors.push("Ít nhất 1 số");
     }
-    if (!/(?=.*[!@#$%^&*])/.test(password)) {
-      errors.push("Ít nhất 1 ký tự đặc biệt");
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push("Ít nhất 1 ký tự đặc biệt (!@#$%^&*)");
     }
 
     const validConditions = 5 - errors.length;
