@@ -53,7 +53,7 @@ export default function Layout() {
         <div>
           <div className="flex items-center justify-start gap-2 mb-4">
             <SidebarTrigger />
-            <AdminBreadcrumb />
+            {/* <AdminBreadcrumb /> */}
           </div>
           <div className="min-h-screen">
             <div className="container mx-auto mb-6">

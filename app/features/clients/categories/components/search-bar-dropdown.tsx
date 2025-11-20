@@ -48,11 +48,11 @@ export default function SearchBarDropdown({
           pageSize: 5,
         });
         setSuggestions(response.data.items);
-        setShowDropdown(true); // Always show dropdown when searching
+        // setShowDropdown(true); // Always show dropdown when searching
       } catch (error) {
         console.error("Error fetching suggestions:", error);
         setSuggestions([]);
-        setShowDropdown(true);
+        setShowDropdown(false);
       } finally {
         setIsLoadingSuggestions(false);
       }
@@ -94,13 +94,14 @@ export default function SearchBarDropdown({
                 setShowDropdown(true);
               }
             }}
-            onFocus={() => {
+            onFocus={(e) => {
               if (searchQuery.trim().length >= 2) {
                 setShowDropdown(true);
               }
             }}
             className="w-full h-12 px-6 text-base border border-gray-300 rounded focus:outline-none focus:border-gray-400 hover:border-gray-400 transition-colors pr-24"
           />
+
           {searchQuery && (
             <button
               type="button"
