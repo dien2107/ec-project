@@ -17,20 +17,17 @@ import {
   Phone,
   Calendar,
 } from "lucide-react";
-import { statusMap, type Order } from "../types";
+import {
+  statusMap,
+  type Order,
+  type OrderStatus,
+  type OrderStatusName,
+} from "../types";
 import OrderDetail from "./order-detail";
 import { toast } from "react-hot-toast";
 import { approveOrder, cancelOrder } from "~/services/order";
 import { useAppDispatch } from "~/redux/store";
-import { fetchOrderListData } from "~/redux/slices/orders";
 import { ConfirmActionDialog } from "./confirmation-modal";
-
-function formatVND(amount: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-}
 
 export default function ViewOrderDetailDialog({
   order,
@@ -243,29 +240,37 @@ export default function ViewOrderDetailDialog({
         {order?.status?.name !== "Delivered" &&
           order?.status?.name !== "Cancelled" && (
             <DialogFooter className="py-4 border-t-2 bg-gray-50 -mx-6 -mb-6 px-6 rounded-b-xl">
-              <ConfirmActionDialog
-                title="Xác nhận hủy đơn hàng"
-                description="Bạn có chắc chắn muốn hủy đơn hàng này không?"
-                onConfirm={handleCancel}
-              >
-                <Button
-                  variant="outline"
-                  className="text-red-600 border-red-500 border-2 hover:bg-red-50 font-semibold"
+              {/* Nút hủy đơn - chỉ hiện khi trạng thái là Pending (Chờ xác nhận) */}
+              {order?.status?.name === "Pending" && (
+                <ConfirmActionDialog
+                  title="Xác nhận hủy đơn hàng"
+                  description="Bạn có chắc chắn muốn hủy đơn hàng này không?"
+                  onConfirm={handleCancel}
                 >
-                  Hủy đơn
-                </Button>
-              </ConfirmActionDialog>
+                  <Button
+                    variant="outline"
+                    className="text-red-600 border-red-500 border-2 hover:bg-red-50 font-semibold"
+                  >
+                    Hủy đơn
+                  </Button>
+                </ConfirmActionDialog>
+              )}
 
-              <ConfirmActionDialog
-                title="Xác nhận duyệt đơn hàng"
-                description="Bạn có chắc chắn muốn duyệt đơn hàng này không?"
-                confirmText="Duyệt"
-                onConfirm={handleApprove}
-              >
-                <Button className="bg-[#3770EC] text-white hover:bg-blue-700 font-semibold shadow-md">
-                  Duyệt đơn hàng
-                </Button>
-              </ConfirmActionDialog>
+              {/* Nút duyệt đơn - ẩn khi trạng thái là Shipping (Đang giao), Delivered, Cancelled */}
+              {order?.status?.name !== "Shipping" &&
+                (order?.status?.name as OrderStatusName) !== "Delivered" &&
+                (order?.status?.name as OrderStatusName) !== "Cancelled" && (
+                  <ConfirmActionDialog
+                    title="Xác nhận duyệt đơn hàng"
+                    description="Bạn có chắc chắn muốn duyệt đơn hàng này không?"
+                    confirmText="Duyệt"
+                    onConfirm={handleApprove}
+                  >
+                    <Button className="bg-[#3770EC] text-white hover:bg-blue-700 font-semibold shadow-md">
+                      Duyệt đơn hàng
+                    </Button>
+                  </ConfirmActionDialog>
+                )}
             </DialogFooter>
           )}
       </DialogContent>

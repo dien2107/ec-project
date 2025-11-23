@@ -11,6 +11,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { NavLink } from "react-router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import type {
@@ -334,9 +335,14 @@ export default function OrderDetailsModal({
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 line-clamp-2 truncate text-sm lg:text-base">
-                            {item.name}
-                          </h4>
+                          <NavLink
+                            to={`/products/${(item as any).slug}`}
+                            className="block relative overflow-hidden rounded-md group hover:no-underline hover:opacity-50 transition"
+                          >
+                            <h4 className="font-medium text-gray-900 line-clamp-2 text-sm lg:text-base">
+                              {item.name}
+                            </h4>
+                          </NavLink>
                           {item.size && (
                             <p className="text-xs lg:text-sm text-gray-500 mt-1">
                               {item.size}

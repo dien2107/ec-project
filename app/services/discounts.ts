@@ -52,3 +52,14 @@ export const updateInactiveDiscounts = async () => {
     return { success: false, updatedCount: 0 };
   }
 };
+
+export const getDiscountByCode = async (code: string) => {
+  try {
+    const response = await instance.get(`/discounts/code/${code}`);
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching discount by code:", error);
+    throw error;
+  }
+};

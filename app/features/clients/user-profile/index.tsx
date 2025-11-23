@@ -49,6 +49,7 @@ export default function UserProfilePage() {
   // 🔹 Khi orderList từ Redux có dữ liệu -> format lại cho UI
   useEffect(() => {
     if (!orderList?.data) return;
+    console.log(orderList.data);
     const formattedList: OrderItem[] = orderList.data.items
       .flat()
       .map(order => {
@@ -96,6 +97,7 @@ export default function UserProfilePage() {
               orderItemId: item.orderItemId,
               productVariantId: item.productVariantId,
               name: item.productName,
+              slug: (item as any).slug,
               price: item.price,
               quantity: item.quantity,
               image: item.productImage,
