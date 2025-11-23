@@ -20,6 +20,9 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { toast } from "sonner";
 import { updateSupplier, getSupplierById } from "~/services/supplier";
+import { useAppDispatch, useAppSelector } from "~/redux/store";
+import { fetchStatuses } from "~/redux/slices/statuses";
+import { ENTITY_TYPE } from "~/constants/entity-types";
 
 interface SupplierEditFormData {
   supplierId: number;
@@ -38,12 +41,8 @@ interface EditSupplierDialogProps {
   onUpdated: () => void;
 }
 
-const statusList = [
-  { statusId: 73, displayName: "Đang hợp tác" },
-  { statusId: 74, displayName: "Ngừng hợp tác" },
-  { statusId: 75, displayName: "Đình chỉ hợp tác" },
-  { statusId: 76, displayName: "Đang trong quá trình phát triển" },
-];
+// Danh sách trạng thái ID được phép chỉnh sửa
+const EDITABLE_STATUS_IDS = [63, 65, 66]; // Đang hợp tác, Đình chỉ hợp tác, Đang trong quá trình phát triển
 
 export default function EditSupplierDialog({
   open,
@@ -51,6 +50,11 @@ export default function EditSupplierDialog({
   supplierId,
   onUpdated,
 }: EditSupplierDialogProps) {
+  const dispatch = useAppDispatch();
+  const { data: statusesData, isLoading: isStatusesLoading } = useAppSelector(
+    (state) => state.statuses
+  );
+
   const [formData, setFormData] = useState<SupplierEditFormData>({
     supplierId: 0,
     name: "",
@@ -62,6 +66,17 @@ export default function EditSupplierDialog({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch statuses khi component mount
+  useEffect(() => {
+    dispatch(fetchStatuses({ entityType: ENTITY_TYPE.SUPPLIER }));
+  }, [dispatch]);
+
+  // Lọc ra chỉ các trạng thái được phép chỉnh sửa
+  const editableStatuses =
+    statusesData[ENTITY_TYPE.SUPPLIER]?.filter((status) =>
+      EDITABLE_STATUS_IDS.includes(status.statusId)
+    ) ?? [];
 
   // Lấy dữ liệu khi mở dialog
   useEffect(() => {
@@ -88,7 +103,10 @@ export default function EditSupplierDialog({
       .finally(() => setIsLoading(false));
   }, [open, supplierId, setIsOpen]);
 
-  const handleChange = (field: keyof SupplierEditFormData, value: string | number) => {
+  const handleChange = (
+    field: keyof SupplierEditFormData,
+    value: string | number
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -131,19 +149,30 @@ export default function EditSupplierDialog({
                 onValueChange={(value) =>
                   handleChange("statusId", Number(value))
                 }
+                disabled={isStatusesLoading || editableStatuses.length === 0}
               >
                 <SelectTrigger id="status">
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusList.map((status) => (
-                    <SelectItem
-                      key={status.statusId}
-                      value={status.statusId.toString()}
-                    >
-                      {status.displayName}
+                  {isStatusesLoading ? (
+                    <SelectItem value="loading" disabled>
+                      Đang tải...
                     </SelectItem>
-                  ))}
+                  ) : editableStatuses.length > 0 ? (
+                    editableStatuses.map((status) => (
+                      <SelectItem
+                        key={status.statusId}
+                        value={status.statusId.toString()}
+                      >
+                        {status.displayName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-data" disabled>
+                      Không có trạng thái
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

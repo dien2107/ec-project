@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { updateUserById } from "~/services/customers";
+import { updateProfileUserById } from "~/services/customers";
 import { useAppDispatch } from "~/redux/store";
 import { fetchCurrentUser } from "~/redux/slices/auth";
 import toast from "react-hot-toast";
@@ -89,7 +89,7 @@ export default function UserInfoEdit({
     };
 
     try {
-      await updateUserById(user.userId, payload);
+      await updateProfileUserById(user.userId, payload);
       toast.success("Cập nhật thông tin thành công!");
       // Reload user data
       await dispatch(fetchCurrentUser());

@@ -221,7 +221,7 @@ export default function UserInformationDetail() {
       dateOfBirth: form.dateOfBirth,
       isVerified: user.isVerified,
       statusId: user.status.statusId,
-      roleIds: user.roles || [],
+      roleIds: (user.roles || []).map((role: any) => role.roleId),
     };
 
     try {

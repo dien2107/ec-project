@@ -177,6 +177,14 @@ export function AddImportOrderModal({
 
     const variants =
       productVariantsState.variantsByProductId?.[variantPickerProductId] ?? [];
+
+    // Tìm giá đã có của product (nếu đã có variant nào của product này)
+    const existingVariant = selectedVariants.find(
+      (v) => v.productId === variantPickerProductId
+    );
+    const basePrice = existingVariant?.productBasePrice ?? 0;
+    const profitMargin = existingVariant?.profitMargin ?? 0;
+
     const toAdd: SelectedVariant[] = variants
       .filter((v: any) => pickerSelectedIds.includes(v.productVariantId))
       .map((v: any) => ({
@@ -192,10 +200,10 @@ export function AddImportOrderModal({
         imageUrl: v.primaryImage?.imageUrl ?? product.primaryImage?.imageUrl,
         currentStock: v.stockQuantity ?? 0,
         importQuantity: 1,
-        productBasePrice: 0, // Price at product level
-        profitMargin: 0,
-        suggestedPrice: 0,
-        totalPrice: 0,
+        productBasePrice: basePrice, // Apply existing price if available
+        profitMargin: profitMargin,
+        suggestedPrice: basePrice * (1 + profitMargin / 100),
+        totalPrice: basePrice * 1,
       }));
 
     setSelectedVariants((prev) => [...prev, ...toAdd]);
@@ -387,34 +395,43 @@ export function AddImportOrderModal({
                         variantPickerProductId
                       ]
                     : []) ?? []
-                ).map((v: any) => (
-                  <label
-                    key={v.productVariantId}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={pickerSelectedIds.includes(v.productVariantId)}
-                      onChange={() => {
-                        setPickerSelectedIds((prev) =>
-                          prev.includes(v.productVariantId)
-                            ? prev.filter((i) => i !== v.productVariantId)
-                            : [...prev, v.productVariantId]
-                        );
-                      }}
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium">
-                        {v.sku}{" "}
-                        {typeof v.size === "object" ? v.size?.name : v.size}{" "}
-                        {typeof v.color === "object" ? v.color?.name : v.color}
+                )
+                  .filter(
+                    (v: any) =>
+                      !selectedVariants.some(
+                        (sv) => sv.productVariantId === v.productVariantId
+                      )
+                  )
+                  .map((v: any) => (
+                    <label
+                      key={v.productVariantId}
+                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={pickerSelectedIds.includes(v.productVariantId)}
+                        onChange={() => {
+                          setPickerSelectedIds((prev) =>
+                            prev.includes(v.productVariantId)
+                              ? prev.filter((i) => i !== v.productVariantId)
+                              : [...prev, v.productVariantId]
+                          );
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {v.sku}{" "}
+                          {typeof v.size === "object" ? v.size?.name : v.size}{" "}
+                          {typeof v.color === "object"
+                            ? v.color?.name
+                            : v.color}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Tồn: {v.stockQuantity ?? 0}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Tồn: {v.stockQuantity ?? 0}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))}
               </div>
             )}
 

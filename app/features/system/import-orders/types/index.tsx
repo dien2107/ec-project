@@ -72,6 +72,7 @@ export type Product = SharedProduct;
 export interface SelectedProduct extends Product {
   importQuantity: number;
   importPrice: number;
+  productBasePrice: number; // Add this field
   profitMargin: number;
   suggestedPrice: number;
   totalPrice: number;
