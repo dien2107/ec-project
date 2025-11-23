@@ -42,8 +42,7 @@ interface EditSupplierDialogProps {
 }
 
 // Danh sách trạng thái ID được phép chỉnh sửa
-const EDITABLE_STATUS_IDS = [63, 65, 66]; // Đang hợp tác, Đình chỉ hợp tác, Đang trong quá trình phát triển
-
+const EDITABLE_STATUS_IDS = [62, 64, 65];
 export default function EditSupplierDialog({
   open,
   setIsOpen,

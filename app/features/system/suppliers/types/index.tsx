@@ -112,16 +112,16 @@ export const getSupplierColumns = (
       const statusId = row.original.statusId;
       let colorClass = "";
       switch (statusId) {
-        case 63: // Đang hợp tác
+        case 62: // Đang hợp tác
           colorClass = "bg-green-100 text-green-700";
           break;
-        case 64: // Ngưng hợp tác
+        case 63: // Ngưng hợp tác
           colorClass = "bg-gray-100 text-gray-600";
           break;
-        case 65: // Đình chỉ hợp tác
+        case 64: // Đình chỉ hợp tác
           colorClass = "bg-red-100 text-red-600";
           break;
-        case 66: // Đã chặn
+        case 65: // Đã chặn
           colorClass = "bg-yellow-100 text-yellow-700";
           break;
       }
