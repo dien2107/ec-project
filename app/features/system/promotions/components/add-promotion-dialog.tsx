@@ -73,21 +73,28 @@ export default function AddPromotionDialog({
   const discountType = watch("discountType");
   const promotionValue = watch("promotionValue");
   const promotionMaxValue = watch("promotionMaxValue");
+  const [previousDiscountType, setPreviousDiscountType] =
+    useState(discountType);
 
   // Reset promotionValue and promotionMaxValue when discountType changes
   useEffect(() => {
-    if (discountType) {
+    if (discountType !== previousDiscountType) {
       setValue("promotionValue", "");
       setValue("promotionMaxValue", "");
+      setPreviousDiscountType(discountType);
     }
-  }, [discountType, setValue]);
+  }, [discountType, previousDiscountType, setValue]);
 
   // Auto-fill MaxDiscountAmount when type is fixed and promotionValue changes
   useEffect(() => {
-    if (discountType === "fixed" && promotionValue) {
+    if (
+      discountType === "fixed" &&
+      promotionValue &&
+      discountType === previousDiscountType
+    ) {
       setValue("promotionMaxValue", promotionValue);
     }
-  }, [promotionValue, discountType, setValue]);
+  }, [promotionValue, discountType, previousDiscountType, setValue]);
 
   // Re-validate promotionMaxValue when promotionMinOrder changes
   useEffect(() => {
@@ -246,7 +253,7 @@ export default function AddPromotionDialog({
                   message:
                     "Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0",
                 },
-                validate: (value) => {
+                validate: value => {
                   if (!value || !promotionMaxValue) return true;
                   const minOrder = parseFloat(value);
                   const maxDiscount = parseFloat(promotionMaxValue);
@@ -280,10 +287,10 @@ export default function AddPromotionDialog({
                     isSearchable={false}
                     styles={reactSelectStyles}
                     isDisabled={isLoading}
-                    onChange={(option) => field.onChange(option?.value ?? "")}
+                    onChange={option => field.onChange(option?.value ?? "")}
                     value={
                       discountTypeOptions.find(
-                        (opt) => opt.value === field.value
+                        opt => opt.value === field.value
                       ) || null
                     }
                   />
@@ -315,7 +322,7 @@ export default function AddPromotionDialog({
                   value: 0,
                   message: "Giá trị khuyến mãi phải lớn hơn hoặc bằng 0",
                 },
-                validate: (value) => {
+                validate: value => {
                   if (!value || !discountType) return true;
                   const numValue = parseFloat(value);
                   if (discountType === "percentage") {
@@ -352,7 +359,7 @@ export default function AddPromotionDialog({
                   value: 0,
                   message: "Giá trị giảm tối đa phải lớn hơn hoặc bằng 0",
                 },
-                validate: (value) => {
+                validate: value => {
                   if (!value) return true;
                   const maxValue = parseFloat(value);
                   const minOrder = parseFloat(promotionMinOrder || "0");
@@ -378,7 +385,7 @@ export default function AddPromotionDialog({
                 type="date"
                 disabled={isLoading}
                 {...register("startAt", {
-                  validate: (value) => {
+                  validate: value => {
                     const endAt = watch("endAt");
 
                     // ✅ Trường hợp cả 2 đều rỗng => hợp lệ
@@ -414,7 +421,7 @@ export default function AddPromotionDialog({
                 type="date"
                 disabled={isLoading}
                 {...register("endAt", {
-                  validate: (value) => {
+                  validate: value => {
                     const startAt = watch("startAt");
 
                     // ✅ Cả 2 đều rỗng => hợp lệ

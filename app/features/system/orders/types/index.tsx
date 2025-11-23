@@ -17,7 +17,7 @@ export type address = {
   is_default: boolean;
 };
 export const statusMap: Record<
-  Status["name"],
+  OrderStatus["name"],
   { label: string; color: string }
 > = {
   Pending: { label: "Đang chờ xác nhận", color: "bg-amber-500" },
@@ -55,16 +55,18 @@ export type order_item = {
   price: number;
   subtotal: number;
 };
-export type Status = {
+export type OrderStatusName =
+  | "Pending"
+  | "Confirmed"
+  | "Processing"
+  | "Shipping"
+  | "Delivered"
+  | "Cancelled"
+  | "Returned";
+
+export type OrderStatus = {
   statusId: number;
-  name:
-    | "Pending"
-    | "Confirmed"
-    | "Processing"
-    | "Delivered"
-    | "Cancelled"
-    | "Returned"
-    | "Shipping";
+  name: OrderStatusName;
 };
 
 export type User = {
@@ -119,7 +121,7 @@ export type Order = {
   createdAt: string; // vì API trả về dạng chuỗi ISO
   user: User;
   ship: Ship;
-  status: Status;
+  status: OrderStatus; // Updated to OrderStatus type with all 7 statuses
   items: OrderItem[];
   payment: paymentDto | null;
   discount: Discount | null;
@@ -201,10 +203,10 @@ export const getColumns = (
       },
     },
     cell: ({ row }) => {
-      const status = row.original.status as Status;
+      const status = row.original.status as OrderStatus;
 
       const statusConfig: Record<
-        Status["name"],
+        OrderStatus["name"],
         { label: string; color: string; dotColor: string }
       > = {
         Pending: {
@@ -265,7 +267,7 @@ export const getColumns = (
     },
     filterFn: (row, id, value) => {
       if (!value || value === "all") return true;
-      const rowValue = (row.getValue(id) as Status).name?.toLowerCase();
+      const rowValue = (row.getValue(id) as OrderStatus).name?.toLowerCase();
       return rowValue === value.toLowerCase();
     },
   },
