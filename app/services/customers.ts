@@ -27,6 +27,16 @@ export const updateUserById = async (userId: number, data: any) => {
     throw error;
   }
 };
+
+export const updateProfileUserById = async (userId: number, data: any) => {
+  try {
+    const response = await instance.put(`/users/profile/${userId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
 export const postUserAssignRoles = async (
   params: { userId: number; AssignedBy: number },
   RoleIds: number[]

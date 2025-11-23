@@ -25,7 +25,8 @@ export default function UserPermissionSystem() {
       state.customerList ?? { customerList: null, isLoading: false }
   );
 
-  
+  // Get current logged-in user
+  const currentUser = useAppSelector((state) => state.auth.user);
   const userStatuses = useAppSelector(
     (state) => state.statuses.data?.[ENTITY_TYPE.USER] ?? []
   );
@@ -40,7 +41,6 @@ export default function UserPermissionSystem() {
   const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  
   const reloadList = useCallback(
     (override?: { PageNumber?: number }) => {
       dispatch(
@@ -79,10 +79,8 @@ export default function UserPermissionSystem() {
     setIsModalOpen(false);
     setSelectedUser(null);
   };
-
   const data: Customer[] =
     customerList?.data?.items ?? customerList?.data ?? [];
-
   const columns: ColumnDef<Customer>[] = [
     { accessorKey: "userId", header: "ID", size: 60 },
     { accessorKey: "fullName", header: "Họ tên" },
@@ -127,20 +125,30 @@ export default function UserPermissionSystem() {
     {
       id: "actions",
       header: "Hành động",
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenModal(row.original);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isCurrentUser = currentUser?.data?.userId === row.original.userId;
+        return (
+          <div className="flex gap-2">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenModal(row.original);
+              }}
+              disabled={isCurrentUser}
+              title={
+                isCurrentUser
+                  ? "Không thể chỉnh sửa thông tin của chính bạn"
+                  : "Chỉnh sửa"
+              }
+              className={isCurrentUser ? "opacity-50 cursor-not-allowed bg-gray-500" : ""}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
     },
   ];
   return (

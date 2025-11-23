@@ -30,7 +30,6 @@ export interface DeleteSupplierDialogProps {
   supplierId?: number;
 }
 
-
 export type Supplier = {
   supplierId: number;
   name: string;
@@ -57,13 +56,21 @@ export const getSupplierColumns = (
   {
     accessorKey: "supplierId",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Mã NCC" className="justify-start" />
+      <SortableHeader
+        column={column}
+        title="Mã NCC"
+        className="justify-start"
+      />
     ),
   },
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Tên nhà cung cấp" className="justify-start" />
+      <SortableHeader
+        column={column}
+        title="Tên nhà cung cấp"
+        className="justify-start"
+      />
     ),
     cell: ({ getValue }) => (
       <span className="font-medium text-gray-800">{getValue() as string}</span>
@@ -93,7 +100,7 @@ export const getSupplierColumns = (
     header: "Địa chỉ",
     cell: ({ getValue }) => (
       <span className="truncate max-w-[250px]" title={getValue() as string}>
-        {getValue () || "--"}
+        {getValue() || "--"}
       </span>
     ),
   },
@@ -105,16 +112,16 @@ export const getSupplierColumns = (
       const statusId = row.original.statusId;
       let colorClass = "";
       switch (statusId) {
-        case 73: // Đang hợp tác
+        case 63: // Đang hợp tác
           colorClass = "bg-green-100 text-green-700";
           break;
-        case 74: // Ngưng hợp tác
+        case 64: // Ngưng hợp tác
           colorClass = "bg-gray-100 text-gray-600";
           break;
-        case 75: // Đình chỉ hợp tác
+        case 65: // Đình chỉ hợp tác
           colorClass = "bg-red-100 text-red-600";
           break;
-        default: // Trạng thái mặc định nếu không khớp
+        case 66: // Đã chặn
           colorClass = "bg-yellow-100 text-yellow-700";
           break;
       }
@@ -137,25 +144,40 @@ export const getSupplierColumns = (
   {
     id: "actions",
     header: "Thao tác",
-    cell: ({ row }) => (
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleEdit(row.original)}
-        >
-          <SquarePen className="w-4 h-4 mr-1" />
-          Sửa
-        </Button>
-        <Button
-          size="sm"
-          variant="destructive"
-          onClick={() => handleDelete(row.original)}
-        >
-          <Trash className="w-4 h-4 mr-1" />
-          Xóa
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const statusId = row.original.statusId;
+      const isDisabled = statusId === 64; // Ngưng hợp tác - không cho phép thao tác
+
+      return (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleEdit(row.original)}
+            disabled={isDisabled}
+            title={
+              isDisabled
+                ? "Không thể chỉnh sửa nhà cung cấp đã ngưng hợp tác"
+                : "Sửa"
+            }
+          >
+            <SquarePen className="w-4 h-4 mr-1" />
+            Sửa
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => handleDelete(row.original)}
+            disabled={isDisabled}
+            title={
+              isDisabled ? "Không thể xóa nhà cung cấp đã ngưng hợp tác" : "Xóa"
+            }
+          >
+            <Trash className="w-4 h-4 mr-1" />
+            Xóa
+          </Button>
+        </div>
+      );
+    },
   },
 ];

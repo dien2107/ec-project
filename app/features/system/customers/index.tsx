@@ -14,7 +14,7 @@ import { Button } from "~/components/ui/button";
 import { useAppDispatch, useAppSelector } from "~/redux/store";
 import { fetchCustomerListData } from "~/redux/slices/customers";
 import { getUserById, updateUserById } from "~/services/customers";
-import { getOrderByUserId } from "~/services/order";
+import order, { getOrderByUserId } from "~/services/order";
 import { fetchStatuses } from "~/redux/slices/statuses";
 import { ENTITY_TYPE } from "~/constants/entity-types";
 import toast, { Toaster } from "react-hot-toast";
@@ -64,49 +64,49 @@ const OrderStatusBadge: React.FC<{ status: EntityStatus }> = ({ status }) => {
   const getStatusStyle = (statusName?: string) => {
     const name = statusName?.toLowerCase();
     switch (name) {
-      case "pending": 
+      case "pending":
         return {
           bg: "bg-yellow-100",
           text: "text-yellow-700",
           icon: Clock,
         };
-      case "confirmed": 
+      case "confirmed":
         return {
           bg: "bg-blue-100",
           text: "text-blue-700",
           icon: CheckCircle,
         };
-      case "processing": 
+      case "processing":
         return {
           bg: "bg-purple-100",
           text: "text-purple-700",
           icon: Package,
         };
-      case "packaging": 
+      case "packaging":
         return {
           bg: "bg-indigo-100",
           text: "text-indigo-700",
           icon: Package,
         };
-      case "shipping": 
+      case "shipping":
         return {
           bg: "bg-cyan-100",
           text: "text-cyan-700",
           icon: TruckIcon,
         };
-      case "delivered": 
+      case "delivered":
         return {
           bg: "bg-green-100",
           text: "text-green-700",
           icon: CheckCircle,
         };
-      case "cancelled": 
+      case "cancelled":
         return {
           bg: "bg-red-100",
           text: "text-red-700",
           icon: XCircle,
         };
-      case "returned": 
+      case "returned":
         return {
           bg: "bg-orange-100",
           text: "text-orange-700",
@@ -164,7 +164,6 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       currency: "VND",
     }).format(amount);
 
-  
   const AddressesList: React.FC<{
     addresses?: Address[];
     fallback?: string | undefined;
@@ -223,7 +222,6 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       return;
     }
 
-    
     if (!userStatuses.length) {
       toast.error("Danh sách trạng thái chưa sẵn sàng, vui lòng thử lại.");
       return;
@@ -242,7 +240,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         isVerified: customer.isVerified ?? false,
         statusId: targetStatus.statusId,
         roleIds: (customer.roles ?? []).map((r) => r.roleId),
-        
+
         addresses: customer.addresses ?? [],
       };
 
@@ -304,7 +302,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         ))}
       </div>
 
-      <div className="p-6 max-h-[60vh] overflow-y-auto">
+      <div className="p-6 max-h-[60vh] overflow-y-auto scrollbar-custom">
         {loading ? (
           <div>Đang tải chi tiết...</div>
         ) : activeTab === "personal" ? (
@@ -443,7 +441,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           Tổng tiền
                         </span>
                         <span className="font-semibold text-gray-900">
-                          {formatCurrency(order.totalPrice || 0)}
+                          {formatCurrency(order.totalAmount || 0)}
                         </span>
                       </div>
                       <div>
@@ -451,7 +449,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           Số sản phẩm
                         </span>
                         <span className="font-semibold text-gray-900">
-                          {order.orderItems?.length || 0} món
+                          {order.items?.length || 0} món
                         </span>
                       </div>
                       <div>
@@ -468,10 +466,10 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       </div>
                       <div>
                         <span className="text-gray-500 block mb-1">
-                          Thanh toán
+                          Vận chuyển
                         </span>
                         <span className="font-semibold text-gray-900">
-                          {order.paymentDestination?.name || "Chưa thanh toán"}
+                          {order.ship?.corpName || "Chưa có"}
                         </span>
                       </div>
                     </div>
@@ -507,7 +505,6 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   );
 };
 
-
 type FilterValues = {
   Search?: string;
   Phone?: string;
@@ -524,13 +521,11 @@ const CustomerManagement: React.FC = () => {
       state.customerList ?? { customerList: null, isLoading: false }
   );
 
-  
   const userStatuses = useAppSelector(
     (state) => state.statuses.data?.[ENTITY_TYPE.USER] ?? []
   );
   const isStatusesLoading = useAppSelector((state) => state.statuses.isLoading);
 
-  
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterValues>({});
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -542,7 +537,6 @@ const CustomerManagement: React.FC = () => {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [activeTab, setActiveTab] = useState<"personal" | "orders">("personal");
 
-  
   const reloadList = useCallback(
     (override?: { PageNumber?: number }) => {
       dispatch(
@@ -563,7 +557,6 @@ const CustomerManagement: React.FC = () => {
     dispatch(fetchStatuses({ entityType: ENTITY_TYPE.USER }));
   }, [dispatch]);
 
-  
   useEffect(() => {
     reloadList();
   }, [reloadList]);
@@ -621,7 +614,6 @@ const CustomerManagement: React.FC = () => {
     setLoadingOrders(true);
 
     try {
-      
       const [userData, ordersData] = await Promise.all([
         getUserById(Number(row.userId)),
         getOrderByUserId(row.userId).catch(() => ({ data: [] })),
@@ -639,7 +631,7 @@ const CustomerManagement: React.FC = () => {
       setLoadingOrders(false);
     }
   };
-
+  console.log(orders);
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />

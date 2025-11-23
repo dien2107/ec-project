@@ -165,6 +165,24 @@ export function SelectedProductsTable({
   onUpdate: (id: any, field: any, value: number) => void;
   onSelect: (p: any | null) => void;
 }) {
+  // Wrapper để update cả detail panel
+  const handleUpdate = (id: any, field: any, value: number) => {
+    onUpdate(id, field, value);
+    // Re-select để refresh detail panel
+    const updatedVariant = selected.find(
+      (v) => (v.id ?? v.productVariantId ?? v.productId) === id
+    );
+    if (updatedVariant) {
+      // Trigger re-select after state update
+      setTimeout(() => {
+        const refreshed = selected.find(
+          (v) => (v.id ?? v.productVariantId ?? v.productId) === id
+        );
+        if (refreshed) onSelect(refreshed);
+      }, 0);
+    }
+  };
+
   // Group variants by product to display product-level price
   const groupedByProduct = selected.reduce((acc: any, variant: any) => {
     const productId = variant.productId;
@@ -214,7 +232,7 @@ export function SelectedProductsTable({
                           const newPrice = parseFloat(e.target.value) || 0;
                           // Update all variants of this product
                           productGroup.variants.forEach((v: any) => {
-                            onUpdate(
+                            handleUpdate(
                               v.id ?? v.productVariantId ?? v.productId,
                               "productBasePrice" as any,
                               newPrice
@@ -235,7 +253,7 @@ export function SelectedProductsTable({
                           const newMargin = parseFloat(e.target.value) || 0;
                           // Update all variants of this product
                           productGroup.variants.forEach((v: any) => {
-                            onUpdate(
+                            handleUpdate(
                               v.id ?? v.productVariantId ?? v.productId,
                               "profitMargin" as any,
                               newMargin
@@ -321,7 +339,7 @@ export function SelectedProductsTable({
                           type="number"
                           value={variant.importQuantity}
                           onChange={(e) =>
-                            onUpdate(
+                            handleUpdate(
                               variant.id ??
                                 variant.productVariantId ??
                                 variant.productId,
@@ -482,7 +500,7 @@ export function ProductDetailPanel({
             </div>
             <div className="flex justify-between text-sm mb-1">
               <span>Giá nhập (Product):</span>
-              <span className="font-bold">
+              <span className="font-bold ">
                 {Math.round(
                   item.productBasePrice ?? item.importPrice ?? 0
                 ).toLocaleString("vi-VN")}

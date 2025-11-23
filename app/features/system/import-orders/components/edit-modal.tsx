@@ -322,12 +322,19 @@ export function EditImportOrderModal({
 
     const variants =
       productVariantsState.variantsByProductId?.[variantPickerProductId] ?? [];
+
+    // Tìm giá đã có của product (nếu đã có variant nào của product này)
+    const existingVariant = selectedProducts.find(
+      (v: any) => (v.productId ?? v.id) === variantPickerProductId
+    );
+    const basePrice =
+      existingVariant?.productBasePrice ??
+      Math.round((product.price ?? product.retailPrice ?? 0) * 0.7);
+    const profitMargin = existingVariant?.profitMargin ?? 30;
+
     const toAdd: any[] = variants
       .filter((v: any) => pickerSelectedIds.includes(v.productVariantId))
       .map((v: any) => {
-        const basePrice = Math.round(
-          (product.price ?? product.retailPrice ?? 0) * 0.7
-        );
         const importQuantity = 1;
         const totalPrice = basePrice * importQuantity;
 
@@ -337,9 +344,9 @@ export function EditImportOrderModal({
           code: v.sku ?? "",
           name: product.name ?? product.productName,
           importQuantity,
-          productBasePrice: basePrice, // Use productBasePrice
-          profitMargin: 30,
-          suggestedPrice: basePrice * 1.3,
+          productBasePrice: basePrice, // Apply existing price
+          profitMargin: profitMargin,
+          suggestedPrice: basePrice * (1 + profitMargin / 100),
           totalPrice,
           price: product.price ?? product.retailPrice ?? 0,
           imageUrl: v.primaryImage?.imageUrl ?? product.primaryImage?.imageUrl,
@@ -646,34 +653,44 @@ export function EditImportOrderModal({
                   productVariantsState.variantsByProductId?.[
                     (variantPickerProductId ?? 0) as number
                   ] ?? []
-                ).map((v: any) => (
-                  <label
-                    key={v.productVariantId}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={pickerSelectedIds.includes(v.productVariantId)}
-                      onChange={() => {
-                        setPickerSelectedIds((prev) =>
-                          prev.includes(v.productVariantId)
-                            ? prev.filter((i) => i !== v.productVariantId)
-                            : [...prev, v.productVariantId]
-                        );
-                      }}
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium">
-                        {v.sku}{" "}
-                        {typeof v.size === "object" ? v.size?.name : v.size}{" "}
-                        {typeof v.color === "object" ? v.color?.name : v.color}
+                )
+                  .filter(
+                    (v: any) =>
+                      !selectedProducts.some(
+                        (sp: any) =>
+                          (sp.productVariantId ?? sp.id) === v.productVariantId
+                      )
+                  )
+                  .map((v: any) => (
+                    <label
+                      key={v.productVariantId}
+                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={pickerSelectedIds.includes(v.productVariantId)}
+                        onChange={() => {
+                          setPickerSelectedIds((prev) =>
+                            prev.includes(v.productVariantId)
+                              ? prev.filter((i) => i !== v.productVariantId)
+                              : [...prev, v.productVariantId]
+                          );
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {v.sku}{" "}
+                          {typeof v.size === "object" ? v.size?.name : v.size}{" "}
+                          {typeof v.color === "object"
+                            ? v.color?.name
+                            : v.color}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Tồn: {v.stockQuantity ?? 0}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Tồn: {v.stockQuantity ?? 0}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))}
               </div>
             )}
 
