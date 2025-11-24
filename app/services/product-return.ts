@@ -13,6 +13,7 @@ export type OrderDto = {
 export type UserOrderDto = {
   userId: number;
   fullName: string;
+  phone: string | null;
 };
 
 export type ProductReturnResponse = {
@@ -30,6 +31,8 @@ export type ProductReturnResponse = {
   orderDto: OrderDto;
   userOrderDto: UserOrderDto;
   createdAt: string;
+
+  quantity: number;
 };
 
 export type ProductReturnListResponse = {
@@ -132,8 +135,9 @@ export const completedProductReturnforExchange = async (returnId: number) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error completing order:", error);
-    throw error;
+    const ex = error as Error;
+
+    throw ex;
   }
 };
 

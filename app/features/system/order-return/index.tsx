@@ -44,7 +44,10 @@ const mapPR = (pr: ProductReturnResponse): Return => {
     orderItemId: pr.orderItemId,
     orderId: String(pr.orderDto?.orderId ?? ""),
     type,
-    customer: { name: pr.userOrderDto?.fullName ?? "", phone: "" },
+    customer: {
+      name: pr.userOrderDto?.fullName ?? "",
+      phone: pr.userOrderDto?.phone ?? "",
+    },
     product: {
       name: pr.productName ?? "",
       sku: pr.returnProductVariantId ? String(pr.returnProductVariantId) : "",
@@ -55,7 +58,7 @@ const mapPR = (pr: ProductReturnResponse): Return => {
     description: pr.returnProductName ?? "",
     status,
     requestDate: pr.createdAt ?? "",
-    quantity: 1,
+    quantity: pr.quantity ?? 1,
   };
 };
 export default function OrderReturn() {
@@ -188,7 +191,9 @@ export default function OrderReturn() {
         );
       } catch (err) {
         const ex = err as AxiosError;
-        toast.error("Không thể hoàn thành đổi hàng: " + ex.message);
+        toast.error(
+          ex.response?.data.message || "Không thể hoàn thành đổi hàng"
+        );
       }
     },
     [dispatch, currentPage, filters]
