@@ -207,11 +207,30 @@ export default function ViewOrderDetailDialog({
                       <p className="text-xs text-gray-500 mb-0.5">
                         Phương thức thanh toán
                       </p>
-                      <p className="font-semibold text-gray-800">
-                        {order?.payment == null
-                          ? "COD (Thanh toán khi nhận hàng)"
-                          : "SEPAY"}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-800">
+                          {order?.payment == null
+                            ? "COD (Thanh toán khi nhận hàng)"
+                            : "SEPAY"}
+                        </p>
+                        {order?.payment && (
+                          <span
+                            className={`inline-flex items-center gap-1 py-0.5 px-2 rounded-full text-xs font-medium ${
+                              order.payment.statusName === "Completed"
+                                ? "bg-green-100 text-green-700"
+                                : order.payment.statusName === "Pending"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {order.payment.statusName === "Completed"
+                              ? "Đã thanh toán"
+                              : order.payment.statusName === "Pending"
+                                ? "Chờ thanh toán"
+                                : "Thất bại"}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

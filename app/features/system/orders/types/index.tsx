@@ -101,6 +101,8 @@ export type OrderItem = {
 };
 export type paymentDto = {
   paymentId: number;
+  statusId: number;
+  statusName: "Completed" | "Pending" | "Failed";
 };
 
 export type reviewOrder = {
