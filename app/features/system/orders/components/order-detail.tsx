@@ -114,7 +114,8 @@ export default function OrderDetail({ order }: { order: any }) {
                         <span className="font-semibold">
                           {formatVND(
                             (order?.totalAmount ?? 0) -
-                              (order?.shippingFee ?? 0)
+                              (order?.shippingFee ?? 0) +
+                              (order?.discount?.discountValue ?? 0)
                           )}
                         </span>
                       </div>
@@ -136,7 +137,7 @@ export default function OrderDetail({ order }: { order: any }) {
                         <div className="flex justify-between items-center text-green-600">
                           <span className="font-medium">Giảm giá:</span>
                           <span className="font-semibold">
-                            -{formatVND(order?.discount ?? 0)}
+                            -{formatVND(order?.discount?.discountValue ?? 0)}
                           </span>
                         </div>
                       )}

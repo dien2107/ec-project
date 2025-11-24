@@ -409,11 +409,26 @@ export default function OrderDetailsModal({
                     Phương thức thanh toán
                   </h3>
                   <div className="bg-white border rounded-lg p-3 lg:p-4 text-sm">
-                    <p className="text-gray-900 font-medium text-xs lg:text-sm">
-                      {order.payment == null
-                        ? "Thanh toán khi nhận hàng (COD)"
-                        : "Thanh toán qua SEPAY"}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-900 font-medium text-xs lg:text-sm">
+                        {order.payment == null
+                          ? "Thanh toán khi nhận hàng (COD)"
+                          : "Thanh toán qua SEPAY"}
+                      </p>
+                      {order.payment && (
+                        <span
+                          className={`inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-xs font-medium ${
+                            order.payment.statusName === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {order.payment.statusName === "Completed"
+                            ? "Đã thanh toán"
+                            : "Chờ thanh toán"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
